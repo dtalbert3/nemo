@@ -1,0 +1,8 @@
+{
+  "indent_size": 2,
+  "indent_char": " ",
+  "max_preserve_newlines": 2,
+  "space_after_anon_function": true,
+  "brace_style": "collapse",
+  "space_before_conditional": true
+}
