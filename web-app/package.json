@@ -1,5 +1,5 @@
 {
-  "name": "nemo web-app",
+  "name": "nemo-web-app",
   "author": "Andrew Pachuilo <andrew.pachuilo@gmail.com>",
   "contributors": [{
     "name": "Cody Moffitt",
@@ -14,18 +14,18 @@
   "version": "0.0.1",
   "main": "server.js",
   "private": "true",
-  "dependecies": {
+  "dependencies": {
     "stylizer": "~2.1",
     "jade": "~1.11"
   },
-  "devDependecies": {
+  "devDependencies": {
     "express": "~4.13",
     "jshint": "~2",
     "js-beautify": "~1",
     "precommit-hook": "~3",
     "validator": "~4.5",
     "lodash": "~3.10",
-    "moonboots-express": "~3.0",
+    "moonboots-express": "~3.0"
   },
   "jshintConfig": {
     "asi": false,
@@ -49,7 +49,7 @@
     "dev": "NODE_ENV=dev node server",
     "prod": "NODE_ENV=prod node server",
     "lint": "jshint .",
-    "validate": "npm ls",
+    "validate": "npm ls"
   },
   "pre-commit": [
     "lint",
