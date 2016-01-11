@@ -11,21 +11,44 @@
     "name": "Oliver Payne",
     "email": "need this"
   }],
-  "version": "0.0.1",
+  "version": "0.0.0",
   "main": "server.js",
   "private": "true",
   "dependencies": {
+    "ampersand-app": "~1",
+    "ampersand-dom": "~1.4",
+    "ampersand-form-view": "~5.1",
+    "ampersand-input-view": "~5.0",
+    "ampersand-model": "~6.0",
+    "ampersand-rest-collection": "~5.0",
+    "ampersand-router": "~3.0",
+    "ampersand-view": "~9.0",
+    "ampersand-view-switcher": "~2.0",
+    "andlog": "~1.0",
+    "async": "~1.5",
+    "bootstrap": "~3.3",
+    "clientconfig": "~1.1",
+    "domify": "~1.4",
+    "domready": "~1.0.8",
+    "express": "~4.13",
+    "favicon-setter": "^0.1.1",
+    "getconfig": "~2.2",
+    "helmet": "~1.0",
+    "jade": "^1.11.0",
+    "local-links": "~1.4",
+    "lodash": "^3.10.1",
+    "moonboots-express": "~3.0",
+    "semantic-ui-css": "~2.1",
     "stylizer": "~2.1",
-    "jade": "~1.11"
+    "templatizer": "~1.5",
+    "validator": "~4.5"
+  },
+  "peerDependencies": {
   },
   "devDependencies": {
-    "express": "~4.13",
-    "jshint": "~2",
     "js-beautify": "~1",
-    "precommit-hook": "~3",
-    "validator": "~4.5",
-    "lodash": "~3.10",
-    "moonboots-express": "~3.0"
+    "jshint": "~2",
+    "precommit-hook": "~3"
   },
   "jshintConfig": {
     "asi": false,
