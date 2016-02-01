@@ -1,11 +1,16 @@
 body
-  div.ui.sidebar.inverted.vertical.menu
-    a.item
-      | Home
-    a.item
-      | Global
-    a.item
-      | Settings
+  nav(class='navbar navbar-default')
+    div(class='container-fluid')
+      div(class='navbar-header')
+        a(class='navbar-brand', href='/')
+          | Nemo
+      ul(class='nav navbar-nav')
+        li
+          a(href='/user')
+            | User
+        li
+          a(href='/global')
+            | Global
 
-  .container-fluid
+  div(class='container-fluid')
     main(data-hook="page-container")

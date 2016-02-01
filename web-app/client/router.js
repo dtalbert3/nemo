@@ -6,8 +6,8 @@ var SettingsPage = require('./pages/settings');
 
 module.exports = Router.extend({
   routes: {
-    '': 'login',
-    'user/:id': 'user',
+    'login/': 'login',
+    'user/': 'user',
     'global/:id': 'global',
     'settings/': 'settings',
     '(*path)': 'catchAll'
@@ -43,6 +43,6 @@ module.exports = Router.extend({
   },
 
   catchAll: function () {
-    this.redirectTo('');
+    this.redirectTo('login/');
   }
 });

@@ -17,7 +17,7 @@
 
     // body.jade compiled template
     templatizer["body"] = function tmpl_body() {
-        return '<body><div class="ui sidebar inverted vertical menu"><a class="item">Home</a><a class="item">Global</a><a class="item">Settings</a></div><div class="container-fluid"><main data-hook="page-container"></main></div></body>';
+        return '<body><nav class="navbar navbar-default"><div class="container-fluid"><div class="navbar-header"><a href="/" class="navbar-brand">Nemo</a></div><ul class="nav navbar-nav"><li><a href="/user">User</a></li><li><a href="/global">Global</a></li></ul></div></nav><div class="container-fluid"><main data-hook="page-container"></main></div></body>';
     };
 
     // head.jade compiled template
@@ -35,7 +35,7 @@
 
     // pages/login.jade compiled template
     templatizer["pages"]["login"] = function tmpl_pages_login() {
-        return '<section class="page login">Hello World</section>';
+        return '<section class="page login"><div class="container-fluid col-md-4 col-md-offset-4"><form action="/user/" class="form-signin"><h2 class="form-signin-heading">Please Sign in</h2><label for="inputEmail" class="sr-only">Email Address</label><input type="email" id="inputEmail" placeholder="Email Address" required="" autofocus="" class="form-control"/><label for="inputPassword" class="sr-only">Password</label><input type="password" id="inputPassword" placeholder="Password" required="" class="form-control"/><div class="checkbox"><label><input type="checkbox"/>Remeber Me</label></div><button type="submit" class="btn btn-lg btn-primary btn-block">Sign in</button></form></div></section>';
     };
 
     // pages/settings.jade compiled template

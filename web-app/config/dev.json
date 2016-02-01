@@ -7,6 +7,14 @@
         "secret": "bang!",
         "secure": false
     },
+    "db": {
+      "host": "localhost",
+      "name": "NEMO",
+      "username": "root",
+      "password": "",
+      "dialect": "mysql",
+      "port": 3306
+    },
     "http": {
         "listen": "localhost",
         "port": 3000

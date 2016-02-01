@@ -3,13 +3,13 @@
   "author": "Andrew Pachuilo <andrew.pachuilo@gmail.com>",
   "contributors": [{
     "name": "Cody Moffitt",
-    "email": "need this"
+    "email": "cemoffitt42@students.tntech.edu"
   }, {
     "name": "Jackson Chandler",
-    "email": "need this"
+    "email": "jkchandler42@students.tntech.edu"
   }, {
     "name": "Oliver Payne",
-    "email": "need this"
+    "email": "oopayne42@students.tntech.edu"
   }],
   "version": "0.0.0",
   "main": "server.js",
@@ -26,7 +26,7 @@
     "ampersand-view-switcher": "~2.0",
     "andlog": "~1.0",
     "async": "~1.5",
-    "bootstrap": "~3.3",
+    "bootstrap": "~3.3.6",
     "clientconfig": "~1.1",
     "domify": "~1.4",
     "domready": "~1.0.8",
@@ -38,7 +38,6 @@
     "local-links": "~1.4",
     "lodash": "^3.10.1",
     "moonboots-express": "~3.0",
-    "semantic-ui-css": "~2.1",
     "stylizer": "~2.1",
     "templatizer": "~1.5",
     "validator": "~4.5"

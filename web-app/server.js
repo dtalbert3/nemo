@@ -3,14 +3,38 @@ var helmet = require('helmet');
 var Moonboots = require('moonboots-express');
 var config = require('getconfig');
 var stylizer = require('stylizer');
+var Sequelize = require('sequelize');
 var templatizer = require('templatizer');
 
 var app = express();
 
+// Setup HTTP headers
 app.use(helmet());
 
+// Set up view engine
 app.set('view engine', 'jade');
 
+// Create database
+var sequelize = new Sequelize(
+  config.db.name,
+  config.db.username,
+  config.db.password,
+  {
+    host: config.db.host,
+    dialect: config.db.dialect, // or 'sqlite', 'postgres', 'mariadb'
+    port:    config.db.port, // or 5432 (for postgres)
+  });
+
+// Connect to database
+sequelize
+  .authenticate()
+  .then(function() {
+    console.log('Connection has been established successfully.');
+  }, function (err) {
+    console.log('Unable to connect to the database:', err);
+  });
+
+// Setup files to be used for client side app
 new Moonboots({
   moonboots: {
     jsFileName: 'nemo-js',
