@@ -7,14 +7,6 @@
         "secret": "bang!",
         "secure": false
     },
-    "db": {
-      "host": "localhost",
-      "name": "NEMO",
-      "username": "root",
-      "password": "",
-      "dialect": "mysql",
-      "port": 3306
-    },
     "http": {
         "listen": "localhost",
         "port": 3000
@@ -22,5 +14,15 @@
     "client": {
         "apiUrl": "http://localhost:3000",
         "debugMode": true
+    },
+    "server": {
+      "db": {
+        "host": "codyemoffitt.com",
+        "name": "NEMO_Datamart",
+        "username": "NEMO_WEB",
+        "password": "NEMO",
+        "dialect": "mysql",
+        "port": 3306
+      }
     }
 }

@@ -1,40 +1,62 @@
-var express = require('express');
+var feathers = require('feathers');
 var helmet = require('helmet');
 var Moonboots = require('moonboots-express');
 var config = require('getconfig');
 var stylizer = require('stylizer');
+var bodyParser = require('body-parser');
+var cookieParser = require('cookie-parser');
 var Sequelize = require('sequelize');
 var templatizer = require('templatizer');
 
-var app = express();
+var app = feathers();
 
 // Setup HTTP headers
 app.use(helmet());
 
-// Set up view engine
+// Set up template view engine
 app.set('view engine', 'jade');
 
 // Create database
 var sequelize = new Sequelize(
-  config.db.name,
-  config.db.username,
-  config.db.password,
+  config.server.db.name,
+  config.server.db.username,
+  config.server.db.password,
   {
-    host: config.db.host,
-    dialect: config.db.dialect, // or 'sqlite', 'postgres', 'mariadb'
-    port:    config.db.port, // or 5432 (for postgres)
+    host: config.server.db.host,
+    dialect: config.server.db.dialect,
+    port:    config.server.db.port,
   });
 
-// Connect to database
+// Test connection to database
 sequelize
   .authenticate()
   .then(function() {
-    console.log('Connection has been established successfully.');
+    console.log('[*] Connection to ' + config.server.db.name + ' database established');
   }, function (err) {
-    console.log('Unable to connect to the database:', err);
+    console.log('[ ] Unable to connect to ' + config.server.db.name + ' database: ', err);
   });
 
+// TODO look into compressing express page
+// parse application/x-www-form-urlencoded
+app.use(bodyParser.urlencoded({ extended: true }));
+
+// parse application/json
+app.use(bodyParser.json());
+
+app.use(cookieParser());
+
+// Set client config cookies
+app.use(function (req, res, next) {
+  res.cookie('config', JSON.stringify(config.client));
+  next();
+});
+
+// Setup NEMO api
+// var nemo = require('./nemoApi');
+// app.all('/api/*', nemo.authenticateUser); // Requires this method to use next() condtionally
+// app.get('/api/user', nemo.getUser);
 // Setup files to be used for client side app
+
 new Moonboots({
   moonboots: {
     jsFileName: 'nemo-js',
@@ -86,3 +108,4 @@ new Moonboots({
 });
 
 app.listen(config.http.port);
+console.log('[*] HTTP server listening on port:' + config.http.port);
