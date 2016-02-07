@@ -4,7 +4,6 @@ var domReady = require('domready');
 // var config = require('clientconfig');
 
 var Router = require('./router');
-var Patients = require('./models/patient-collection');
 var MainView = require('./views/main');
 
 // Attach app to window for easy access
@@ -12,7 +11,7 @@ window.app = app;
 
 app.extend({
   router: new Router(),
-  patients: new Patients(),
+  patients: {},
   init: function () {
     // wait for document ready to render our main view
     // this ensures the document has a body, etc.

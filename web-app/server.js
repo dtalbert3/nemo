@@ -1,40 +1,20 @@
 var feathers = require('feathers');
+var socketio = require('feathers-socketio');
 var helmet = require('helmet');
 var Moonboots = require('moonboots-express');
 var config = require('getconfig');
 var stylizer = require('stylizer');
 var bodyParser = require('body-parser');
 var cookieParser = require('cookie-parser');
-var Sequelize = require('sequelize');
 var templatizer = require('templatizer');
 
-var app = feathers();
+var app = feathers().configure(socketio());
 
 // Setup HTTP headers
 app.use(helmet());
 
 // Set up template view engine
 app.set('view engine', 'jade');
-
-// Create database
-var sequelize = new Sequelize(
-  config.server.db.name,
-  config.server.db.username,
-  config.server.db.password,
-  {
-    host: config.server.db.host,
-    dialect: config.server.db.dialect,
-    port:    config.server.db.port,
-  });
-
-// Test connection to database
-sequelize
-  .authenticate()
-  .then(function() {
-    console.log('[*] Connection to ' + config.server.db.name + ' database established');
-  }, function (err) {
-    console.log('[ ] Unable to connect to ' + config.server.db.name + ' database: ', err);
-  });
 
 // TODO look into compressing express page
 // parse application/x-www-form-urlencoded
@@ -52,11 +32,10 @@ app.use(function (req, res, next) {
 });
 
 // Setup NEMO api
-// var nemo = require('./nemoApi');
-// app.all('/api/*', nemo.authenticateUser); // Requires this method to use next() condtionally
-// app.get('/api/user', nemo.getUser);
-// Setup files to be used for client side app
+var nemoApi = require('./nemoApi');
+app.use('/user', nemoApi.userService);
 
+// Setup files to be used for client side app
 new Moonboots({
   moonboots: {
     jsFileName: 'nemo-js',
