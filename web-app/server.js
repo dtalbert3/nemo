@@ -86,5 +86,6 @@ new Moonboots({
   server: app
 });
 
+// Start listen server
 app.listen(config.http.port);
 console.log('[*] HTTP server listening on port:' + config.http.port);

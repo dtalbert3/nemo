@@ -24,5 +24,12 @@ socket.emit('user::find', {}, function(err, data) {
 
 module.exports = PageView.extend({
   pageTitle: 'Login',
-  template: templates.pages.login
+  template: templates.pages.login,
+  initialize: function() {
+    var form = document.querySelector('.form-signin');
+    console.log(form);
+    // form.submit(function() {
+    //   console.log('submit hit');
+    // });
+  }
 });

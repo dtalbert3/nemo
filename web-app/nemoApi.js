@@ -21,7 +21,6 @@ sequelize
     console.log('[ ] Unable to connect to ' + config.server.db.name + ' database: ', err);
   });
 
-
 var userModel = require('./client/models/user')(sequelize);
 exports.userService = {
 
@@ -35,27 +34,35 @@ exports.userService = {
       });
   },
 
-  get: function(id, params, callback) {
+  // get: function(id, params, callback) {
+  //
+  // },
+  //
+  // create: function(data, params, callback) {
+  //
+  // },
+  //
+  // update: function(id, data, params, callback) {
+  //
+  // },
+  //
+  // patch: function(id, data, params, callback) {
+  //
+  // },
+  //
+  // remove: function(id, params, callback) {
+  //
+  // },
+  //
+  // setup: function(app, path) {
+  //
+  // }
+};
 
-  },
+exports.dashboardService = {
 
-  create: function(data, params, callback) {
+};
 
-  },
+exports.questionService = {
 
-  update: function(id, data, params, callback) {
-
-  },
-
-  patch: function(id, data, params, callback) {
-
-  },
-
-  remove: function(id, params, callback) {
-
-  },
-
-  setup: function(app, path) {
-
-  }
 };
