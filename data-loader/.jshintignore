@@ -1,0 +1,7 @@
+node_modules
+public/
+client/modules
+client/bower_components
+client/libraries
+client/templates.js
+test/*
