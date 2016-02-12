@@ -1,15 +1,18 @@
+'use strict';
+
 var Sequelize = require('sequelize');
 
 module.exports = function (sequelize) {
 
-    var User = sequelize.define('User', {
-      Name: Sequelize.STRING,
-      Password: Sequelize.STRING
-    }, {
-      timestamps: false,
-      freezeTableName: true,
-      tableName: 'User'
-    });
+  var User = sequelize.define('User', {
+    Name: Sequelize.STRING,
+    Hash: Sequelize.STRING,
+    Salt: Sequelize.STRING
+  }, {
+    timestamps: false,
+    freezeTableName: true,
+    tableName: 'User'
+  });
 
-    return User;
+  return User;
 };

@@ -1,50 +1,31 @@
-var app = require('ampersand-app');
-var domReady = require('domready');
-// var logger = require('andlog');
-// var config = require('clientconfig');
+'use strict';
 
-var Router = require('./router');
-var MainView = require('./views/main');
+var _domready = require('domready');
 
-// Attach app to window for easy access
-window.app = app;
+var _domready2 = _interopRequireDefault(_domready);
 
-app.extend({
-  router: new Router(),
-  patients: {},
-  init: function () {
-    // wait for document ready to render our main view
-    // this ensures the document has a body, etc.
-    // init our main view
-    var mainView = new MainView({
-      el: document.body
-    });
+var _faviconSetter = require('favicon-setter');
 
-    // ...and render it
-    mainView.render();
+var _faviconSetter2 = _interopRequireDefault(_faviconSetter);
 
-    // listen for new pages from the router
-    this.router.on('newPage', mainView.setPage, mainView);
+var _reactDom = require('react-dom');
 
-    // we have what we need, we can now start our router and show the appropriate page
-    this.router.history.start({
-      pushState: true,
-      root: '/'
-    });
-  },
+var _router = require('./router');
 
-  // This is how you navigate around the app.
-  // this gets called by a global click handler that handles
-  // all the <a> tags in the app.
-  // it expects a url without a leading slash.
-  // for example: "costello/settings".
-  navigate: function (page) {
-    var url = (page.charAt(0) === '/') ? page.slice(1) : page;
-    this.router.history.navigate(url, {
-      trigger: true
-    });
-  }
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+// Start once dom has loaded
+(0, _domready2.default)(function () {
+
+  // Create app container
+  var app = document.createElement('div');
+  app.id = 'app';
+  document.body.appendChild(app);
+
+  // Set fav icon
+  (0, _faviconSetter2.default)('/favicon.png');
+
+  // Render app
+  (0, _reactDom.render)(_router.router, document.getElementById('app'));
 });
-
-// run
-domReady(app.init.bind(app));
+// import config from 'clientconfig';

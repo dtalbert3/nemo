@@ -1,21 +1,62 @@
-// base view for pages
-var View = require('ampersand-view');
-// var _ = require('lodash');
-//var key = require('keymaster');
+'use strict';
 
-module.exports = View.extend({
-  // register keyboard handlers
-  registerKeyboardShortcuts: function () {
-    /*
-    var self = this;
-    _.each(this.keyboardShortcuts, function (value, k) {
-        // register key handler scoped to this page
-        key(k, self.cid, _.bind(self[value], self));
-    });
-    key.setScope(this.cid);
-    */
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _react = require('react');
+
+var _react2 = _interopRequireDefault(_react);
+
+var _reactRouter = require('react-router');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+exports.default = _react2.default.createClass({
+  displayName: 'base',
+
+  componentDidMount: function componentDidMount() {
+    document.title = 'Nemo';
   },
-  unregisterKeyboardShortcuts: function () {
-    //key.deleteScope(this.cid);
+  render: function render() {
+    return _react2.default.createElement(
+      'div',
+      null,
+      _react2.default.createElement(
+        'nav',
+        { className: 'navbar navbar-default' },
+        _react2.default.createElement(
+          'div',
+          { className: 'container-fluid' },
+          _react2.default.createElement(
+            'div',
+            { className: 'navbar-header' },
+            _react2.default.createElement(
+              _reactRouter.Link,
+              { to: '/', className: 'navbar-brand' },
+              'Nemo'
+            )
+          ),
+          _react2.default.createElement(
+            'ul',
+            { className: 'nav navbar-nav' },
+            _react2.default.createElement(
+              'li',
+              null,
+              _react2.default.createElement(
+                _reactRouter.Link,
+                { to: '/login' },
+                'User'
+              )
+            )
+          )
+        )
+      ),
+      _react2.default.createElement(
+        'div',
+        { className: 'container-fluid' },
+        this.props.children
+      )
+    );
   }
 });

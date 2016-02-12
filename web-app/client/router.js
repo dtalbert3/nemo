@@ -1,48 +1,35 @@
-var Router = require('ampersand-router');
-var LoginPage = require('./pages/login');
-var UserDashboardPage = require('./pages/user-dashboard');
-var GlobalDashboardPage = require('./pages/global-dashboard');
-var SettingsPage = require('./pages/settings');
+'use strict';
 
-module.exports = Router.extend({
-  routes: {
-    'login/': 'login',
-    'user/': 'user',
-    'global/:id': 'global',
-    'settings/': 'settings',
-    '(*path)': 'catchAll'
-  },
-
-  // ------- ROUTE HANDLERS ---------
-  login: function () {
-    this.trigger('newPage', new LoginPage({
-      // Pass page parameters here
-      // Deal with id/query strings here
-    }));
-  },
-
-  user: function () {
-    this.trigger('newPage', new UserDashboardPage({
-      // Pass page parameters here
-      // Deal with id/query strings here
-    }));
-  },
-
-  global: function () {
-    this.trigger('newPage', new GlobalDashboardPage({
-      // Pass page parameters here
-      // Deal with id/query strings here
-    }));
-  },
-
-  settings: function () {
-    this.trigger('newPage', new SettingsPage({
-      // Pass page parameters here
-      // Deal with id/query strings here
-    }));
-  },
-
-  catchAll: function () {
-    this.redirectTo('login/');
-  }
+Object.defineProperty(exports, "__esModule", {
+  value: true
 });
+exports.router = undefined;
+
+var _react = require('react');
+
+var _react2 = _interopRequireDefault(_react);
+
+var _reactRouter = require('react-router');
+
+var _base = require('./pages/base');
+
+var _base2 = _interopRequireDefault(_base);
+
+var _login = require('./pages/login');
+
+var _login2 = _interopRequireDefault(_login);
+
+var _userDashboard = require('./pages/user-dashboard');
+
+var _userDashboard2 = _interopRequireDefault(_userDashboard);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var routes = _react2.default.createElement(
+  _reactRouter.Route,
+  { path: '/', component: _base2.default },
+  _react2.default.createElement(_reactRouter.Route, { path: '/login', component: _login2.default }),
+  _react2.default.createElement(_reactRouter.Route, { path: '/user', component: _userDashboard2.default })
+);
+
+var router = exports.router = _react2.default.createElement(_reactRouter.Router, { routes: routes, history: _reactRouter.browserHistory });

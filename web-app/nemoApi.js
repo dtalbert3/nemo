@@ -9,7 +9,7 @@ var sequelize = new Sequelize(
   {
     host: config.server.db.host,
     dialect: config.server.db.dialect,
-    port:    config.server.db.port,
+    port:    config.server.db.port
   });
 
 // Test connection to database
@@ -22,8 +22,11 @@ sequelize
   });
 
 var userModel = require('./client/models/user')(sequelize);
+// Model really not even required here too :)! Remove later . . .
 exports.userService = {
 
+  // Can use this to authenticate
+  // We should send back a token to be used upon each request
   find: function(params, callback) {
     sequelize
       .query('SELECT * FROM User', { model: userModel })
@@ -32,7 +35,7 @@ exports.userService = {
       }, function(error) {
         return callback(error, null);
       });
-  },
+  }
 
   // get: function(id, params, callback) {
   //

@@ -1,18 +1,10 @@
 {
-  "asi": false,
-  "browser": true,
-  "curly": true,
-  "expr": true,
-  "indent": 2,
-  "loopfunc": true,
   "node": true,
-  "undef": true,
-  "unused": true,
+
+  "curly": true,
   "latedef": true,
   "quotmark": true,
-  "eqeqeq": true,
-  "globalstrict": false,
-  "globals": {
-    "require": false
-  }
+  "undef": true,
+  "unused": true,
+  "trailing": true
 }
