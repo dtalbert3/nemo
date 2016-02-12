@@ -1,71 +1,72 @@
 /* jshint indent: 2 */
-
-module.exports = function(sequelize, DataTypes) {
+var Sequelize = require('sequelize');
+module.exports = function(sequelize) {
   return sequelize.define('visit_dimension', {
     encounter_num: {
-      type: DataTypes.INTEGER,
+      type: Sequelize.INTEGER,
       allowNull: false,
       primaryKey: true,
       autoIncrement: true
     },
     patient_num: {
-      type: DataTypes.INTEGER,
+      type: Sequelize.INTEGER,
       allowNull: false
     },
     active_status_cd: {
-      type: DataTypes.STRING,
+      type: Sequelize.STRING,
       allowNull: true
     },
     start_date: {
-      type: DataTypes.DATE,
+      type: Sequelize.DATE,
       allowNull: true
     },
     end_date: {
-      type: DataTypes.DATE,
+      type: Sequelize.DATE,
       allowNull: true
     },
     inout_cd: {
-      type: DataTypes.STRING,
+      type: Sequelize.STRING,
       allowNull: true
     },
     location_cd: {
-      type: DataTypes.STRING,
+      type: Sequelize.STRING,
       allowNull: true
     },
     location_path: {
-      type: DataTypes.STRING,
+      type: Sequelize.STRING,
       allowNull: true
     },
     length_of_stay: {
-      type: DataTypes.INTEGER,
+      type: Sequelize.INTEGER,
       allowNull: true
     },
     visit_blob: {
-      type: DataTypes.TEXT,
+      type: Sequelize.TEXT,
       allowNull: true
     },
     update_date: {
-      type: DataTypes.DATE,
+      type: Sequelize.DATE,
       allowNull: true
     },
     download_date: {
-      type: DataTypes.DATE,
+      type: Sequelize.DATE,
       allowNull: true
     },
     import_date: {
-      type: DataTypes.DATE,
+      type: Sequelize.DATE,
       allowNull: true
     },
     sourcesystem_cd: {
-      type: DataTypes.STRING,
+      type: Sequelize.STRING,
       allowNull: true
     },
     upload_id: {
-      type: DataTypes.INTEGER,
+      type: Sequelize.INTEGER,
       allowNull: true
     }
   }, {
     tableName: 'visit_dimension',
-    freezeTableName: true
+    freezeTableName: true,
+    timestamps: false
   });
 };

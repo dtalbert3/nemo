@@ -1,7 +1,7 @@
-var sequelize = reqire('sequelize');
+var sequelize = require('sequelize');
 //function createQuestion()
 
-function copyQuestion(int question_id)
+var copyQuestion = function (question_id)
 {
 	/* Copy question:
 			receive the question ID from the web client.
@@ -15,69 +15,75 @@ function copyQuestion(int question_id)
 			change the entries of the tables, adding in the newly created question ID
 			submit the new parameter entries
 			*/
-	var dataMartCon = new sequelize('NEMO_Datamart', 'NEMO_WEB', 'NEMO', 
+
+	var dataMartCon = new sequelize('NEMO_Datamart', 'NEMO_WEB', 'NEMO',
 	{
 		host: 'codyemoffitt.com',
 		dialect: 'mysql',
 		port: 3306,
 		logging: false,
-		pool: 
-		{
-			max: 5,
-			min: 0,
-			idle: 10000
-		}
-	});	
-		var query = 'SELECT ID, TypeID, EventID FROM Question WHERE ID=' + question_id + ';';
-		kumcCon.query(query, {type:sequelize.QueryTypes.SELECT})
-			.then(function(old_question)
-			{
-				// Somehow construct a submit statement to insert the new fields into the old question. 	
-				// The question needs to be added first, before moving on to the parameters.
-				var parameter_query = 'SELECT Name, concept_path, concept_cd, valtype_cd, TableName, TableColumn from ParamaterType WHERE ID=' + question_id + ';';
-				kumcCon.query(query, {type:sequelize.QueryTypes.SELECT})
-				.then(function(old_parameters)
-				{
-						// Create new parameters from the old ones, fitting them with the new question ID
-				}
-				 
-
-			}
-
-
-}
-
-function deleteQuestion(int question_id)
-{
-	/* Delete question:
-			receive the question ID from the web client.
-			remove all entries from the parameter table with the question ID
-			remove the question with the corresponding ID
-			*/
-	var dataMartCon = new sequelize('NEMO_Datamart', 'NEMO_WEB', 'NEMO', 
-	{
-		host: 'codyemoffitt.com',
-		dialect: 'mysql',
-		port: 3306,
-		logging: false,
-		pool: 
+		pool:
 		{
 			max: 5,
 			min: 0,
 			idle: 10000
 		}
 	});
-	
+		var query = 'SELECT ID, TypeID, EventID FROM Question WHERE ID=' + question_id + ';';
+		dataMartCon.query(query, {type:sequelize.QueryTypes.SELECT})
+			.then(function(old_question)
+			{
+				old_question = old_question;
+				// Somehow construct a submit statement to insert the new fields into the old question.
+				// The question needs to be added first, before moving on to the parameters.
+				// var parameter_query = 'SELECT Name, concept_path, concept_cd, valtype_cd, TableName, TableColumn from ParamaterType WHERE ID=' + question_id + ';';
+
+				dataMartCon.query(query, {type:sequelize.QueryTypes.SELECT})
+				.then(function(old_parameters)
+				{
+						old_parameters = old_parameters;
+						// Create new parameters from the old ones, fitting them with the new question ID
+				}
+
+
+			);}
+
+
+);};
+
+var deleteQuestion = function(question_id)
+{
+	/* Delete question:
+			receive the question ID from the web client.
+			remove all entries from the parameter table with the question ID
+			remove the question with the corresponding ID
+			*/
+	var dataMartCon = new sequelize('NEMO_Datamart', 'NEMO_WEB', 'NEMO',
+	{
+		host: 'codyemoffitt.com',
+		dialect: 'mysql',
+		port: 3306,
+		logging: false,
+		pool:
+		{
+			max: 5,
+			min: 0,
+			idle: 10000
+		}
+	});
+
 	var query = 'DELETE from Question WHERE ID=' + question_id + ';';
-	kumcCon.query(query {type:sequelize.QueryTypes.DELETE})
-	.then(function())
+	dataMartCon.query(query, {type:sequelize.QueryTypes.DELETE})
+	.then(function()
 	{
 		var query = 'DELETE from QuestionParameter WHERE ID=' + question_id + ';';
-		kumcCon.query(query {type:sequelize.QueryTypes.DELETE})
+		dataMartCon.query(query, {type:sequelize.QueryTypes.DELETE})
 		.then(function(){}
-	}
-}
+	);}
+);};
 
+console.log(copyQuestion);
+console.log(deleteQuestion);
 /* Edit Question:
 		Would work the same ways as a copy question, except that the original is deleted afterwards
 		Get the question ID from the web client
@@ -92,4 +98,3 @@ function deleteQuestion(int question_id)
 			for each question, get the question type
 			for each question, get the event type
 		*/
-
