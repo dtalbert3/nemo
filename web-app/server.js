@@ -4,6 +4,7 @@ var helmet = require('helmet');
 var Moonboots = require('moonboots-express');
 var config = require('getconfig');
 var stylizer = require('stylizer');
+var serveStatic = require('serve-static');
 var bodyParser = require('body-parser');
 var cookieParser = require('cookie-parser');
 
@@ -19,6 +20,9 @@ if (config.isDev) {
     shelljs.exec('npm run build');
   });
 }
+
+// Serve public folder
+app.use(serveStatic(__dirname + '/public'));
 
 // Setup HTTP headers
 app.use(helmet());

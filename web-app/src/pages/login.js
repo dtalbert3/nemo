@@ -45,7 +45,7 @@ export default React.createClass({
   },
   render() {
     return (
-      <div className='container-fluid col-md-4 col-md-offset-4'>
+      <div className='container-fluid center-block'>
         <form className='form-signin' onSubmit={this.handleSubmit} autoComplete='on'>
           <h2 className='form-signin-heading'>Please Sign In</h2>
           <label htmlFor='inputEmail' className='sr-only'>Email Address</label>

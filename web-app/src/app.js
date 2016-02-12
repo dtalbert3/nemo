@@ -13,7 +13,7 @@ domReady(function() {
   document.body.appendChild(app);
 
   // Set fav icon
-  setFavicon('/favicon.png');
+  setFavicon('/favicon.ico');
 
   // Render app
   render(
