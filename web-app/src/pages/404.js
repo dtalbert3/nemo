@@ -3,7 +3,7 @@ import { Link } from 'react-router';
 
 export default React.createClass({
   componentDidMount: function() {
-    document.title = 'Nemo';
+    document.title = '404';
   },
   render() {
     return (
