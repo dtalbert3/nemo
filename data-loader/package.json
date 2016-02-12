@@ -1,20 +1,16 @@
 {
   "name": "nemo-data-loader",
   "author": "Andrew Pachuilo <andrew.pachuilo@gmail.com>",
-  "contributors": [
-    {
-      "name": "Cody Moffitt",
-      "email": "cemoffitt42@students.tntech.edu"
-    },
-    {
-      "name": "Jackson Chandler",
-      "email": "jkchandler42@students.tntech.edu"
-    },
-    {
-      "name": "Oliver Payne",
-      "email": "oopayne42@students.tntech.edu"
-    }
-  ],
+  "contributors": [{
+    "name": "Cody Moffitt",
+    "email": "cemoffitt42@students.tntech.edu"
+  }, {
+    "name": "Jackson Chandler",
+    "email": "jkchandler42@students.tntech.edu"
+  }, {
+    "name": "Oliver Payne",
+    "email": "oopayne42@students.tntech.edu"
+  }],
   "version": "0.0.0",
   "main": "db_connection.js",
   "private": "true",
@@ -22,7 +18,8 @@
     "mysql": "~2.10.2",
     "sequelize": "~3.19.1",
     "pg": "~4.4.4",
-    "pg-hstore": "~2.3.2"
+    "pg-hstore": "~2.3.2",
+    "promise": "~7.1.1"
   },
   "peerDependencies": {},
   "devDependencies": {

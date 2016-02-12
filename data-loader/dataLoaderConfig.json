@@ -1,0 +1,42 @@
+{
+  "nemoConnection": {
+    "dbName": "NEMO_Datamart",
+    "userName": "NEMO_WEB",
+    "password": "NEMO",
+    "sequelizeOptions": {
+      "host": "codyemoffitt.com",
+      "dialect": "mysql",
+      "port": 3306,
+      "logging": false,
+      "pool": {
+        "max": 5,
+        "min": 0,
+        "idle": 10000
+      }
+    }
+  },
+  "kumcConnection": {
+    "dbName": "KUMC_NEMO",
+    "userName": "NEMO_WEB",
+    "password": "NEMO",
+    "sequelizeOptions": {
+      "host": "codyemoffitt.com",
+      "dialect": "postgres",
+      "port": 5432,
+      "logging": false,
+      "pool": {
+        "max": 5,
+        "min": 0,
+        "idle": 10000
+      }
+    }
+  },
+  "tablesToCopy": {
+    "observation_fact": false,
+    "code_lookup": false,
+    "concept_dimension": false,
+    "patient_dimension": false,
+    "provider_dimension": false,
+    "visit_dimension": false
+  }
+}

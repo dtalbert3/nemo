@@ -45,6 +45,7 @@ module.exports = function(sequelize, DataTypes) {
     }
   }, {
     tableName: 'Question',
-    freezeTableName: true
+    freezeTableName: true,
+    timestamps: false
   });
 };
