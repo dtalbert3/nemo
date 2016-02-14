@@ -4,7 +4,7 @@ var sequelize = require('sequelize');
 //
 // var data = fs.readFileSync('./dataLoaderConfig.json'),
 // 	dataLoaderOptions;
-// 
+//
 // var Sequelize = new sequelize(dataLoaderOptions.nemoConnection.dbName,
 // 	dataLoaderOptions.nemoConnection.userName, dataLoaderOptions.nemoConnection
 // 	.password, dataLoaderOptions.nemoConnection.sequelizeOptions);
@@ -60,7 +60,8 @@ var sequelize = require('sequelize');
 // 				QuestionID: question.dataValues.ID,
 // 				TypeID: parameter.TypeID,
 // 				tval_char: parameter.tval_char,
-// 				nval_num: parameter.nval_num
+// 				nval_num: parameter.nval_num,
+//				upper_bound: parameter.upper_bound
 // 			});
 // 		}
 // 	});
