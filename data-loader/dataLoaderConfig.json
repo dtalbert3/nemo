@@ -32,11 +32,12 @@
     }
   },
   "tablesToCopy": {
-    "observation_fact": false,
+    "observation_fact": true,
     "code_lookup": false,
     "concept_dimension": false,
-    "patient_dimension": false,
+    "patient_dimension": true,
     "provider_dimension": false,
     "visit_dimension": false
-  }
+  },
+  "dividePatients": true
 }
