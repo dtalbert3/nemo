@@ -1,15 +1,16 @@
 /* jshint indent: 2 */
+var Sequelize = require('sequelize');
 
-module.exports = function(sequelize, DataTypes) {
+module.exports = function(sequelize) {
   return sequelize.define('User', {
     ID: {
-      type: DataTypes.INTEGER(11),
+      type: Sequelize.INTEGER(11),
       allowNull: false,
       primaryKey: true,
       autoIncrement: true
     },
     UserTypeID: {
-      type: DataTypes.INTEGER(11),
+      type: Sequelize.INTEGER(11),
       allowNull: false,
       references: {
         model: 'UserType',
@@ -17,15 +18,20 @@ module.exports = function(sequelize, DataTypes) {
       }
     },
     Name: {
-      type: DataTypes.STRING,
+      type: Sequelize.STRING,
       allowNull: true
     },
-    Password: {
-      type: DataTypes.STRING,
+    Hash: {
+      type: Sequelize.STRING,
+      allowNull: true
+    },
+    Salt: {
+      type: Sequelize.STRING,
       allowNull: true
     }
   }, {
     tableName: 'User',
-    freezeTableName: true
+    freezeTableName: true,
+    timestamps: false
   });
 };

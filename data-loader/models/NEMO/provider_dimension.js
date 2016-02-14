@@ -1,55 +1,48 @@
 /* jshint indent: 2 */
-
-module.exports = function(sequelize, DataTypes) {
+var Sequelize = require('sequelize');
+module.exports = function(sequelize) {
   return sequelize.define('provider_dimension', {
     provider_id: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      primaryKey: true,
-      references: {
-        model: '',
-        key: ''
-      }
+      type: Sequelize.STRING,
+      allowNull: false
     },
     provider_path: {
-      type: DataTypes.STRING,
+      type: Sequelize.STRING,
       allowNull: false,
       primaryKey: true,
-      references: {
-        model: '',
-        key: ''
-      }
+      autoIncrement: true
     },
     name_char: {
-      type: DataTypes.STRING,
+      type: Sequelize.STRING,
       allowNull: true
     },
     provider_blob: {
-      type: DataTypes.TEXT,
+      type: Sequelize.TEXT,
       allowNull: true
     },
     update_date: {
-      type: DataTypes.DATE,
+      type: Sequelize.DATE,
       allowNull: true
     },
     download_date: {
-      type: DataTypes.DATE,
+      type: Sequelize.DATE,
       allowNull: true
     },
     import_date: {
-      type: DataTypes.DATE,
+      type: Sequelize.DATE,
       allowNull: true
     },
     sourcesystem_cd: {
-      type: DataTypes.STRING,
+      type: Sequelize.STRING,
       allowNull: true
     },
     upload_id: {
-      type: DataTypes.INTEGER(11),
+      type: Sequelize.INTEGER,
       allowNull: true
     }
   }, {
     tableName: 'provider_dimension',
-    freezeTableName: true
+    freezeTableName: true,
+    timestamps: false
   });
 };

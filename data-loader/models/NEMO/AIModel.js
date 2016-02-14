@@ -1,15 +1,15 @@
 /* jshint indent: 2 */
-
-module.exports = function(sequelize, DataTypes) {
+var Sequelize = require('sequelize');
+module.exports = function(sequelize) {
   return sequelize.define('AIModel', {
     ID: {
-      type: DataTypes.INTEGER(11),
+      type: Sequelize.INTEGER(11),
       allowNull: false,
       primaryKey: true,
       autoIncrement: true
     },
     QuestionID: {
-      type: DataTypes.INTEGER(11),
+      type: Sequelize.INTEGER(11),
       allowNull: false,
       references: {
         model: 'Question',
@@ -17,11 +17,11 @@ module.exports = function(sequelize, DataTypes) {
       }
     },
     Value: {
-      type: DataTypes.STRING,
+      type: Sequelize.STRING,
       allowNull: true
     },
     Accuracy: {
-      type: DataTypes.DECIMAL,
+      type: Sequelize.DECIMAL,
       allowNull: true
     },
     AIFeedback: {
@@ -29,7 +29,7 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     },
     PredictionFeedback: {
-      type: DataTypes.DECIMAL,
+      type: Sequelize.DECIMAL,
       allowNull: true
     },
     AI: {
@@ -42,6 +42,7 @@ module.exports = function(sequelize, DataTypes) {
     }
   }, {
     tableName: 'AIModel',
-    freezeTableName: true
+    freezeTableName: true,
+    timestamps: false
   });
 };

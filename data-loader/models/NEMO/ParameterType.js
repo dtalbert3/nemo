@@ -1,39 +1,44 @@
 /* jshint indent: 2 */
-
-module.exports = function(sequelize, DataTypes) {
+var Sequelize = require('sequelize');
+module.exports = function(sequelize) {
   return sequelize.define('ParameterType', {
     ID: {
-      type: DataTypes.INTEGER(11),
+      type: Sequelize.INTEGER(11),
       allowNull: false,
       primaryKey: true,
       autoIncrement: true
     },
     Name: {
-      type: DataTypes.STRING,
+      type: Sequelize.STRING,
       allowNull: false
     },
     concept_path: {
-      type: DataTypes.STRING,
+      type: Sequelize.STRING,
       allowNull: true
     },
     concept_cd: {
-      type: DataTypes.STRING,
+      type: Sequelize.STRING,
       allowNull: true
     },
     valtype_cd: {
-      type: DataTypes.STRING,
+      type: Sequelize.STRING,
       allowNull: false
     },
     TableName: {
-      type: DataTypes.STRING,
+      type: Sequelize.STRING,
       allowNull: true
     },
     TableColumn: {
-      type: DataTypes.STRING,
+      type: Sequelize.STRING,
+      allowNull: true
+    },
+    bounded: {
+      type: Sequelize.BOOLEAN,
       allowNull: true
     }
   }, {
     tableName: 'ParameterType',
-    freezeTableName: true
+    freezeTableName: true,
+    timestamps: false
   });
 };

@@ -1,9 +1,9 @@
 /* jshint indent: 2 */
-
-module.exports = function(sequelize, DataTypes) {
+var Sequelize = require('sequelize');
+module.exports = function(sequelize) {
   return sequelize.define('QuestionEvent', {
     ID: {
-      type: DataTypes.INTEGER(11),
+      type: Sequelize.INTEGER(11),
       allowNull: false,
       primaryKey: true,
       references: {
@@ -12,19 +12,20 @@ module.exports = function(sequelize, DataTypes) {
       }
     },
     Name: {
-      type: DataTypes.STRING,
+      type: Sequelize.STRING,
       allowNull: false
     },
     concept_path: {
-      type: DataTypes.STRING,
+      type: Sequelize.STRING,
       allowNull: true
     },
     concept_cd: {
-      type: DataTypes.STRING,
+      type: Sequelize.STRING,
       allowNull: true
     }
   }, {
     tableName: 'QuestionEvent',
-    freezeTableName: true
+    freezeTableName: true,
+    timestamps: false
   });
 };

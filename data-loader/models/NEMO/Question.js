@@ -1,9 +1,9 @@
 /* jshint indent: 2 */
-
-module.exports = function(sequelize, DataTypes) {
+var Sequelize = require('sequelize');
+module.exports = function(sequelize) {
   return sequelize.define('Question', {
     ID: {
-      type: DataTypes.INTEGER(11),
+      type: Sequelize.INTEGER(11),
       allowNull: false,
       primaryKey: true,
       references: {
@@ -12,7 +12,7 @@ module.exports = function(sequelize, DataTypes) {
       }
     },
     UserID: {
-      type: DataTypes.INTEGER(11),
+      type: Sequelize.INTEGER(11),
       allowNull: false,
       references: {
         model: 'User',
@@ -20,7 +20,7 @@ module.exports = function(sequelize, DataTypes) {
       }
     },
     StatusID: {
-      type: DataTypes.INTEGER(11),
+      type: Sequelize.INTEGER(11),
       allowNull: false,
       references: {
         model: 'QuestionStatus',
@@ -28,7 +28,7 @@ module.exports = function(sequelize, DataTypes) {
       }
     },
     TypeID: {
-      type: DataTypes.INTEGER(11),
+      type: Sequelize.INTEGER(11),
       allowNull: false,
       references: {
         model: 'QuestionType',
@@ -36,7 +36,7 @@ module.exports = function(sequelize, DataTypes) {
       }
     },
     EventID: {
-      type: DataTypes.INTEGER(11),
+      type: Sequelize.INTEGER(11),
       allowNull: false,
       references: {
         model: 'QuestionEvent',
