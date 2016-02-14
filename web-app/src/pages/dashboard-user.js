@@ -16,7 +16,7 @@ var TEST_ROWS = [
 // var UPDATE;
 
 export default React.createClass({
-  componentDidMount: function() {
+  componentDidMount() {
     document.title = 'Nemo User Dashboard';
 
     // Test addition/removal of rows
@@ -37,11 +37,11 @@ export default React.createClass({
     // UPDATE = setInterval(TEST, 1000);
   },
 
-  componentWillUnmount: function() {
+  componentWillUnmount() {
     // clearInterval(UPDATE);
   },
 
-  getInitialState: function() {
+  getInitialState() {
     return {
       headers: TEST_HEADERS,
       rows: TEST_ROWS

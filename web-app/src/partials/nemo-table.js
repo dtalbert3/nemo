@@ -3,7 +3,7 @@ import React from 'react';
 import { Collapse, Well, Table } from 'react-bootstrap';
 
 const Tbody = React.createClass({
-  getInitialState: function() {
+  getInitialState() {
     return { open: [] };
   },
 

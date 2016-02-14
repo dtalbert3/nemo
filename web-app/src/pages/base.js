@@ -17,7 +17,7 @@ const NavLink = React.createClass({
 });
 
 export default React.createClass({
-  componentDidMount: function() {
+  componentDidMount() {
     document.title = 'Nemo';
   },
 

@@ -28,7 +28,7 @@ function validate(email, password) {
 }
 
 export default React.createClass({
-  componentDidMount: function() {
+  componentDidMount() {
     document.title = 'Nemo Login';
   },
 
@@ -36,7 +36,7 @@ export default React.createClass({
     router: React.PropTypes.object.isRequired
   },
 
-  handleSubmit: function(event) {
+  handleSubmit(event) {
     event.preventDefault();
 
     const email = this.refs.email.value;
