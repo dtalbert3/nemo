@@ -1,68 +1,56 @@
 /* jshint indent: 2 */
-
-module.exports = function(sequelize, DataTypes) {
+var Sequelize = require('sequelize');
+module.exports = function(sequelize) {
   return sequelize.define('code_lookup', {
     table_cd: {
-      type: DataTypes.STRING,
+      type: Sequelize.STRING,
       allowNull: false,
       primaryKey: true,
-      references: {
-        model: '',
-        key: ''
-      }
+      autoIncrement: true
     },
     column_cd: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      primaryKey: true,
-      references: {
-        model: '',
-        key: ''
-      }
+      type: Sequelize.STRING,
+      allowNull: false
     },
     code_cd: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      primaryKey: true,
-      references: {
-        model: '',
-        key: ''
-      }
+      type: Sequelize.STRING,
+      allowNull: false
     },
     name_char: {
-      type: DataTypes.STRING,
+      type: Sequelize.STRING,
       allowNull: true
     },
     lookup_blob: {
-      type: DataTypes.TEXT,
+      type: Sequelize.TEXT,
       allowNull: true
     },
     upload_date: {
-      type: DataTypes.DATE,
+      type: Sequelize.DATE,
       allowNull: true
     },
     update_date: {
-      type: DataTypes.DATE,
+      type: Sequelize.DATE,
       allowNull: true
     },
     download_date: {
-      type: DataTypes.DATE,
+      type: Sequelize.DATE,
       allowNull: true
     },
     import_date: {
-      type: DataTypes.DATE,
+      type: Sequelize.DATE,
       allowNull: true
     },
     sourcesystem_cd: {
-      type: DataTypes.STRING,
+      type: Sequelize.STRING,
       allowNull: true
     },
     upload_id: {
-      type: DataTypes.INTEGER(11),
+      type: Sequelize.INTEGER,
       allowNull: true
     }
   }, {
     tableName: 'code_lookup',
-    freezeTableName: true
+    freezeTableName: true,
+    timestamps: false
   });
 };

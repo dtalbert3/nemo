@@ -1,15 +1,16 @@
 /* jshint indent: 2 */
+var Sequelize = require('sequelize');
 
-module.exports = function(sequelize, DataTypes) {
+module.exports = function(sequelize) {
   return sequelize.define('UserPrivilege', {
     ID: {
-      type: DataTypes.INTEGER(11),
+      type: Sequelize.INTEGER(11),
       allowNull: false,
       primaryKey: true,
       autoIncrement: true
     },
     UserTypeID: {
-      type: DataTypes.INTEGER(11),
+      type: Sequelize.INTEGER(11),
       allowNull: false,
       references: {
         model: 'UserType',
@@ -17,11 +18,12 @@ module.exports = function(sequelize, DataTypes) {
       }
     },
     Privilege: {
-      type: DataTypes.STRING,
+      type: Sequelize.STRING,
       allowNull: false
     }
   }, {
     tableName: 'UserPrivilege',
-    freezeTableName: true
+    freezeTableName: true,
+    timestamps: false
   });
 };

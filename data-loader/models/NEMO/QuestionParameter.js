@@ -1,9 +1,10 @@
 /* jshint indent: 2 */
+var Sequelize = require('sequelize');
 
-module.exports = function(sequelize, DataTypes) {
+module.exports = function(sequelize) {
   return sequelize.define('QuestionParameter', {
     ID: {
-      type: DataTypes.INTEGER(11),
+      type: Sequelize.INTEGER(11),
       allowNull: false,
       primaryKey: true,
       references: {
@@ -12,7 +13,7 @@ module.exports = function(sequelize, DataTypes) {
       }
     },
     QuestionID: {
-      type: DataTypes.INTEGER(11),
+      type: Sequelize.INTEGER(11),
       allowNull: false,
       references: {
         model: 'Question',
@@ -20,7 +21,7 @@ module.exports = function(sequelize, DataTypes) {
       }
     },
     TypeID: {
-      type: DataTypes.INTEGER(11),
+      type: Sequelize.INTEGER(11),
       allowNull: false,
       references: {
         model: 'ParameterType',
@@ -28,15 +29,16 @@ module.exports = function(sequelize, DataTypes) {
       }
     },
     tval_char: {
-      type: DataTypes.STRING,
+      type: Sequelize.STRING,
       allowNull: true
     },
     nval_num: {
-      type: DataTypes.DECIMAL,
-      allowNull: true
+      type: Sequelize.DECIMAL,
+      allowNull: true,
     }
   }, {
     tableName: 'QuestionParameter',
-    freezeTableName: true
+    freezeTableName: true,
+    timestamps: false
   });
 };

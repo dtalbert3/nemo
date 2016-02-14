@@ -1,15 +1,15 @@
 /* jshint indent: 2 */
-
-module.exports = function(sequelize, DataTypes) {
+var Sequelize = require('sequelize');
+module.exports = function(sequelize) {
   return sequelize.define('UserSession', {
     ID: {
-      type: DataTypes.INTEGER(11),
+      type: Sequelize.INTEGER(11),
       allowNull: false,
       primaryKey: true,
       autoIncrement: true
     },
     UserID: {
-      type: DataTypes.INTEGER(11),
+      type: Sequelize.INTEGER(11),
       allowNull: false,
       references: {
         model: 'User',
@@ -17,15 +17,16 @@ module.exports = function(sequelize, DataTypes) {
       }
     },
     LoginTime: {
-      type: DataTypes.DATE,
+      type: Sequelize.DATE,
       allowNull: false
     },
     LastRequest: {
-      type: DataTypes.DATE,
+      type: Sequelize.DATE,
       allowNull: false
     }
   }, {
     tableName: 'UserSession',
-    freezeTableName: true
+    freezeTableName: true,
+    timestamps: false
   });
 };

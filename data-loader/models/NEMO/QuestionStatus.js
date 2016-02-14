@@ -1,9 +1,9 @@
 /* jshint indent: 2 */
-
-module.exports = function(sequelize, DataTypes) {
+var Sequelize = require('sequelize');
+module.exports = function(sequelize) {
   return sequelize.define('QuestionStatus', {
     ID: {
-      type: DataTypes.INTEGER(11),
+      type: Sequelize.INTEGER(11),
       allowNull: false,
       primaryKey: true,
       references: {
@@ -12,11 +12,12 @@ module.exports = function(sequelize, DataTypes) {
       }
     },
     Status: {
-      type: DataTypes.STRING,
+      type: Sequelize.STRING,
       allowNull: false
     }
   }, {
     tableName: 'QuestionStatus',
-    freezeTableName: true
+    freezeTableName: true,
+    timestamps: false
   });
 };

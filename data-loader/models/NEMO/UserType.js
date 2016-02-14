@@ -1,19 +1,21 @@
 /* jshint indent: 2 */
+var Sequelize = require('sequelize');
 
-module.exports = function(sequelize, DataTypes) {
+module.exports = function(sequelize) {
   return sequelize.define('UserType', {
     ID: {
-      type: DataTypes.INTEGER(11),
+      type: Sequelize.INTEGER(11),
       allowNull: false,
       primaryKey: true,
       autoIncrement: true
     },
     Type: {
-      type: DataTypes.STRING,
+      type: Sequelize.STRING,
       allowNull: true
     }
   }, {
     tableName: 'UserType',
-    freezeTableName: true
+    freezeTableName: true,
+    timestamps: false
   });
 };
