@@ -35,6 +35,10 @@ module.exports = function(sequelize) {
     nval_num: {
       type: Sequelize.DECIMAL,
       allowNull: true,
+    },
+    upper_bound: {
+      type: Sequelize.BOOLEAN,
+      allowNull: true
     }
   }, {
     tableName: 'QuestionParameter',

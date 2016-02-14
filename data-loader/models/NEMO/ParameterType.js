@@ -32,11 +32,7 @@ module.exports = function(sequelize) {
       type: Sequelize.STRING,
       allowNull: true
     },
-    upper_bound: {
-      type: Sequelize.BOOLEAN,
-      allowNull: true
-    },
-    unbounded: {
+    bounded: {
       type: Sequelize.BOOLEAN,
       allowNull: true
     }
