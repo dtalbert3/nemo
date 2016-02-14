@@ -1,10 +1,10 @@
 var sequelize = require('sequelize');
 // var fs = require('fs');
-// var Promise = require('promise');
-
+// // var Promise = require('promise');
+//
 // var data = fs.readFileSync('./dataLoaderConfig.json'),
 // 	dataLoaderOptions;
-
+// 
 // var Sequelize = new sequelize(dataLoaderOptions.nemoConnection.dbName,
 // 	dataLoaderOptions.nemoConnection.userName, dataLoaderOptions.nemoConnection
 // 	.password, dataLoaderOptions.nemoConnection.sequelizeOptions);
@@ -15,7 +15,7 @@ var sequelize = require('sequelize');
 // 	console.log(err);
 // }
 
-// Load the models
+// // Load the models
 // var questionModel = require('./models/NEMO/Question')(
 // 	Sequelize);
 //
@@ -27,24 +27,44 @@ var sequelize = require('sequelize');
 //
 // var questionTypeModel = require('./models/NEMO/QuestionType')(
 // 	Sequelize);
-
+//
 // var userModel = require('./models/NEMO/User')(
 // 	Sequelize);
-
+//
 // var userPrivilegeModel = require('./models/NEMO/UserPrivilege')(
 // 	Sequelize);
-
+//
 // var userTypeModel = require('./models/NEMO/UserType')(
 // 	Sequelize);
-
+//
 // var aiModelModel = require('./models/NEMO/AIModel')(
-// Sequelize);
+// 	Sequelize);
 // var aiParameterModel = require('./models/NEMO/AIParameter')(
 // 	Sequelize);
-
-// var createQuestion = function() {
 //
-// }
+// var createQuestion = function(params, callBack) {
+//
+// 	var questionAttributes = {
+// 		UserID: params.UserID,
+// 		StatusID: params.QuestionStatusID,
+// 		TypeID: params.QuestionTypeID,
+// 		EventID: params.QuestionEventID
+// 	};
+// 	questionModel.upsert(questionAttributes);
+//
+// 	questionModel.findOne({
+// 		where: questionAttributes
+// 	}).done(function(question) {
+// 		for (var parameter in params.QuestionParamsArray) {
+// 			questionParameterModel.upsert({
+// 				QuestionID: question.dataValues.ID,
+// 				TypeID: parameter.TypeID,
+// 				tval_char: parameter.tval_char,
+// 				nval_num: parameter.nval_num
+// 			});
+// 		}
+// 	});
+// };
 
 var copyQuestion = function(question_id) {
 	/* Copy question:
@@ -121,7 +141,8 @@ var deleteQuestion = function(question_id) {
 			type: sequelize.QueryTypes.DELETE
 		})
 		.then(function() {
-			var query = 'DELETE from QuestionParameter WHERE ID=' + question_id + ';';
+			var query = 'DELETE from QuestionParameter WHERE ID=' + question_id +
+				';';
 			dataMartCon.query(query, {
 					type: sequelize.QueryTypes.DELETE
 				})

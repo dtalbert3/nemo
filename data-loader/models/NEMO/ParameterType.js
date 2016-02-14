@@ -31,6 +31,14 @@ module.exports = function(sequelize) {
     TableColumn: {
       type: Sequelize.STRING,
       allowNull: true
+    },
+    upper_bound: {
+      type: Sequelize.BOOLEAN,
+      allowNull: true
+    },
+    unbounded: {
+      type: Sequelize.BOOLEAN,
+      allowNull: true
     }
   }, {
     tableName: 'ParameterType',
