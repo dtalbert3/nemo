@@ -28,13 +28,15 @@ function validate(email, password) {
 }
 
 export default React.createClass({
-  componentDidMount: function() {
+  componentDidMount() {
     document.title = 'Nemo Login';
   },
+
   contextTypes: {
     router: React.PropTypes.object.isRequired
   },
-  handleSubmit: function(event) {
+
+  handleSubmit(event) {
     event.preventDefault();
 
     const email = this.refs.email.value;
@@ -43,9 +45,10 @@ export default React.createClass({
     validate(email, password);
     this.context.router.replace('/user');
   },
+
   render() {
     return (
-      <div className='container-fluid center-block'>
+      <div className='container-fluid col-md-4 col-md-offset-4'>
         <form className='form-signin' onSubmit={this.handleSubmit} autoComplete='on'>
           <h2 className='form-signin-heading'>Please Sign In</h2>
           <label htmlFor='inputEmail' className='sr-only'>Email Address</label>

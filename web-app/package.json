@@ -31,9 +31,11 @@
     "feathers-socketio": "~1.2.0",
     "getconfig": "~2.2",
     "helmet": "~1.0",
+    "lodash.isequal": "^4.0.0",
     "moonboots-express": "~3.0",
     "mysql": "~2.10.2",
     "react": "~0.14.7",
+    "react-bootstrap": "^0.28.3",
     "react-dom": "~0.14.7",
     "react-router": "~2.0.0",
     "sequelize": "~3.19.1",
@@ -112,7 +114,7 @@
     ]
   },
   "scripts": {
-    "build": "babel --presets es2015,react -d client/ src/",
+    "build": "rm -rf client/ && babel --presets es2015,react -d client/ src/",
     "start": "node server.js",
     "dev": "NODE_ENV=dev node server",
     "prod": "NODE_ENV=prod node server",

@@ -12,3 +12,7 @@
 body {
   background: #fff;
 }
+.custom-hover:hover {
+  background-color: #e7e7e7 !important;
+  cursor: pointer;
+}
