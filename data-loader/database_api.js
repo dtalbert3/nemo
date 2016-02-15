@@ -1,71 +1,110 @@
 var sequelize = require('sequelize');
-// var fs = require('fs');
-// // var Promise = require('promise');
-//
-// var data = fs.readFileSync('./dataLoaderConfig.json'),
-// 	dataLoaderOptions;
-//
-// var Sequelize = new sequelize(dataLoaderOptions.nemoConnection.dbName,
-// 	dataLoaderOptions.nemoConnection.userName, dataLoaderOptions.nemoConnection
-// 	.password, dataLoaderOptions.nemoConnection.sequelizeOptions);
-// try {
-// 	dataLoaderOptions = JSON.parse(data);
-// } catch (err) {
-// 	console.log('There has been an error parsing your JSON.');
-// 	console.log(err);
-// }
 
-// // Load the models
-// var questionModel = require('./models/NEMO/Question')(
-// 	Sequelize);
-//
-// var questionParameterModel = require('./models/NEMO/QuestionParameter')(
-// 	Sequelize);
-//
-// var questionStatusModel = require('./models/NEMO/QuestionStatus')(
-// 	Sequelize);
-//
-// var questionTypeModel = require('./models/NEMO/QuestionType')(
-// 	Sequelize);
-//
-// var userModel = require('./models/NEMO/User')(
-// 	Sequelize);
-//
-// var userPrivilegeModel = require('./models/NEMO/UserPrivilege')(
-// 	Sequelize);
-//
-// var userTypeModel = require('./models/NEMO/UserType')(
-// 	Sequelize);
-//
-// var aiModelModel = require('./models/NEMO/AIModel')(
-// 	Sequelize);
-// var aiParameterModel = require('./models/NEMO/AIParameter')(
-// 	Sequelize);
-//
-// var createQuestion = function(params, callBack) {
-//
-// 	var questionAttributes = {
-// 		UserID: params.UserID,
-// 		StatusID: params.QuestionStatusID,
-// 		TypeID: params.QuestionTypeID,
-// 		EventID: params.QuestionEventID
-// 	};
-// 	questionModel.upsert(questionAttributes);
-//
-// 	questionModel.findOne({
-// 		where: questionAttributes
-// 	}).done(function(question) {
-// 		for (var parameter in params.QuestionParamsArray) {
-// 			questionParameterModel.upsert({
-// 				QuestionID: question.dataValues.ID,
-// 				TypeID: parameter.TypeID,
-// 				tval_char: parameter.tval_char,
-// 				nval_num: parameter.nval_num,
-//				upper_bound: parameter.upper_bound
-// 			});
-// 		}
-// 	});
-// };
+//function getNewID() {
+//	var id;	
+//}
+var fs = require('fs');
+var Promise = require('promise');
+
+var data = fs.readFileSync('./dataLoaderConfig.json'),
+	dataLoaderOptions;
+
+try {
+  dataLoaderOptions = JSON.parse(data);
+} catch (err) {
+  console.log('There has been an error parsing your JSON.');
+  console.log(err);
+}
+
+var Sequelize = new sequelize(dataLoaderOptions.nemoConnection.dbName,
+	dataLoaderOptions.nemoConnection.userName, dataLoaderOptions.nemoConnection
+	.password, dataLoaderOptions.nemoConnection.sequelizeOptions);
+try {
+	dataLoaderOptions = JSON.parse(data);
+} catch (err) {
+	console.log('There has been an error parsing your JSON.');
+	console.log(err);
+}
+
+// Load the models
+var questionModel = require('./models/NEMO/Question')(
+	Sequelize);
+
+var questionParameterModel = require('./models/NEMO/QuestionParameter')(
+	Sequelize);
+
+var questionStatusModel = require('./models/NEMO/QuestionStatus')(
+	Sequelize);
+
+var questionTypeModel = require('./models/NEMO/QuestionType')(
+	Sequelize);
+
+var userModel = require('./models/NEMO/User')(
+	Sequelize);
+
+var userPrivilegeModel = require('./models/NEMO/UserPrivilege')(
+	Sequelize);
+
+var userTypeModel = require('./models/NEMO/UserType')(
+	Sequelize);
+
+var aiModelModel = require('./models/NEMO/AIModel')(
+	Sequelize);
+var aiParameterModel = require('./models/NEMO/AIParameter')(
+	Sequelize);
+
+var createQuestion = function(params, callBack) {
+
+	var questionAttributes = {
+		ID: params.ID,
+		UserID: params.UserID,
+		StatusID: params.QuestionStatusID,
+		TypeID: params.QuestionTypeID,
+		EventID: params.QuestionEventID
+	};
+	questionModel.upsert(questionAttributes);
+
+
+	questionModel.findOne({
+		where: questionAttributes
+	}).done(function(question) {
+		for (var parameter in params.QuestionParamsArray) {
+			questionParameterModel.upsert({
+				ID: parameter.ID,
+				QuestionID: question.dataValues.ID,
+				TypeID: parameter.TypeID,
+				tval_char: parameter.tval_char,
+				nval_num: parameter.nval_num,
+ 			upper_bound: parameter.upper_bound
+			});
+		}
+	});
+};
+
+var param = {
+	UserID: 1,
+	QuestionStatusID: 2,
+	QuestionTypeID: 1,
+	QuestionEventID: 1,
+	QuestionParamsArray: [ 
+												{	
+													ID: 1,
+													TypeID: 1,
+													tval_char:'Some data',
+													nval_num: 7777,
+													upper_bound:0
+												},
+												{	
+													ID: 2,
+													TypeID: 1,
+													tval_char:'Some more data',
+													nval_num: 7788,
+													upper_bound:1
+												}
+											]
+	};
+
+createQuestion(param, null);
 
 var copyQuestion = function(question_id) {
 	/* Copy question:
@@ -101,14 +140,20 @@ var copyQuestion = function(question_id) {
 				old_question = old_question;
 				// Somehow construct a submit statement to insert the new fields into the old question.
 				// The question needs to be added first, before moving on to the parameters.
-				// var parameter_query = 'SELECT Name, concept_path, concept_cd, valtype_cd, TableName, TableColumn from ParamaterType WHERE ID=' + question_id + ';';
+				query = 'SELECT Name, concept_path, concept_cd, valtype_cd, TableName, TableColumn from ParamaterType WHERE ID=' + question_id + ';';
 
 				dataMartCon.query(query, {
 						type: sequelize.QueryTypes.SELECT
 					})
-					.then(function(old_parameters) {
-							old_parameters = old_parameters;
+					.then(function(parameters) {
+							parameter = parameter;
 							// Create new parameters from the old ones, fitting them with the new question ID
+							/*
+							for(var i = 0; i < parameters.length; i++) {
+								parameters[i].ID = getNewID();
+							}
+							query = 'INSERT parameters=? INTO ParameterType;'
+							dataMartCon.*/
 						}
 
 
