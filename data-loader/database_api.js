@@ -1,3 +1,5 @@
+/* jshint undef: true, unused: false */
+
 var sequelize = require('sequelize');
 var fs = require('fs');
 // var Promise = require('promise');
@@ -64,13 +66,13 @@ questionModel.belongsTo(questionTypeModel, {
 questionModel.belongsTo(questionEventModel, {
 	foreignKey: 'EventID'
 });
+aiModelModel.hasMany(aiParameterModel);
+
 // questionStatusModel.hasMany(questionModel, {
 // 	foreignKey: 'StatusID'
 // });
 
-aiModelModel.hasMany(aiParameterModel);
-
-var createQuestion = function(params, callBack) {
+function createQuestion(params, callBack) {
 	callBack = callBack;
 	var questionAttributes = {
 		UserID: params.UserID,
@@ -101,9 +103,55 @@ var createQuestion = function(params, callBack) {
 			return recurseParam(params.QuestionParamsArray, 0);
 		});
 	});
-};
+}
 
-var getQuestionsByUser = function(params, callBack) {
+function editQuestion(params, callBack) {
+	callBack = callBack;
+	var questionAttributes = {
+		ID: params.ID,
+		UserID: params.UserID,
+		StatusID: params.QuestionStatusID,
+		TypeID: params.QuestionTypeID,
+		EventID: params.QuestionEventID
+	};
+	Sequelize.transaction(function(t) {
+
+		return questionModel.upsert(questionAttributes, {
+			transaction: t
+		}).then(function() { // Recursively chain questionParameter upsert promises
+			var recurseParam = function(pArray, i) {
+				if (pArray[i]) {
+					var questionParamData;
+					// If updating a param, send its ID up
+					if (pArray[i].ID) {
+						questionParamData = {
+							ID: pArray[i].ID,
+							QuestionID: params.ID,
+							TypeID: pArray[i].TypeID,
+							tval_char: pArray[i].tval_char,
+							nval_num: pArray[i].nval_num,
+							upper_bound: pArray[i].upper_bound
+						};
+					} else { //If adding a new parameter, omit ID so the ID will be created by the database
+						questionParamData = {
+							QuestionID: params.ID,
+							TypeID: pArray[i].TypeID,
+							tval_char: pArray[i].tval_char,
+							nval_num: pArray[i].nval_num,
+							upper_bound: pArray[i].upper_bound
+						};
+					}
+					return questionParameterModel.upsert(questionParamData, {
+						transaction: t
+					}).then(recurseParam(pArray, (i + 1)));
+				}
+			};
+			return recurseParam(params.QuestionParamsArray, 0);
+		});
+	});
+}
+
+function getQuestionsByUser(params, callBack) {
 	callBack = callBack;
 	var orderColumn = 'ID' || params.orderColumn;
 	var order = 'DESC' || params.order;
@@ -135,9 +183,9 @@ var getQuestionsByUser = function(params, callBack) {
 			// console.log(data[0].dataValues.QuestionStatus);
 		});
 	});
-};
+}
 
-var getDashboardQuestions = function(params, callBack) {
+function getDashboardQuestions(params, callBack) {
 	callBack = callBack;
 	var orderColumn = 'UserID' || params.orderColumn;
 	var order = 'DESC' || params.order;
@@ -163,55 +211,61 @@ var getDashboardQuestions = function(params, callBack) {
 			// console.log(data[0].dataValues.QuestionStatus);
 		});
 	});
-};
+}
 
-var getParameterTypes = function(params, callBack) {
+function getParameterTypes(params, callBack) {
 	callBack = callBack;
 	Sequelize.transaction(function() {
 		return parameterTypeModel.findAll().then(function(data) {
 			console.log(data);
 		});
 	});
-};
+}
 
 // getQuestionsByUser({
 // 	UserID: 1
 // }, null);
 
-getQuestionsByUser({
+// getQuestionsByUser({
+//
+// 	UserID: 1
+// }, null);
+//
+// getDashboardQuestions({
+// 	start: 0,
+// 	chunk: 2
+// }, null);
+//
+// getParameterTypes(null, null);
 
-	UserID: 1
-}, null);
+var param = {
+	ID: 18,
+	UserID: 1,
+	QuestionStatusID: 2,
+	QuestionTypeID: 1,
+	QuestionEventID: 1,
+	QuestionParamsArray: [{
+		ID: 19,
+		TypeID: 1,
+		tval_char: 'Edited parameter 1 Some data',
+		nval_num: 7777,
+		upper_bound: 0
+	}, {
+		ID: 20,
+		TypeID: 1,
+		tval_char: 'Edited Parameter 2 Some more data',
+		nval_num: 7788,
+		upper_bound: 1
+	}, {
+		TypeID: 1,
+		tval_char: 'Added Parameter 3 On Edit',
+		nval_num: 123,
+		upper_bound: 1
+	}]
+};
 
-getDashboardQuestions({
-	start: 0,
-	chunk: 2
-}, null);
+editQuestion(param, null);
 
-getParameterTypes(null, null);
-
-createQuestion = createQuestion;
-getQuestionsByUser = getQuestionsByUser;
-// var param = {
-// 	ID: 1,
-// 	UserID: 1,
-// 	QuestionStatusID: 2,
-// 	QuestionTypeID: 1,
-// 	QuestionEventID: 1,
-// 	QuestionParamsArray: [{
-// 		TypeID: 1,
-// 		tval_char: 'Some data',
-// 		nval_num: 7777,
-// 		upper_bound: 0
-// 	}, {
-// 		TypeID: 1,
-// 		tval_char: 'Some more data',
-// 		nval_num: 7788,
-// 		upper_bound: 1
-// 	}]
-// };
-
-// createQuestion(param, null);
 
 // var copyQuestion = function(question_id) {
 // 	/* Copy question:
