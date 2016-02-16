@@ -31,10 +31,8 @@ export default React.createClass({
   addToken(data) {
     var token = Object.assign({}, data);
 
-    var exist = this.state.tokens.filter((d) => {
-      return isEqual(d, token);
-    });
-    if (exist.length === 0) {
+    var exist = this.state.tokens.find((d) => isEqual(d, token));
+    if (exist === undefined) {
       var tokens = this.state.tokens.concat(token);
       this.setState({
         tokens: tokens
