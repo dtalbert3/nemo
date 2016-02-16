@@ -2,7 +2,6 @@
 
 var sequelize = require('sequelize');
 var fs = require('fs');
-// var Promise = require('promise');
 
 var data = fs.readFileSync('./dataLoaderConfig.json'),
 	dataLoaderOptions;
@@ -26,15 +25,23 @@ var questionModel = require('./models/NEMO/Question')(
 var questionParameterModel = require('./models/NEMO/QuestionParameter')(
 	Sequelize);
 
-
 var questionStatusModel = require('./models/NEMO/QuestionStatus')(
 	Sequelize);
-//
+
 var questionTypeModel = require('./models/NEMO/QuestionType')(
 	Sequelize);
 
 var questionEventModel = require('./models/NEMO/QuestionEvent')(
 	Sequelize);
+
+var aiModelModel = require('./models/NEMO/AIModel')(
+	Sequelize);
+var aiParameterModel = require('./models/NEMO/AIParameter')(
+	Sequelize);
+
+var parameterTypeModel = require('./models/NEMO/ParameterType')(
+	Sequelize);
+
 //
 // var userModel = require('./models/NEMO/User')(
 // 	Sequelize);
@@ -45,13 +52,6 @@ var questionEventModel = require('./models/NEMO/QuestionEvent')(
 // var userTypeModel = require('./models/NEMO/UserType')(
 // 	Sequelize);
 //
-var aiModelModel = require('./models/NEMO/AIModel')(
-	Sequelize);
-var aiParameterModel = require('./models/NEMO/AIParameter')(
-	Sequelize);
-
-var parameterTypeModel = require('./models/NEMO/ParameterType')(
-	Sequelize);
 
 // Define associations
 questionModel.hasMany(questionParameterModel);
@@ -67,10 +67,6 @@ questionModel.belongsTo(questionEventModel, {
 	foreignKey: 'EventID'
 });
 aiModelModel.hasMany(aiParameterModel);
-
-// questionStatusModel.hasMany(questionModel, {
-// 	foreignKey: 'StatusID'
-// });
 
 function createQuestion(params, callBack) {
 	callBack = callBack;
@@ -104,7 +100,11 @@ function createQuestion(params, callBack) {
 		});
 	});
 }
-
+/* Edit Question:
+		Would work the same ways as a copy question, except that the original is deleted afterwards
+		Get the question ID from the web client
+		query the database for the corresponding question entry
+*/
 function editQuestion(params, callBack) {
 	callBack = callBack;
 	var questionAttributes = {
@@ -151,6 +151,14 @@ function editQuestion(params, callBack) {
 	});
 }
 
+/* Get Questions by user:
+		Get the user ID from the web client
+		query the question database for all corresponding questions.
+		Retreive additional info for each question
+			for each question, get all of the corresponding parameters
+			for each question, get the question type
+			for each question, get the event type
+*/
 function getQuestionsByUser(params, callBack) {
 	callBack = callBack;
 	var orderColumn = 'ID' || params.orderColumn;
@@ -180,7 +188,6 @@ function getQuestionsByUser(params, callBack) {
 			}
 		}).then(function(data) {
 			console.log(data);
-			// console.log(data[0].dataValues.QuestionStatus);
 		});
 	});
 }
@@ -208,7 +215,6 @@ function getDashboardQuestions(params, callBack) {
 			]
 		}).then(function(data) {
 			console.log(data);
-			// console.log(data[0].dataValues.QuestionStatus);
 		});
 	});
 }
@@ -238,34 +244,31 @@ function getParameterTypes(params, callBack) {
 //
 // getParameterTypes(null, null);
 
-var param = {
-	ID: 18,
-	UserID: 1,
-	QuestionStatusID: 2,
-	QuestionTypeID: 1,
-	QuestionEventID: 1,
-	QuestionParamsArray: [{
-		ID: 19,
-		TypeID: 1,
-		tval_char: 'Edited parameter 1 Some data',
-		nval_num: 7777,
-		upper_bound: 0
-	}, {
-		ID: 20,
-		TypeID: 1,
-		tval_char: 'Edited Parameter 2 Some more data',
-		nval_num: 7788,
-		upper_bound: 1
-	}, {
-		TypeID: 1,
-		tval_char: 'Added Parameter 3 On Edit',
-		nval_num: 123,
-		upper_bound: 1
-	}]
-};
-
-editQuestion(param, null);
-
+// var param = {
+// 	ID: 18,
+// 	UserID: 1,
+// 	QuestionStatusID: 2,
+// 	QuestionTypeID: 1,
+// 	QuestionEventID: 1,
+// 	QuestionParamsArray: [{
+// 		ID: 19,
+// 		TypeID: 1,
+// 		tval_char: 'Edited parameter 1 Some data',
+// 		nval_num: 7777,
+// 		upper_bound: 0
+// 	}, {
+// 		ID: 20,
+// 		TypeID: 1,
+// 		tval_char: 'Edited Parameter 2 Some more data',
+// 		nval_num: 7788,
+// 		upper_bound: 1
+// 	}, {
+// 		TypeID: 1,
+// 		tval_char: 'Added Parameter 3 On Edit',
+// 		nval_num: 123,
+// 		upper_bound: 1
+// 	}]
+// };
 
 // var copyQuestion = function(question_id) {
 // 	/* Copy question:
@@ -358,20 +361,3 @@ editQuestion(param, null);
 // 				.then(function() {});
 // 		});
 // };
-
-// console.log(copyQuestion);
-// console.log(deleteQuestion);
-/* Edit Question:
-		Would work the same ways as a copy question, except that the original is deleted afterwards
-		Get the question ID from the web client
-		query the database for the corresponding question entry
-		*/
-
-/* Get Questions by user:
-		Get the user ID from the web client
-		query the question database for all corresponding questions.
-		Retreive additional info for each question
-			for each question, get all of the corresponding parameters
-			for each question, get the question type
-			for each question, get the event type
-		*/
