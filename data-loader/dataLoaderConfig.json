@@ -7,7 +7,6 @@
       "host": "codyemoffitt.com",
       "dialect": "mysql",
       "port": 3306,
-      "logging": false,
       "pool": {
         "max": 5,
         "min": 0,
