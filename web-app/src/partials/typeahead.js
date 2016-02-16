@@ -1,7 +1,10 @@
 import React from 'react';
 import Bloodhound from 'bloodhound-js';
-
 import { Input, ListGroup, ListGroupItem } from 'react-bootstrap';
+// import config from 'clientconfig';
+import io from 'socket.io-client';
+// const socket = io(config.apiUrl); // Required for production
+const socket = io(); // Defaults to localhost
 
 const Suggestions = React.createClass({
   handleClick(index) {
@@ -9,9 +12,10 @@ const Suggestions = React.createClass({
   },
 
   render() {
-    var className = (this.props.hidden) ? 'hidden' : '';
+    var className = ((this.props.hidden) ? 'hidden ' : '') + 'suggestions';
+    var absolute = {position: 'absolute'};
     return (
-      <ListGroup className={className}>
+      <ListGroup className={className} style={absolute} >
         {this.props.suggestions.map((suggestion, i) => {
           return (
             <ListGroupItem key={i} onClick={this.handleClick.bind(null, i)}>
@@ -27,15 +31,6 @@ const Suggestions = React.createClass({
 export default React.createClass({
   updateToken(token) {
     this.props.updateToken(token);
-  },
-
-  validationState() {
-    var token = this.state.engine.get(this.state.input);
-    if (token[0] !== undefined) {
-      return 'success';
-    } else if (this.state.input.length > 0) {
-      return 'error';
-    }
   },
 
   handleClick(index) {
@@ -66,10 +61,25 @@ export default React.createClass({
 
   handleChange() {
     var input = this.refs.input.getValue();
+    this.setState({
+      input: input
+    });
+    this.search(input);
+  },
+
+  validationState() {
+    var token = this.state.engine.get(this.state.input);
+    if (token[0] !== undefined) {
+      return 'success';
+    } else if (this.state.input.length > 0) {
+      return 'error';
+    }
+  },
+
+  search(input) {
     this.state.engine.search(input, (suggestions) => {
       this.setState({
-        suggestions: suggestions,
-        input: input,
+        suggestions: suggestions.slice(0, this.props.limit),
         hidden: (suggestions.length === 0) ? true : false
       });
       var token = this.state.engine.get(input)[0];
@@ -79,9 +89,14 @@ export default React.createClass({
     });
   },
 
-  componentWillReceiveProps(nextProp) {
-    this.state.engine.clear();
-    this.state.engine.add(nextProp.suggestions);
+  componentDidMount() {
+    socket.emit('questionParameters::find', {}, (err, data) => {
+      if (!err) {
+        this.state.engine.clear();
+        this.state.engine.add(data);
+        this.search(this.state.input);
+      }
+    });
   },
 
   getInitialState() {

@@ -1,7 +1,5 @@
 import React from 'react';
-
 import { Grid } from 'react-bootstrap';
-
 import QuestionCreator from '../partials/question-creator.js';
 import NemoTable from '../partials/nemo-table.js';
 

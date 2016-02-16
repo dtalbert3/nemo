@@ -1,12 +1,12 @@
 import React from 'react';
-
 import { Input, Grid, Row, SplitButton, Button, MenuItem, Label, Glyphicon } from 'react-bootstrap';
-
-import io from 'socket.io-client';
-var socket = io();
-
-import isEqual from 'lodash.isequal';
 import TypeAhead from './typeahead';
+import Alert from './alert';
+import isEqual from 'lodash.isequal';
+// import config from 'clientconfig';
+import io from 'socket.io-client';
+// const socket = io(config.apiUrl); // Required for production
+const socket = io(); // Defaults to localhost
 
 const Token = React.createClass({
   removeToken() {
@@ -56,6 +56,8 @@ const RangeInput = React.createClass({
   updateBounds() {
     var min = this.refs.min.getValue();
     var max = this.refs.max.getValue();
+    min = (min !== '') ? parseInt(min) : null;
+    max = (max !== '') ? parseInt(max) : null;
     this.setState({
       min: min,
       max: max
@@ -88,40 +90,50 @@ const RangeInput = React.createClass({
 });
 
 export default React.createClass({
-  addToken() {
+  addParameter() {
     // Add error pop if with explanation if needed
-    // Valid Token
+    // Valid Parameter
     // Validate Bounds -> Valid numeric (ie no 3.5.1) and min < max
-    var token = Object.assign({}, this.state.token);
-    var exist = this.state.parameters.find((d) => isEqual(d, token));
-    if (Object.keys(token).length && exist === undefined) {
-      if (token.bounded) {
-        if (this.state.parameterBounds.min < this.state.parameterBounds.max) {
-          token.bounded1 = this.state.parameterBounds;
-        } else {
-          console.log('error'); // THROW?!
-        }
+    // BUG doesn't realize duplicate eixst all the time...
+    var parameter = Object.assign({}, this.state.parameter);
+    var duplicate = this.state.parameters.find((d) => isEqual(d.bounded1, parameter.bounded1));
+    if (parameter.bounded) {
+      var bounds = Object.assign({}, this.state.parameterBounds);
+      if (bounds.min === null || bounds.max === null) {
+        Alert('Missing Range', 'danger', 4 * 1000);
+        return;
+      } else if (bounds.min > bounds.max) {
+        Alert('Invalid Parameter Range', 'danger', 4 * 1000);
+        return;
+      } else {
+        parameter.bounded1 = bounds;
       }
-
-      this.setState({
-        parameters: this.state.parameters.concat(token),
-        parameterBounds: { min: null, max: null }
-      });
-    } else {
-      console.log('error'); // Use throw?!? Requires addbutton to catch!
+    } else if (Object.keys(parameter).length < 1) {
+      Alert('Invalid Parameter', 'danger', 4 * 1000);
+      return;
+    } else if (duplicate !== undefined || duplicate.bounded1.min === parameter.bounded1.min) {
+      Alert('Parameter Already Exist', 'danger', 4 * 1000);
+      return;
+    } else if (this.state.parameters.length > 0) {
+      console.log(duplicate.bound1.min, parameter.bounded1.min);
     }
+
+    this.setState({
+      parameters: this.state.parameters.concat(parameter)
+    });
+    return;
   },
 
-  updateToken(token) {
+  updateParameter(parameter) {
     this.setState({
-      token: token
+      parameter: parameter
     });
   },
 
-  removeToken(token) {
+  removeParameter(parameter) {
     this.setState({
       parameters: this.state.parameters.filter((d) => {
-        return (d !== token) ? true : false;
+        return (d !== parameter) ? true : false;
       })
     });
   },
@@ -144,15 +156,7 @@ export default React.createClass({
     });
   },
 
-  getInitialState() {
-    socket.emit('questionParameters::find', {}, (err, data) => {
-      if (!err) {
-        this.setState({
-          questionParameters: data.map((d) => d)
-        });
-      }
-    });
-
+  componentDidMount() {
     socket.emit('questionTypes::find', {}, (err, data) => {
       if (!err) {
         this.setState({
@@ -168,16 +172,17 @@ export default React.createClass({
         });
       }
     });
+  },
 
+  getInitialState() {
     return {
-      questionParameters: [],
       questionTypes: [],
       selectedTypeIndex: null,
       questionEvents: [],
       selectedEventIndex: null,
       parameterBounds: { min: null, max: null },
       parameters: [],
-      token: {}
+      parameter: {}
     };
   },
 
@@ -204,29 +209,30 @@ export default React.createClass({
           <span> for patients with </span>
 
           <TypeAhead
-            suggestions={this.state.questionParameters}
+            suggestions={[]}
             key='ID'
             value='Name'
-            updateToken={this.updateToken}
+            limit={10}
+            updateToken={this.updateParameter}
           />
 
-          { (Object.keys(this.state.token).length && this.state.token.bounded) ?
+          { (Object.keys(this.state.parameter).length && this.state.parameter.bounded) ?
             <RangeInput
               bounds={this.state.parameterBounds}
               updateBounds={this.updateBounds}/> :
             undefined
           }
 
-          <Button onClick={this.addToken}>Add</Button>
+          <Button onClick={this.addParameter}>Add</Button>
         </Row>
 
         <Row>
-          {this.state.parameters.map((token, i) => {
+          {this.state.parameters.map((parameter, i) => {
             return <Token
               key={i}
               value={'Name'}
-              token={token}
-              removeToken={this.removeToken} />;
+              token={parameter}
+              removeToken={this.removeParameter} />;
           })}
         </Row>
       </Grid>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Nav, Navbar } from 'react-bootstrap';
+import { Nav, Navbar, Grid } from 'react-bootstrap';
 import { Link } from 'react-router';
 
 const NavLink = React.createClass({
@@ -23,26 +23,25 @@ export default React.createClass({
 
   render() {
     return (
-      <div>
-        <Navbar>
-          <Navbar.Header>
-            <Navbar.Brand>
-              <Link to='/'>Nemo</Link>
-            </Navbar.Brand>
-            <Navbar.Toggle />
-          </Navbar.Header>
-          <Navbar.Collapse>
-            <Nav>
-              <NavLink path='/login' label='Login'/>
-              <NavLink path='/user' label='User'/>
-              <NavLink path='/global' label='Global'/>
-            </Nav>
-          </Navbar.Collapse>
-        </Navbar>
-        <div className='container-fluid'>
+      <Navbar>
+        <Navbar.Header>
+          <Navbar.Brand>
+            <Link to='/'>Nemo</Link>
+          </Navbar.Brand>
+          <Navbar.Toggle />
+        </Navbar.Header>
+        <Navbar.Collapse>
+          <Nav>
+            <NavLink path='/login' label='Login'/>
+            <NavLink path='/user' label='User'/>
+            <NavLink path='/global' label='Global'/>
+          </Nav>
+        </Navbar.Collapse>
+        <div id='alert'/>
+        <Grid fluid={true}>
           {this.props.children}
-        </div>
-      </div>
+        </Grid>
+      </Navbar>
     );
   }
 });
