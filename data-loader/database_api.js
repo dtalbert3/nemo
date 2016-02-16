@@ -15,12 +15,7 @@ try {
 var Sequelize = new sequelize(dataLoaderOptions.nemoConnection.dbName,
 	dataLoaderOptions.nemoConnection.userName, dataLoaderOptions.nemoConnection
 	.password, dataLoaderOptions.nemoConnection.sequelizeOptions);
-try {
-	dataLoaderOptions = JSON.parse(data);
-} catch (err) {
-	console.log('There has been an error parsing your JSON.');
-	console.log(err);
-}
+
 
 // Load the models
 var questionModel = require('./models/NEMO/Question')(
@@ -48,6 +43,9 @@ var questionParameterModel = require('./models/NEMO/QuestionParameter')(
 var aiModelModel = require('./models/NEMO/AIModel')(
 	Sequelize);
 var aiParameterModel = require('./models/NEMO/AIParameter')(
+	Sequelize);
+
+var parameterTypeModel = require('./models/NEMO/ParameterType')(
 	Sequelize);
 
 // Define associations
@@ -103,12 +101,23 @@ var getQuestionsByUser = function(params, callBack) {
 	});
 };
 
-getQuestionsByUser({
-	UserID: 1
-}, null);
+var getParameterTypes = function(params, callBack) {
+	callBack = callBack;
+	Sequelize.transaction(function() {
+		return parameterTypeModel.findAll().then(function(data) {
+			console.log(data);
+		});
+	});
+};
+
+// getQuestionsByUser({
+// 	UserID: 1
+// }, null);
+
+getParameterTypes(null, null);
 
 createQuestion = createQuestion;
-
+getQuestionsByUser = getQuestionsByUser;
 // var param = {
 // 	ID: 1,
 // 	UserID: 1,
