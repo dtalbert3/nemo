@@ -25,11 +25,14 @@ var questionParameterModel = require('./models/NEMO/QuestionParameter')(
 	Sequelize);
 
 
-// var questionStatusModel = require('./models/NEMO/QuestionStatus')(
-// 	Sequelize);
+var questionStatusModel = require('./models/NEMO/QuestionStatus')(
+	Sequelize);
 //
-// var questionTypeModel = require('./models/NEMO/QuestionType')(
-// 	Sequelize);
+var questionTypeModel = require('./models/NEMO/QuestionType')(
+	Sequelize);
+
+var questionEventModel = require('./models/NEMO/QuestionEvent')(
+	Sequelize);
 //
 // var userModel = require('./models/NEMO/User')(
 // 	Sequelize);
@@ -51,6 +54,20 @@ var parameterTypeModel = require('./models/NEMO/ParameterType')(
 // Define associations
 questionModel.hasMany(questionParameterModel);
 questionModel.hasMany(aiModelModel);
+// questionStatusModel.hasMany(questionModel);
+questionModel.belongsTo(questionStatusModel, {
+	foreignKey: 'StatusID'
+});
+questionModel.belongsTo(questionTypeModel, {
+	foreignKey: 'TypeID'
+});
+questionModel.belongsTo(questionEventModel, {
+	foreignKey: 'EventID'
+});
+// questionStatusModel.hasMany(questionModel, {
+// 	foreignKey: 'StatusID'
+// });
+
 aiModelModel.hasMany(aiParameterModel);
 
 var createQuestion = function(params, callBack) {
@@ -88,15 +105,62 @@ var createQuestion = function(params, callBack) {
 
 var getQuestionsByUser = function(params, callBack) {
 	callBack = callBack;
+	var orderColumn = 'ID' || params.orderColumn;
+	var order = 'DESC' || params.order;
+	var offset = null || params.start;
+	var limit = null || params.chunk;
 	Sequelize.transaction(function() {
 		var userID = params.UserID;
 		return questionModel.findAll({
-			include: [questionParameterModel, aiModelModel],
+			include: [questionParameterModel, aiModelModel, {
+				model: questionStatusModel,
+				required: true
+			}, {
+				model: questionTypeModel,
+				required: true
+			}, {
+				model: questionEventModel,
+				required: true
+			}],
+			offset: offset,
+			limit: limit,
+			order: [
+				[orderColumn, order]
+			],
 			where: {
 				UserID: userID
 			}
 		}).then(function(data) {
 			console.log(data);
+			// console.log(data[0].dataValues.QuestionStatus);
+		});
+	});
+};
+
+var getDashboardQuestions = function(params, callBack) {
+	callBack = callBack;
+	var orderColumn = 'UserID' || params.orderColumn;
+	var order = 'DESC' || params.order;
+	Sequelize.transaction(function() {
+		return questionModel.findAll({
+			include: [questionParameterModel, aiModelModel, {
+				model: questionStatusModel,
+				required: true
+			}, {
+				model: questionTypeModel,
+				required: true
+			}, {
+				model: questionEventModel,
+				required: true
+			}],
+			offset: params.start,
+			limit: params.chunk,
+			order: [
+				[orderColumn, order]
+			]
+		}).then(function(data) {
+			console.log(data);
+			// console.log(data[0].dataValues.QuestionStatus);
 		});
 	});
 };
@@ -113,6 +177,16 @@ var getParameterTypes = function(params, callBack) {
 // getQuestionsByUser({
 // 	UserID: 1
 // }, null);
+
+getQuestionsByUser({
+
+	UserID: 1
+}, null);
+
+getDashboardQuestions({
+	start: 0,
+	chunk: 2
+}, null);
 
 getParameterTypes(null, null);
 
