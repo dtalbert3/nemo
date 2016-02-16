@@ -2,6 +2,10 @@ import React from 'react';
 
 import { Label, Glyphicon } from 'react-bootstrap';
 
+import io from 'socket.io-client';
+
+var socket = io();
+
 import TypeAhead from './typeahead';
 
 import isEqual from 'lodash.isequal';
@@ -49,14 +53,17 @@ export default React.createClass({
   },
 
   getInitialState() {
-    var PARAMS = [
-      {id: 1, value: 'double'},
-      {id: 2, value: 'triple'},
-      {id: 3, value: 'quadruple'}
-    ];
+    var self = this;
+    socket.emit('questionService::find', {}, function(err, data) {
+      if (!err) {
+        self.setState({
+          parameters: data.map( d => d)
+        });
+      }
+    });
 
     return {
-      parameters: PARAMS,
+      parameters: [],
       tokens: []
     };
   },
@@ -66,7 +73,9 @@ export default React.createClass({
     return (
       <div className='container'>
         <TypeAhead
-          parameters={this.state.parameters}
+          parameters={this.state.parameters.map(function(d) {
+            return { value: d.concept_cd, id: d.ID };
+          })}
           addToken={this.addToken}
         />
         <div>

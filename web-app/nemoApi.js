@@ -66,6 +66,19 @@ exports.dashboardService = {
 
 };
 
+// var questionParameterModel = require('./models/QuestionParameter')(sequelize);
+var parameterTypeModel = require('./models/ParameterType')(sequelize);
 exports.questionService = {
 
+  // Fetch parameters allowed to be used by client
+  find: function(params, callback) {
+    sequelize.transaction(function() {
+      return parameterTypeModel.findAll()
+        .then(function(data) {
+          return callback(null, data);
+        }, function(error) {
+          return callback(error, null);
+        });
+    });
+  }
 };
