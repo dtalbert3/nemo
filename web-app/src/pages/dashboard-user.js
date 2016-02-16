@@ -42,6 +42,7 @@ export default React.createClass({
   },
 
   getInitialState() {
+    console.log('get new init state user');
     return {
       headers: TEST_HEADERS,
       rows: TEST_ROWS

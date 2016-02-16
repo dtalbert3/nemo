@@ -5,7 +5,7 @@ import { render } from 'react-dom';
 import { router} from './router';
 
 // Start once dom has loaded
-domReady(function() {
+domReady(() => {
 
   // Create app container
   var app = document.createElement('div');

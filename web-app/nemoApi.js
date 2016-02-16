@@ -9,7 +9,8 @@ var sequelize = new Sequelize(
   {
     host: config.server.db.host,
     dialect: config.server.db.dialect,
-    port:    config.server.db.port
+    port:    config.server.db.port,
+    logging: (config.server.db.logging) ? console.log : false
   });
 
 // Test connection to database

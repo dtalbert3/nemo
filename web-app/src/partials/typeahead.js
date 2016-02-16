@@ -9,13 +9,12 @@ const Suggestions = React.createClass({
   },
 
   render() {
-    var self = this;
     var className = (this.props.hidden) ? 'hidden' : '';
     return (
       <ListGroup className={className}>
-        {this.props.suggestions.map(function(suggestion, i) {
+        {this.props.suggestions.map((suggestion, i) => {
           return (
-            <ListGroupItem key={i} onClick={self.handleClick.bind(null, suggestion)}>
+            <ListGroupItem key={i} onClick={this.handleClick.bind(null, suggestion)}>
               {suggestion}
             </ListGroupItem>
           );
@@ -67,15 +66,19 @@ export default React.createClass({
   },
 
   handleChange() {
-    var self = this;
     var input = this.refs.input.getValue();
-    this.state.engine.search(input, function(suggestions) {
-      self.setState({
+    this.state.engine.search(input, (suggestions) => {
+      this.setState({
         suggestions: suggestions,
         value: input,
         hidden: (suggestions.length === 0) ? true : false
       });
     });
+  },
+
+  componentWillReceiveProps(nextProp) {
+    this.state.engine.clear();
+    this.state.engine.add(nextProp.parameters);
   },
 
   getInitialState() {
@@ -85,15 +88,15 @@ export default React.createClass({
       hidden: true,
       engine: new Bloodhound({
         local: this.props.parameters,
-        identify: function(obj) { return obj.value; },
-        queryTokenizer: function(data) {
+        identify: (d) => d.value,
+        queryTokenizer: (data) => {
           return Bloodhound.tokenizers.whitespace(data);
         },
-        datumTokenizer: function(d){
+        datumTokenizer: (d) => {
           var tokens = [];
           var stringSize = d.value.length;
-          for (var size = 1; size <= stringSize; size++){
-            for (var i = 0; i+size<= stringSize; i++){
+          for (var size = 1; size <= stringSize; size++) {
+            for (var i = 0; i+size<= stringSize; i++) {
               tokens.push(d.value.substr(i, size));
             }
           }
@@ -114,7 +117,7 @@ export default React.createClass({
           onKeyPress={this.handleKey}
         />
         <Suggestions
-          suggestions={Array.from(this.state.suggestions, d => d.value)}
+          suggestions={Array.from(this.state.suggestions, (d) => d.value)}
           handleClick={this.handleClick}
           hidden={this.state.hidden}
         />

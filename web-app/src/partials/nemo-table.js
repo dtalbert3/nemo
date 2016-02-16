@@ -8,29 +8,28 @@ const Tbody = React.createClass({
   },
 
   render() {
-    var self = this;
     return (
       <tbody>
-        {self.props.rows.map(function(row, i) {
-          if (self.state.open[i] === undefined) {
-            self.state.open[i] = false;
+        {this.props.rows.map((row, i) => {
+          if (this.state.open[i] === undefined) {
+            this.state.open[i] = false;
           }
           return (
             [<tr
               key={i}
               className='custom-hover'
-              onClick={ ()=> {
-                var state = self.state.open;
-                state[i] = !self.state.open[i];
-                self.setState({ open: state });
+              onClick={() => {
+                var state = this.state.open;
+                state[i] = !this.state.open[i];
+                this.setState({ open: state });
               }}>
-              {row.map(function(col, j) {
+              {row.map((col, j) => {
                 return <td key={j}>{col}</td>;
               })}
             </tr>,
             <tr>
-              <td colSpan={row.length} className={ self.state.open[i] ? '' : 'hidden' }>
-              <Collapse in={ self.state.open[i] }>
+              <td colSpan={row.length} className={ this.state.open[i] ? '' : 'hidden' }>
+              <Collapse in={ this.state.open[i] }>
                 <div>
                   <Well bsSize='large'>
                     <h1>Hidden Content</h1>
@@ -51,7 +50,7 @@ const Thead = React.createClass({
     return (
       <thead>
         <tr>
-          {this.props.headers.map(function(head, i) {
+          {this.props.headers.map((head, i) => {
             return <td key={i}><h4>{head}</h4></td>;
           })}
         </tr>

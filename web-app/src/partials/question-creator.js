@@ -11,7 +11,7 @@ import TypeAhead from './typeahead';
 import isEqual from 'lodash.isequal';
 
 const Token = React.createClass({
-  removeToken: function() {
+  removeToken() {
     this.props.removeToken(this.props.token);
   },
 
@@ -31,10 +31,9 @@ export default React.createClass({
   addToken(data) {
     var token = Object.assign({}, data);
 
-    var exist = this.state.tokens.filter(function(d) {
+    var exist = this.state.tokens.filter((d) => {
       return isEqual(d, token);
     });
-
     if (exist.length === 0) {
       var tokens = this.state.tokens.concat(token);
       this.setState({
@@ -44,7 +43,7 @@ export default React.createClass({
   },
 
   removeToken(token) {
-    var tokens = this.state.tokens.filter(function(d) {
+    var tokens = this.state.tokens.filter((d) => {
       return (d !== token) ? true : false;
     });
     this.setState({
@@ -53,11 +52,10 @@ export default React.createClass({
   },
 
   getInitialState() {
-    var self = this;
-    socket.emit('questionService::find', {}, function(err, data) {
+    socket.emit('questionService::find', {}, (err, data) => {
       if (!err) {
-        self.setState({
-          parameters: data.map( d => d)
+        this.setState({
+          parameters: data.map((d) => d)
         });
       }
     });
@@ -69,18 +67,17 @@ export default React.createClass({
   },
 
   render() {
-    var self = this;
     return (
       <div className='container'>
         <TypeAhead
-          parameters={this.state.parameters.map(function(d) {
+          parameters={this.state.parameters.map((d) => {
             return { value: d.concept_cd, id: d.ID };
           })}
           addToken={this.addToken}
         />
         <div>
-          {this.state.tokens.map(function(token, i) {
-            return <Token key={i} token={token} removeToken={self.removeToken} />;
+          {this.state.tokens.map((token, i) => {
+            return <Token key={i} token={token} removeToken={this.removeToken} />;
           })}
         </div>
       </div>

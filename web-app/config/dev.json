@@ -22,7 +22,8 @@
         "username": "NEMO_WEB",
         "password": "NEMO",
         "dialect": "mysql",
-        "port": 3306
+        "port": 3306,
+        "logging": false
       }
     }
 }
