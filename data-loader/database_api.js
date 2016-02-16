@@ -36,6 +36,7 @@ var questionEventModel = require('./models/NEMO/QuestionEvent')(
 
 var aiModelModel = require('./models/NEMO/AIModel')(
 	Sequelize);
+
 var aiParameterModel = require('./models/NEMO/AIParameter')(
 	Sequelize);
 
@@ -151,6 +152,54 @@ function editQuestion(params, callBack) {
 	});
 }
 
+/* Edit Question:
+		Would work the same ways as a copy question, except that the original is deleted afterwards
+		Get the question ID from the web client
+		query the database for the corresponding question entry
+*/
+function deleteQuestion(params, callBack) {
+	callBack = callBack;
+
+	Sequelize.transaction(function(t) {
+		// Destroy parameters of question then
+		// Destroy parameters of AI models then
+		// Destroy AI models of question then
+		// Destroy the question itself
+
+		return questionParameterModel.destroy({
+			where: {
+				QuestionID: params.ID
+			}
+		}).then(function() {
+			// Get list of AI Model IDs to destroy
+			return aiModelModel.findAll({
+				where: {
+					QuestionID: params.ID
+				}
+			}).then(function(aiModelData) {
+				var aiModelDataIDList = aiModelData.map(function(a) {
+					return a.dataValues.ID;
+				});
+				//Destroy the AI models
+				return aiModelModel.destroy({
+					where: {
+						ID: {
+							$in: aiModelDataIDList
+						}
+					}
+				}).then(function() {
+					//Finally delete the question itself
+					return questionModel.destroy({
+						where: {
+							ID: params.ID,
+						}
+					});
+				});
+			});
+		});
+	});
+}
+
 /* Get Questions by user:
 		Get the user ID from the web client
 		query the question database for all corresponding questions.
@@ -227,6 +276,10 @@ function getParameterTypes(params, callBack) {
 		});
 	});
 }
+
+// deleteQuestion({
+// 	ID: 19
+// }, null);
 
 // getQuestionsByUser({
 // 	UserID: 1
