@@ -1,8 +1,4 @@
 var sequelize = require('sequelize');
-
-//function getNewID() {
-//	var id;
-//}
 var fs = require('fs');
 // var Promise = require('promise');
 
@@ -33,6 +29,7 @@ var questionModel = require('./models/NEMO/Question')(
 var questionParameterModel = require('./models/NEMO/QuestionParameter')(
 	Sequelize);
 
+
 // var questionStatusModel = require('./models/NEMO/QuestionStatus')(
 // 	Sequelize);
 //
@@ -48,10 +45,15 @@ var questionParameterModel = require('./models/NEMO/QuestionParameter')(
 // var userTypeModel = require('./models/NEMO/UserType')(
 // 	Sequelize);
 //
-// var aiModelModel = require('./models/NEMO/AIModel')(
-// 	Sequelize);
-// var aiParameterModel = require('./models/NEMO/AIParameter')(
-// 	Sequelize);
+var aiModelModel = require('./models/NEMO/AIModel')(
+	Sequelize);
+var aiParameterModel = require('./models/NEMO/AIParameter')(
+	Sequelize);
+
+// Define associations
+questionModel.hasMany(questionParameterModel);
+questionModel.hasMany(aiModelModel);
+aiModelModel.hasMany(aiParameterModel);
 
 var createQuestion = function(params, callBack) {
 	callBack = callBack;
@@ -67,7 +69,6 @@ var createQuestion = function(params, callBack) {
 			transaction: t
 		}).then(function(data) {
 			var questionID = data.dataValues.ID;
-			// console.log('QuestionID: ', questionID);
 			// Recursively chain questionParameter create promises
 			var recurseParam = function(pArray, i) {
 				if (pArray[i]) {
@@ -87,26 +88,47 @@ var createQuestion = function(params, callBack) {
 	});
 };
 
-var param = {
-	ID: 1,
-	UserID: 1,
-	QuestionStatusID: 2,
-	QuestionTypeID: 1,
-	QuestionEventID: 1,
-	QuestionParamsArray: [{
-		TypeID: 1,
-		tval_char: 'Some data',
-		nval_num: 7777,
-		upper_bound: 0
-	}, {
-		TypeID: 1,
-		tval_char: 'Some more data',
-		nval_num: 7788,
-		upper_bound: 1
-	}]
+var getQuestionsByUser = function(params, callBack) {
+	callBack = callBack;
+	Sequelize.transaction(function() {
+		var userID = params.UserID;
+		return questionModel.findAll({
+			include: [questionParameterModel, aiModelModel],
+			where: {
+				UserID: userID
+			}
+		}).then(function(data) {
+			console.log(data);
+		});
+	});
 };
 
-createQuestion(param, null);
+getQuestionsByUser({
+	UserID: 1
+}, null);
+
+createQuestion = createQuestion;
+
+// var param = {
+// 	ID: 1,
+// 	UserID: 1,
+// 	QuestionStatusID: 2,
+// 	QuestionTypeID: 1,
+// 	QuestionEventID: 1,
+// 	QuestionParamsArray: [{
+// 		TypeID: 1,
+// 		tval_char: 'Some data',
+// 		nval_num: 7777,
+// 		upper_bound: 0
+// 	}, {
+// 		TypeID: 1,
+// 		tval_char: 'Some more data',
+// 		nval_num: 7788,
+// 		upper_bound: 1
+// 	}]
+// };
+
+// createQuestion(param, null);
 
 // var copyQuestion = function(question_id) {
 // 	/* Copy question:
