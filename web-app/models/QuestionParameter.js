@@ -35,7 +35,7 @@ module.exports = function(sequelize) {
     },
     nval_num: {
       type: Sequelize.DECIMAL,
-      allowNull: true,
+      allowNull: true
     },
     upper_bound: {
       type: Sequelize.BOOLEAN,
