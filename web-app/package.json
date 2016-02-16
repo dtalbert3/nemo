@@ -19,6 +19,7 @@
   "main": "server.js",
   "private": true,
   "dependencies": {
+    "bloodhound-js": "^1.2.1",
     "body-parser": "~1.14.2",
     "bootstrap": "~3.3.6",
     "clientconfig": "~1.1",

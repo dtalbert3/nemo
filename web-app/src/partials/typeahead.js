@@ -60,7 +60,7 @@ export default React.createClass({
           value: this.state.suggestions[0].value,
           hidden: true
         });
-      } else {
+      } else if (token[0] !== undefined) {
         this.addToken(token[0]);
       }
     }
@@ -89,8 +89,15 @@ export default React.createClass({
         queryTokenizer: function(data) {
           return Bloodhound.tokenizers.whitespace(data);
         },
-        datumTokenizer: function(data) {
-          return Bloodhound.tokenizers.whitespace(data.value);
+        datumTokenizer: function(d){
+          var tokens = [];
+          var stringSize = d.value.length;
+          for (var size = 1; size <= stringSize; size++){
+            for (var i = 0; i+size<= stringSize; i++){
+              tokens.push(d.value.substr(i, size));
+            }
+          }
+          return tokens;
         }
       })
     };

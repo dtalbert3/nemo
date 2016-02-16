@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Input, Button, Glyphicon } from 'react-bootstrap';
+import { Label, Glyphicon } from 'react-bootstrap';
 
 import TypeAhead from './typeahead';
 
@@ -12,12 +12,13 @@ const Token = React.createClass({
   },
 
   render() {
-    const remove = <Button onClick={this.removeToken}><Glyphicon glyph="remove" /></Button>;
     return (
-      <Input type="text" readOnly
-        placeholder={this.props.token.value}
-        buttonAfter={remove}
-      />
+      <h4 className='token'>
+        <Label className="label label-primary" >
+          {this.props.token.value + ' '}
+          <Glyphicon onClick={this.removeToken} glyph="remove" />
+        </Label>
+      </h4>
     );
   }
 });
