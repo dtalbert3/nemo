@@ -323,65 +323,92 @@ function getParameterTypes(params, callBack) {
 // 	}]
 // };
 
-// var copyQuestion = function(question_id) {
-// 	/* Copy question:
-// 			receive the question ID from the web client.
-// 			query the datamart for the corresponding question entry
-// 			change the entries of the question:
-// 				- user name
-// 				- question ID (create a new ID)
-// 				- status
-// 			submit the new question entry
-// 			query the parameter table for all entries under the question ID
-// 			change the entries of the tables, adding in the newly created question ID
-// 			submit the new parameter entries
-// 			*/
-//
-// 	var dataMartCon = new sequelize('NEMO_Datamart', 'NEMO_WEB', 'NEMO', {
-// 		host: 'codyemoffitt.com',
-// 		dialect: 'mysql',
-// 		port: 3306,
-// 		logging: false,
-// 		pool: {
-// 			max: 5,
-// 			min: 0,
-// 			idle: 10000
-// 		}
-// 	});
-// 	var query = 'SELECT ID, TypeID, EventID FROM Question WHERE ID=' +
-// 		question_id + ';';
-// 	dataMartCon.query(query, {
-// 			type: sequelize.QueryTypes.SELECT
-// 		})
-// 		.then(function(old_question) {
-// 				old_question = old_question;
-// 				// Somehow construct a submit statement to insert the new fields into the old question.
-// 				// The question needs to be added first, before moving on to the parameters.
-// 				query =
-// 					'SELECT Name, concept_path, concept_cd, valtype_cd, TableName, TableColumn from ParamaterType WHERE ID=' +
-// 					question_id + ';';
-//
-// 				// dataMartCon.query(query, {
-// 				// 		type: sequelize.QueryTypes.SELECT
-// 				// 	})
-// 				// 	.then(function(parameters) {
-// 				// 			parameter = parameter;
-// 				// 			// Create new parameters from the old ones, fitting them with the new question ID
-// 				// 			/*
-// 				// 			for(var i = 0; i < parameters.length; i++) {
-// 				// 				parameters[i].ID = getNewID();
-// 				// 			}
-// 				// 			query = 'INSERT parameters=? INTO ParameterType;'
-// 				// 			dataMartCon.*/
-// 				// 		}
-//
-//
-// 					);
-// 			}
-//
-//
-// 		);
-// };
+function copyQuestion(params, callback) {
+ 	/* Copy question:
+ 			receive the question ID from the web client.
+ 			query the datamart for the corresponding question entry
+ 			change the entries of the question:
+ 				- user name
+ 				- question ID (create a new ID)
+ 				- status
+ 			submit the new question entry
+ 			query the parameter table for all entries under the question ID
+ 			change the entries of the tables, adding in the newly created question ID
+ 			submit the new parameter entries
+ 			*/
+	/*
+	Sequelize.transaction(function(t){
+		var id = params.ID;
+		var use_ai_models = params.use_ai_models;
+		var new_question;
+		return questionModel.findByID(id, {
+			transaction: t
+		}).then(function(old_question) {
+			new_question = {
+				UserID: old_question.UserID,
+				TypeID: old_question.TypeID,
+				StatusID: old_question.StatusID,
+				EventID: old_question.StatusID
+			};
+		});
+		return questionParameterModel.findAll({
+			where: {
+				QuestionID: id
+			}, {
+				transaction: t
+			}).then(function(old_params) {
+				for (var i = 0; i < old_params.length; i++) { 
+					new_question.QuestionParamsArray.push({
+						TypeID: old_params[i].dataValues.TypeID,
+						tval_char: old_params[i].dataValues.tval_char,
+						nval_num: old_params[i].dataValues.nval_num,
+						upper_bound: old_params[i].dataValues.upper_bound
+					});
+				}
+			});	
+		};
+		createQuestion(new_question, callback);
+		if (use_ai_models) {
+					
+		}
+	});
+	*/
+	/*
+ 	var query = 'SELECT ID, TypeID, EventID FROM Question WHERE ID=' +
+ 		question_id + ';';
+ 	dataMartCon.query(query, {
+ 			type: sequelize.QueryTypes.SELECT
+ 		})
+ 		.then(function(old_question) {
+ 				old_question = old_question;
+ 				// Somehow construct a submit statement to insert the new fields into the old question.
+ 				// The question needs to be added first, before moving on to the parameters.
+ 				query =
+ 					'SELECT Name, concept_path, concept_cd, valtype_cd, TableName, TableColumn from ParamaterType WHERE ID=' +
+ 					question_id + ';';
+
+ 				// dataMartCon.query(query, {
+ 				// 		type: sequelize.QueryTypes.SELECT
+ 				// 	})
+ 				// 	.then(function(parameters) {
+ 				// 			parameter = parameter;
+ 				// 			// Create new parameters from the old ones, fitting them with the new question ID
+ 				// 			/*
+ 				// 			for(var i = 0; i < parameters.length; i++) {
+ 				// 				parameters[i].ID = getNewID();
+ 				// 			}
+ 				// 			query = 'INSERT parameters=? INTO ParameterType;'
+ 				// 			dataMartCon.*/
+ 				// 		}
+
+
+ 					);
+ 			}
+
+
+ 		);
+		*/
+};
 
 // var deleteQuestion = function(question_id) {
 // 	/* Delete question:
