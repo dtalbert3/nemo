@@ -44,7 +44,9 @@ app.use(function (req, res, next) {
 // Setup NEMO api
 var nemoApi = require('./nemoApi');
 app.use('/user', nemoApi.userService);
-app.use('/questionService', nemoApi.questionService);
+app.use('/questionParameters', nemoApi.questionParameters);
+app.use('/questionTypes', nemoApi.questionTypes);
+app.use('/questionEvents', nemoApi.questionEvents);
 
 // Setup files to be used for client side app
 new Moonboots({

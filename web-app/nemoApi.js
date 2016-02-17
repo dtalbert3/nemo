@@ -67,14 +67,41 @@ exports.dashboardService = {
 
 };
 
-// var questionParameterModel = require('./models/QuestionParameter')(sequelize);
 var parameterTypeModel = require('./models/ParameterType')(sequelize);
-exports.questionService = {
+exports.questionParameters = {
 
   // Fetch parameters allowed to be used by client
   find: function(params, callback) {
     sequelize.transaction(function() {
       return parameterTypeModel.findAll()
+        .then(function(data) {
+          return callback(null, data);
+        }, function(error) {
+          return callback(error, null);
+        });
+    });
+  }
+};
+
+var questionTypeModel = require('./models/QuestionType')(sequelize);
+exports.questionTypes = {
+  find: function(params, callback) {
+    sequelize.transaction(function() {
+      return questionTypeModel.findAll()
+        .then(function(data) {
+          return callback(null, data);
+        }, function(error) {
+          return callback(error, null);
+        });
+    });
+  }
+};
+
+var questionEventModel = require('./models/QuestionEvent')(sequelize);
+exports.questionEvents = {
+  find: function(params, callback) {
+    sequelize.transaction(function() {
+      return questionEventModel.findAll()
         .then(function(data) {
           return callback(null, data);
         }, function(error) {

@@ -1,6 +1,19 @@
 import React from 'react';
-
 import { Collapse, Well, Table } from 'react-bootstrap';
+
+const Thead = React.createClass({
+  render() {
+    return (
+      <thead>
+        <tr>
+          {this.props.headers.map((head, i) => {
+            return <td key={i}><h4>{head}</h4></td>;
+          })}
+        </tr>
+      </thead>
+    );
+  }
+});
 
 const Tbody = React.createClass({
   getInitialState() {
@@ -28,15 +41,12 @@ const Tbody = React.createClass({
               })}
             </tr>,
             <tr>
-              <td colSpan={row.length} className={ this.state.open[i] ? '' : 'hidden' }>
-              <Collapse in={ this.state.open[i] }>
-                <div>
-                  <Well bsSize='large'>
-                    <h1>Hidden Content</h1>
-                  </Well>
-                </div>
-              </Collapse>
-              </td>
+              <InfoWell
+                colSpan={row.length}
+                className={this.state.open[i] ? '' : 'hidden'}
+                open={this.state.open[i]}
+                data={row}
+              />
             </tr>]
           );
         })}
@@ -45,16 +55,17 @@ const Tbody = React.createClass({
   }
 });
 
-const Thead = React.createClass({
+const InfoWell = React.createClass({
   render() {
+    var { data, open, ...props } = this.props;
     return (
-      <thead>
-        <tr>
-          {this.props.headers.map((head, i) => {
-            return <td key={i}><h4>{head}</h4></td>;
-          })}
-        </tr>
-      </thead>
+       <td { ...props }>
+        <Collapse in={ open }>
+          <Well bsSize='large'>
+            <h1>Hidden Content</h1>
+          </Well>
+        </Collapse>
+      </td>
     );
   }
 });

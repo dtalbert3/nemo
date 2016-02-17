@@ -1,5 +1,5 @@
 import React from 'react';
-
+import { Grid } from 'react-bootstrap';
 import QuestionCreator from '../partials/question-creator.js';
 import NemoTable from '../partials/nemo-table.js';
 
@@ -18,23 +18,6 @@ var TEST_ROWS = [
 export default React.createClass({
   componentDidMount() {
     document.title = 'Nemo User Dashboard';
-
-    // Test addition/removal of rows
-    // var self = this;
-    // function TEST() {
-    //   console.log('update');
-    //   if (Math.random() < 0.7 || TEST_ROWS.length < 3) {
-    //     TEST_ROWS.push(['Q' + Math.random(), 'A' + Math.random()]);
-    //   } else {
-    //     TEST_ROWS.pop();
-    //   }
-    //
-    //   self.setState({
-    //     rows: TEST_ROWS
-    //   });
-    // }
-
-    // UPDATE = setInterval(TEST, 1000);
   },
 
   componentWillUnmount() {
@@ -42,7 +25,6 @@ export default React.createClass({
   },
 
   getInitialState() {
-    console.log('get new init state user');
     return {
       headers: TEST_HEADERS,
       rows: TEST_ROWS
@@ -51,13 +33,13 @@ export default React.createClass({
 
   render() {
     return (
-      <div className='container'>
+      <Grid>
         <h2>Create a question</h2>
         <QuestionCreator />
 
         <h2>Your Questions</h2>
         <NemoTable rows={this.state.rows} headers={this.state.headers} />
-      </div>
+      </Grid>
     );
   }
 });

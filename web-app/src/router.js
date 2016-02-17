@@ -1,6 +1,5 @@
 import React from 'react';
 import { Router, Route , browserHistory } from 'react-router';
-
 import Base from './pages/base';
 import Login from './pages/login';
 import DashboardUser from './pages/dashboard-user';

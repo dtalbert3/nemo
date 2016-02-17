@@ -51,6 +51,7 @@
   "devDependencies": {
     "babel-cli": "^6.5.1",
     "babel-eslint": "^4.1.8",
+    "babel-plugin-syntax-object-rest-spread": "^6.5.0",
     "babel-preset-es2015": "^6.5.0",
     "babel-preset-react": "^6.5.0",
     "eslint": "^2.0.0",
@@ -115,7 +116,7 @@
     ]
   },
   "scripts": {
-    "build": "rm -rf client/ && babel --presets es2015,react -d client/ src/",
+    "build": "rm -rf client/ && babel --presets es2015,react --plugins syntax-object-rest-spread -d client/ src/",
     "start": "node server.js",
     "dev": "NODE_ENV=dev node server",
     "prod": "NODE_ENV=prod node server",
