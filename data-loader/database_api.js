@@ -277,6 +277,39 @@ function getParameterTypes(params, callBack) {
 	});
 }
 
+var getQuestionTypes = function(params, callback) {
+	sequelize.transaction(function() {
+		return questionTypeModel.findAll()
+			.then(function(data) {
+				return callback(null, data);
+			}, function(error) {
+				return callback(error, null);
+			});
+	});
+};
+
+var getQuestionEvents = function(params, callback) {
+	sequelize.transaction(function() {
+		return questionEventModel.findAll()
+			.then(function(data) {
+				return callback(null, data);
+			}, function(error) {
+				return callback(error, null);
+			});
+	});
+};
+
+var getQuestionStatus = function(params, callback) {
+	sequelize.transaction(function() {
+		return questionStatusModel.findAll()
+			.then(function(data) {
+				return callback(null, data);
+			}, function(error) {
+				return callback(error, null);
+			});
+	});
+};
+
 // deleteQuestion({
 // 	ID: 19
 // }, null);
