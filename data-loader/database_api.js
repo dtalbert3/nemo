@@ -390,7 +390,7 @@ function copyQuestion(params, callback) {
 			}, {
 				transaction: t
 			}).then(function(old_params) {
-				for (var i = 0; i < old_params.length; i++) { 
+				for (var i = 0; i < old_params.length; i++) {
 					new_question.QuestionParamsArray.push({
 						TypeID: old_params[i].dataValues.TypeID,
 						tval_char: old_params[i].dataValues.tval_char,
@@ -398,11 +398,11 @@ function copyQuestion(params, callback) {
 						upper_bound: old_params[i].dataValues.upper_bound
 					});
 				}
-			});	
+			});
 		};
 		createQuestion(new_question, callback);
 		if (use_ai_models) {
-					
+
 		}
 	});
 	*/
@@ -435,13 +435,13 @@ function copyQuestion(params, callback) {
  				// 		}
 
 
- 					);
- 			}
-
-
- 		);
-		*/
-};
+ 	// 				);
+ 	// 		}
+		//
+		//
+ 	// 	);
+		// */
+}
 
 // var deleteQuestion = function(question_id) {
 // 	/* Delete question:
