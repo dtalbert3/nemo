@@ -109,9 +109,9 @@ exports.questionTypes = {
 // Definition of question event model for QuestionEvent table in NEMO Datamart
 var questionEventModel = require('./models/QuestionEvent')(sequelize);
 exports.questionEvents = {
-  find: function(params, callback) {
 
-    // Fetch question events allowed to be used by the client from the database
+  // Fetch question events allowed to be used by the client from the database
+  find: function(params, callback) {
     sequelize.transaction(function() {
       return questionEventModel.findAll()
         .then(function(data) {

@@ -69,23 +69,49 @@ questionModel.belongsTo(questionEventModel, {
 });
 aiModelModel.hasMany(aiParameterModel);
 
+/* Create Question:
+	Takes attributes of question and parameters of question in object format
+	callBack is used to return data or errors/exceptions
+	Example params object:
+	var param = {
+		UserID: 1,
+		QuestionStatusID: 2,
+		QuestionTypeID: 1,
+		QuestionEventID: 1,
+		QuestionParamsArray: [{
+			ID: 19,
+			TypeID: 1,
+			tval_char: 'Some data',
+			nval_num: 7777,
+			upper_bound: 0
+		}, {
+			TypeID: 1,
+			tval_char: 'Some more data',
+			nval_num: 7788,
+			upper_bound: 1
+		}]
+	};
+*/
 function createQuestion(params, callBack) {
-	callBack = callBack;
+	// Compile a question attributes for upsert
 	var questionAttributes = {
 		UserID: params.UserID,
 		StatusID: params.QuestionStatusID,
 		TypeID: params.QuestionTypeID,
 		EventID: params.QuestionEventID
 	};
+	// Declare questionID for use later
 	var questionID;
+	// Initiate transaction, will be committed if things go smoothly or rolled back if there is an issue at any point
 	Sequelize.transaction(function(t) {
-
 		return questionModel.create(questionAttributes, {
 			transaction: t
 		}).then(function(data) {
+			// QuestionID is needed as a foreign key for QuestionParameter
 			questionID = data.dataValues.ID;
-			// Recursively chain questionParameter create promises
+			// Helper function to recursively chain questionParameter create promises
 			var recurseParam = function(pArray, i) {
+				// If the current parameter exists only, otherwise nothing is done and promise chain is ended
 				if (pArray[i]) {
 					return questionParameterModel.create({
 						QuestionID: questionID,
@@ -98,19 +124,50 @@ function createQuestion(params, callBack) {
 					}).then(recurseParam(pArray, (i + 1)));
 				}
 			};
+			// Call helper function to insert Question Parameters
 			return recurseParam(params.QuestionParamsArray, 0);
 		});
 	}).then(function() {
+		// Return the Question ID of the created question
 		return questionID;
+	}).catch(function(error) {
+		return callBack(error, null);
 	});
 }
 /* Edit Question:
-		Would work the same ways as a copy question, except that the original is deleted afterwards
-		Get the question ID from the web client
-		query the database for the corresponding question entry
+	Takes attributes of question and parameters of question in object format
+	ID is specified for the Question, but optional for parameters, since paramters may be added or updated (upsert)
+	Parameter layout is very similar to createQuestion, since a hard edit in the web client will be calling createQuestion,
+	and a soft edit in the web client will ball editQuestion
+	callBack is used to return data or errors/exceptions
+	Example params object:
+	var param = {
+		ID: 18,
+		UserID: 1,
+		QuestionStatusID: 2,
+		QuestionTypeID: 1,
+		QuestionEventID: 1,
+		QuestionParamsArray: [{
+			ID: 19,
+			TypeID: 1,
+			tval_char: 'Edited parameter 1 Some data',
+			nval_num: 7777,
+			upper_bound: 0
+		}, {
+			ID: 20,
+			TypeID: 1,
+			tval_char: 'Edited Parameter 2 Some more data',
+			nval_num: 7788,
+			upper_bound: 1
+		}, {
+			TypeID: 1,
+			tval_char: 'Added Parameter 3 On Edit',
+			nval_num: 123,
+			upper_bound: 1
+		}]
+	};
 */
 function editQuestion(params, callBack) {
-	callBack = callBack;
 	var questionAttributes = {
 		ID: params.ID,
 		UserID: params.UserID,
@@ -118,11 +175,14 @@ function editQuestion(params, callBack) {
 		TypeID: params.QuestionTypeID,
 		EventID: params.QuestionEventID
 	};
-	Sequelize.transaction(function(t) {
+	// Initiate transaction, will be committed if things go smoothly or rolled back if there is an issue at any point
+	// Example params object:
 
+	Sequelize.transaction(function(t) {
 		return questionModel.upsert(questionAttributes, {
 			transaction: t
-		}).then(function() { // Recursively chain questionParameter upsert promises
+		}).then(function() {
+			// Helper function to recursively chain questionParameter upsert promises
 			var recurseParam = function(pArray, i) {
 				if (pArray[i]) {
 					var questionParamData;
@@ -150,19 +210,26 @@ function editQuestion(params, callBack) {
 					}).then(recurseParam(pArray, (i + 1)));
 				}
 			};
+			// Call helper function to insert or update Question Parameters
 			return recurseParam(params.QuestionParamsArray, 0);
 		});
+	}).then(function(data) {
+		return callBack(null, data);
+	}).catch(function(error) {
+		return callBack(error, null);
 	});
 }
 
-/* Edit Question:
-		Would work the same ways as a copy question, except that the original is deleted afterwards
-		Get the question ID from the web client
-		query the database for the corresponding question entry
+/* Delete Question:
+		Completely deletes a Question from the Question table, as well as its dependent tables
+		callBack is used to return data or errors/exceptions
+	  Example params object:
+		{
+		 	ID: 19
+		}
 */
 function deleteQuestion(params, callBack) {
-	callBack = callBack;
-
+	// Initiate transaction, will be committed if things go smoothly or rolled back if there is an issue at any point
 	Sequelize.transaction(function(t) {
 		// Destroy parameters of question then
 		// Destroy parameters of AI models then
@@ -200,16 +267,35 @@ function deleteQuestion(params, callBack) {
 				});
 			});
 		});
+	}).then(function(data) {
+		return callBack(null, data);
+	}).catch(function(error) {
+		return callBack(error, null);
 	});
 }
 
 /* Get Questions by user:
+		Get a list of all the Questions for a particular user
 		Get the user ID from the web client
-		query the question database for all corresponding questions.
-		Retreive additional info for each question
-			for each question, get all of the corresponding parameters
-			for each question, get the question type
-			for each question, get the event type
+		Query the database for all corresponding questions.
+		Retrieve additional info for each question
+			For each question, get all of the corresponding parameters
+			For each question, get the question type
+			For each question, get the question event type
+			For each question, get the question status
+			For each question, get all of the AI Model data
+  	callBack is used to return data or errors/exceptions
+		Example params object:
+		{
+		 	UserID: 1,
+			orderColumn: 'ID', 	//This is optional, it is the column from the Question table by which to order the questions,
+			order: 'DESC',			//This is optional, its the order by which to organize the results, ascending or descending
+			start: 0,						//This is optional, used for paging results
+			chunk: 10, 					//This is optional, used for limiting amount of the paged results returned
+		}
+
+		May need AI Parameter data in the future
+
 */
 function getQuestionsByUser(params, callBack) {
 	callBack = callBack;
@@ -222,13 +308,13 @@ function getQuestionsByUser(params, callBack) {
 		return questionModel.findAll({
 			include: [questionParameterModel, aiModelModel, {
 				model: questionStatusModel,
-				required: true
+				required: true //Inner join
 			}, {
 				model: questionTypeModel,
-				required: true
+				required: true //Inner join
 			}, {
 				model: questionEventModel,
-				required: true
+				required: true //Inner join
 			}],
 			offset: offset,
 			limit: limit,
@@ -239,26 +325,49 @@ function getQuestionsByUser(params, callBack) {
 				UserID: userID
 			}
 		}).then(function(data) {
-			console.log(data);
+			return callBack(null, data);
+		}).catch(function(error) {
+			return callBack(error, null);
 		});
 	});
 }
 
+/* Get Dashboard Questions:
+		Get a list of all the Questions in the NEMO Datamart
+		query the question database for all corresponding questions.
+		Retrieve additional info for each question
+			For each question, get all of the corresponding parameters
+			For each question, get the question type
+			For each question, get the question event type
+			For each question, get the question status
+			For each question, get all of the AI Model data
+  	callBack is used to return data or errors/exceptions
+		Example params object:
+		{
+		 	UserID: 1,
+			orderColumn: 'ID', 	//This is optional, it is the column from the Question table by which to order the questions,
+			order: 'DESC',			//This is optional, its the order by which to organize the results, ascending or descending
+			start: 0,						//This is NOT optional, used for paging results
+			chunk: 10, 					//This is NOT optional, used for limiting amount of the paged results returned
+		}
+
+		May need AI Parameter data in the future
+
+*/
 function getDashboardQuestions(params, callBack) {
-	callBack = callBack;
 	var orderColumn = 'UserID' || params.orderColumn;
 	var order = 'DESC' || params.order;
 	Sequelize.transaction(function() {
 		return questionModel.findAll({
 			include: [questionParameterModel, aiModelModel, {
 				model: questionStatusModel,
-				required: true
+				required: true //Inner join
 			}, {
 				model: questionTypeModel,
-				required: true
+				required: true //Inner join
 			}, {
 				model: questionEventModel,
-				required: true
+				required: true //Inner join
 			}],
 			offset: params.start,
 			limit: params.chunk,
@@ -266,7 +375,9 @@ function getDashboardQuestions(params, callBack) {
 				[orderColumn, order]
 			]
 		}).then(function(data) {
-			console.log(data);
+			return callBack(null, data);
+		}).catch(function(error) {
+			return callBack(error, null);
 		});
 	});
 }
