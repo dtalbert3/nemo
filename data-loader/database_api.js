@@ -77,12 +77,13 @@ function createQuestion(params, callBack) {
 		TypeID: params.QuestionTypeID,
 		EventID: params.QuestionEventID
 	};
+	var questionID;
 	Sequelize.transaction(function(t) {
 
 		return questionModel.create(questionAttributes, {
 			transaction: t
 		}).then(function(data) {
-			var questionID = data.dataValues.ID;
+			questionID = data.dataValues.ID;
 			// Recursively chain questionParameter create promises
 			var recurseParam = function(pArray, i) {
 				if (pArray[i]) {
@@ -99,6 +100,8 @@ function createQuestion(params, callBack) {
 			};
 			return recurseParam(params.QuestionParamsArray, 0);
 		});
+	}).then(function() {
+		return questionID;
 	});
 }
 /* Edit Question:
@@ -356,7 +359,7 @@ var getQuestionStatus = function(params, callback) {
 // 	}]
 // };
 
-function copyQuestion(params, callback) {
+
  	/* Copy question:
  			receive the question ID from the web client.
  			query the datamart for the corresponding question entry
@@ -369,26 +372,23 @@ function copyQuestion(params, callback) {
  			change the entries of the tables, adding in the newly created question ID
  			submit the new parameter entries
  			*/
-	/*
+function copyQuestion(params, callback) {
 	Sequelize.transaction(function(t){
 		var id = params.ID;
 		var use_ai_models = params.use_ai_models;
 		var new_question;
-		return questionModel.findByID(id, {
-			transaction: t
-		}).then(function(old_question) {
+		return questionModel.findByID(id
+		).then(function(old_question) {
 			new_question = {
-				UserID: old_question.UserID,
+				UserID: params.UserID,
 				TypeID: old_question.TypeID,
 				StatusID: old_question.StatusID,
-				EventID: old_question.StatusID
+				EventID: old_question.EventID
 			};
-		});
-		return questionParameterModel.findAll({
-			where: {
-				QuestionID: id
-			}, {
-				transaction: t
+			return questionParameterModel.findAll({
+				where: {
+					QuestionID: id
+				}
 			}).then(function(old_params) {
 				for (var i = 0; i < old_params.length; i++) { 
 					new_question.QuestionParamsArray.push({
@@ -398,14 +398,59 @@ function copyQuestion(params, callback) {
 						upper_bound: old_params[i].dataValues.upper_bound
 					});
 				}
+				var new_id = createQuestion(new_question, callback);
+				if (use_ai_models) {
+					return aiModelModel.findAll({
+						where: {
+							QuestionID: id
+						}
+					}).then(function(old_ai_models) {		
+						var recurseAiModel = function(mArray, i) {
+							if (mArray[i]) {
+								return aiModelModel.create({
+									QuestionID: new_id,
+									Value: mArray[i].dataValues.Value,
+									Accuracy: mArray[i].dataValues.Accuracy,
+									AIFeedback: mArray[i].dataValues.AIFeedback,
+									PredictionFeedback: mArray[i].dataValues.PredictionFeedback,
+									AI: mArray[i].dataValues.AI,
+									Active: mArray[i].dataValues.Active
+								}, {
+									transaction: t
+								}).then(function(new_ai_model) {
+									var ai_model_id = data.dataValues.ID;
+									return aiParameterModel.findAll({
+										where: {
+											AIModelID: mArray[i].dataValues.ID
+										}
+									}).then(function(old_ai_parameters) {
+										var recurseAiParameter = function(pArray, i) {
+											if (pArray[i]) {
+												return aiParameterModel.create({
+													AIModelID: ai_model_id,
+													TypeID: pArray[i].dataValues.TypeID,
+													tval_char: pArray[i].dataValues.tval_char,
+													nval_num: pArray[i].dataValues.nval_num
+												}, {
+													transaction: t
+												}).then(recurseAiParameter(pArray, (i + 1)));
+											}
+										};
+										return recurseAiParameter(old_ai_parameters, 0); 
+									});
+								});
+							}
+						};
+						return recurseAiModel(old_ai_models, 0);
+						
+							
+					});
+				}
+
 			});	
-		};
-		createQuestion(new_question, callback);
-		if (use_ai_models) {
-					
-		}
+
+		});
 	});
-	*/
 	/*
  	var query = 'SELECT ID, TypeID, EventID FROM Question WHERE ID=' +
  		question_id + ';';
@@ -431,7 +476,7 @@ function copyQuestion(params, callback) {
  				// 				parameters[i].ID = getNewID();
  				// 			}
  				// 			query = 'INSERT parameters=? INTO ParameterType;'
- 				// 			dataMartCon.*/
+ 				// 			dataMartCon.
  				// 		}
 
 
@@ -440,8 +485,9 @@ function copyQuestion(params, callback) {
 
 
  		);
-		*/
-};
+		*/		
+}
+
 
 // var deleteQuestion = function(question_id) {
 // 	/* Delete question:
