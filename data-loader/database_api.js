@@ -360,36 +360,37 @@ var getQuestionStatus = function(params, callback) {
 // };
 
 
- 	/* Copy question:
- 			receive the question ID from the web client.
- 			query the datamart for the corresponding question entry
- 			change the entries of the question:
- 				- user name
- 				- question ID (create a new ID)
- 				- status
- 			submit the new question entry
- 			query the parameter table for all entries under the question ID
- 			change the entries of the tables, adding in the newly created question ID
- 			submit the new parameter entries
- 			*/
+/* Copy question:
+		receive the question ID from the web client.
+		query the datamart for the corresponding question entry
+		change the entries of the question:
+			- user name
+			- question ID (create a new ID)
+			- status
+		submit the new question entry
+		query the parameter table for all entries under the question ID
+		change the entries of the tables, adding in the newly created question ID
+		submit the new parameter entries
+		*/
 function copyQuestion(params, callback) {
-	Sequelize.transaction(function(t){
+	Sequelize.transaction(function(t) {
 		var id = params.ID;
 		var use_ai_models = params.use_ai_models;
 		var new_question;
-		return questionModel.findByID(id
-		).then(function(old_question) {
+		return questionModel.findById(id).then(function(old_question) {
 			new_question = {
 				UserID: params.UserID,
-				TypeID: old_question.TypeID,
-				StatusID: old_question.StatusID,
-				EventID: old_question.EventID
+				QuestionTypeID: old_question.TypeID,
+				QuestionStatusID: old_question.StatusID,
+				QuestionEventID: old_question.EventID
 			};
+			// console.log("\n\n\n\nNew Question:", new_question);
 			return questionParameterModel.findAll({
 				where: {
 					QuestionID: id
 				}
 			}).then(function(old_params) {
+				new_question.QuestionParamsArray = [];
 				for (var i = 0; i < old_params.length; i++) {
 					new_question.QuestionParamsArray.push({
 						TypeID: old_params[i].dataValues.TypeID,
@@ -404,7 +405,7 @@ function copyQuestion(params, callback) {
 						where: {
 							QuestionID: id
 						}
-					}).then(function(old_ai_models) {		
+					}).then(function(old_ai_models) {
 						var recurseAiModel = function(mArray, i) {
 							if (mArray[i]) {
 								return aiModelModel.create({
@@ -436,28 +437,24 @@ function copyQuestion(params, callback) {
 												}).then(recurseAiParameter(pArray, (i + 1)));
 											}
 										};
-										return recurseAiParameter(old_ai_parameters, 0); 
+										return recurseAiParameter(old_ai_parameters, 0);
 									});
 								});
 							}
 						};
 						return recurseAiModel(old_ai_models, 0);
-						
-							
+
+
 					});
 				}
 
-			});	
+			});
 
 		});
-			});
-		};
-		createQuestion(new_question, callback);
-		if (use_ai_models) {
-
-		}
 	});
-	/*
+}
+
+/*
  	var query = 'SELECT ID, TypeID, EventID FROM Question WHERE ID=' +
  		question_id + ';';
  	dataMartCon.query(query, {
@@ -491,16 +488,22 @@ function copyQuestion(params, callback) {
 
 
  		);
-		*/		
-}
+		*/
+// }
+//
+// // 				);
+// // 		}
+// //
+// //
+// // 	);
+// // */
+// }
 
- 	// 				);
- 	// 		}
-		//
-		//
- 	// 	);
-		// */
-}
+copyQuestion({
+	ID: 49,
+	UserID: 1,
+	use_ai_models: true
+}, null);
 
 // var deleteQuestion = function(question_id) {
 // 	/* Delete question:
