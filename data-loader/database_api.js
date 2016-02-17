@@ -91,6 +91,8 @@ aiModelModel.hasMany(aiParameterModel);
 			upper_bound: 1
 		}]
 	};
+
+	Needs a check added to detect if this exact question has been created yet, as per requirements
 */
 function createQuestion(params, callBack) {
 	// Compile a question attributes for upsert
@@ -227,6 +229,8 @@ function editQuestion(params, callBack) {
 		{
 		 	ID: 19
 		}
+
+		Change from initial requirements, AI Model data is no longer kept
 */
 function deleteQuestion(params, callBack) {
 	// Initiate transaction, will be committed if things go smoothly or rolled back if there is an issue at any point
@@ -424,53 +428,6 @@ var getQuestionStatus = function(params, callback) {
 	});
 };
 
-// deleteQuestion({
-// 	ID: 19
-// }, null);
-
-// getQuestionsByUser({
-// 	UserID: 1
-// }, null);
-
-// getQuestionsByUser({
-//
-// 	UserID: 1
-// }, null);
-//
-// getDashboardQuestions({
-// 	start: 0,
-// 	chunk: 2
-// }, null);
-//
-// getParameterTypes(null, null);
-
-// var param = {
-// 	ID: 18,
-// 	UserID: 1,
-// 	QuestionStatusID: 2,
-// 	QuestionTypeID: 1,
-// 	QuestionEventID: 1,
-// 	QuestionParamsArray: [{
-// 		ID: 19,
-// 		TypeID: 1,
-// 		tval_char: 'Edited parameter 1 Some data',
-// 		nval_num: 7777,
-// 		upper_bound: 0
-// 	}, {
-// 		ID: 20,
-// 		TypeID: 1,
-// 		tval_char: 'Edited Parameter 2 Some more data',
-// 		nval_num: 7788,
-// 		upper_bound: 1
-// 	}, {
-// 		TypeID: 1,
-// 		tval_char: 'Added Parameter 3 On Edit',
-// 		nval_num: 123,
-// 		upper_bound: 1
-// 	}]
-// };
-
-
 /* Copy question:
 		receive the question ID from the web client.
 		query the datamart for the corresponding question entry
@@ -495,7 +452,6 @@ function copyQuestion(params, callback) {
 				QuestionStatusID: old_question.StatusID,
 				QuestionEventID: old_question.EventID
 			};
-			// console.log("\n\n\n\nNew Question:", new_question);
 			return questionParameterModel.findAll({
 				where: {
 					QuestionID: id
@@ -564,86 +520,3 @@ function copyQuestion(params, callback) {
 		});
 	});
 }
-
-/*
- 	var query = 'SELECT ID, TypeID, EventID FROM Question WHERE ID=' +
- 		question_id + ';';
- 	dataMartCon.query(query, {
- 			type: sequelize.QueryTypes.SELECT
- 		})
- 		.then(function(old_question) {
- 				old_question = old_question;
- 				// Somehow construct a submit statement to insert the new fields into the old question.
- 				// The question needs to be added first, before moving on to the parameters.
- 				query =
- 					'SELECT Name, concept_path, concept_cd, valtype_cd, TableName, TableColumn from ParamaterType WHERE ID=' +
- 					question_id + ';';
-
- 				// dataMartCon.query(query, {
- 				// 		type: sequelize.QueryTypes.SELECT
- 				// 	})
- 				// 	.then(function(parameters) {
- 				// 			parameter = parameter;
- 				// 			// Create new parameters from the old ones, fitting them with the new question ID
- 				// 			/*
- 				// 			for(var i = 0; i < parameters.length; i++) {
- 				// 				parameters[i].ID = getNewID();
- 				// 			}
- 				// 			query = 'INSERT parameters=? INTO ParameterType;'
- 				// 			dataMartCon.
- 				// 		}
-
-
- 					);
- 			}
-
-
- 		);
-		*/
-// }
-//
-// // 				);
-// // 		}
-// //
-// //
-// // 	);
-// // */
-// }
-
-copyQuestion({
-	ID: 49,
-	UserID: 1,
-	use_ai_models: true
-}, null);
-
-// var deleteQuestion = function(question_id) {
-// 	/* Delete question:
-// 			receive the question ID from the web client.
-// 			remove all entries from the parameter table with the question ID
-// 			remove the question with the corresponding ID
-// 			*/
-// 	var dataMartCon = new sequelize('NEMO_Datamart', 'NEMO_WEB', 'NEMO', {
-// 		host: 'codyemoffitt.com',
-// 		dialect: 'mysql',
-// 		port: 3306,
-// 		logging: false,
-// 		pool: {
-// 			max: 5,
-// 			min: 0,
-// 			idle: 10000
-// 		}
-// 	});
-//
-// 	var query = 'DELETE from Question WHERE ID=' + question_id + ';';
-// 	dataMartCon.query(query, {
-// 			type: sequelize.QueryTypes.DELETE
-// 		})
-// 		.then(function() {
-// 			var query = 'DELETE from QuestionParameter WHERE ID=' + question_id +
-// 				';';
-// 			dataMartCon.query(query, {
-// 					type: sequelize.QueryTypes.DELETE
-// 				})
-// 				.then(function() {});
-// 		});
-// };
