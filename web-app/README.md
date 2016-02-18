@@ -21,9 +21,9 @@ This is for User Story 2.02
 Uses Es6 javaScript version
 
 ## Main files that are being used
-1.nemo/web-app/models/*
-2.nemoAPI.js
-3.nemo/web-app/src/pages/dashboard-user.js
-4.nemo/web-app/src/pages/base.js
-5.nemo/web-app/src/partials/*
-  
+1. nemo/web-app/models/*
+2. nemoAPI.js
+3. nemo/web-app/src/pages/dashboard-user.js
+4. nemo/web-app/src/pages/base.js
+5. nemo/web-app/src/partials/*
+   
