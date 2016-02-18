@@ -71,7 +71,7 @@ aiModelModel.hasMany(aiParameterModel);
 
 /* Create Question:
 	Takes attributes of question and parameters of question in object format
-	callBack is used to return data or errors/exceptions
+	callback is used to return data or errors/exceptions
 	Example params object:
 	var param = {
 		UserID: 1,
@@ -79,22 +79,21 @@ aiModelModel.hasMany(aiParameterModel);
 		QuestionTypeID: 1,
 		QuestionEventID: 1,
 		QuestionParamsArray: [{
-			ID: 19,
 			TypeID: 1,
 			tval_char: 'Some data',
-			nval_num: 7777,
+			nval_num: min,
 			upper_bound: 0
 		}, {
 			TypeID: 1,
 			tval_char: 'Some more data',
-			nval_num: 7788,
+			nval_num: max,
 			upper_bound: 1
 		}]
 	};
 
 	Needs a check added to detect if this exact question has been created yet, as per requirements
 */
-function createQuestion(params, callBack) {
+function createQuestion(params, callback) {
 	// Compile a question attributes for upsert
 	var questionAttributes = {
 		UserID: params.UserID,
@@ -133,17 +132,37 @@ function createQuestion(params, callBack) {
 		// Return the Question ID of the created question
 		return questionID;
 	}).catch(function(error) {
-		return callBack(error, null);
+		return callback(error, null);
 	});
 }
+var param = {
+	UserID: 2,
+	QuestionStatusID: 2,
+	QuestionTypeID: 1,
+	QuestionEventID: 1,
+	QuestionParamsArray: [{
+		TypeID: 1,
+		tval_char: 'Some data',
+		nval_num: 1,
+		upper_bound: 0
+	}, {
+		TypeID: 1,
+		tval_char: 'Some more data',
+		nval_num: 7,
+		upper_bound: 1
+	}]
+};
+createQuestion(param, function(x, y) {
+	return x;
+});
 /* Edit Question:
 	Takes attributes of question and parameters of question in object format
 	ID is specified for the Question, but optional for parameters, since paramters may be added or updated (upsert)
 	Parameter layout is very similar to createQuestion, since a hard edit in the web client will be calling createQuestion,
-	and a soft edit in the web client will ball editQuestion
-	callBack is used to return data or errors/exceptions
+	and a soft edit in the web client will call editQuestion. This switching functionality has not yet been implemented.
+	callback is used to return data or errors/exceptions
 	Example params object:
-	var param = {
+	var data = {
 		ID: 18,
 		UserID: 1,
 		QuestionStatusID: 2,
@@ -169,16 +188,16 @@ function createQuestion(params, callBack) {
 		}]
 	};
 */
-function editQuestion(params, callBack) {
+function editQuestion(data, params, callback) {
 	var questionAttributes = {
-		ID: params.ID,
-		UserID: params.UserID,
-		StatusID: params.QuestionStatusID,
-		TypeID: params.QuestionTypeID,
-		EventID: params.QuestionEventID
+		ID: data.ID,
+		UserID: data.UserID,
+		StatusID: data.QuestionStatusID,
+		TypeID: data.QuestionTypeID,
+		EventID: data.QuestionEventID
 	};
 	// Initiate transaction, will be committed if things go smoothly or rolled back if there is an issue at any point
-	// Example params object:
+	// Example data object:
 
 	Sequelize.transaction(function(t) {
 		return questionModel.upsert(questionAttributes, {
@@ -192,7 +211,7 @@ function editQuestion(params, callBack) {
 					if (pArray[i].ID) {
 						questionParamData = {
 							ID: pArray[i].ID,
-							QuestionID: params.ID,
+							QuestionID: data.ID,
 							TypeID: pArray[i].TypeID,
 							tval_char: pArray[i].tval_char,
 							nval_num: pArray[i].nval_num,
@@ -200,7 +219,7 @@ function editQuestion(params, callBack) {
 						};
 					} else { //If adding a new parameter, omit ID so the ID will be created by the database
 						questionParamData = {
-							QuestionID: params.ID,
+							QuestionID: data.ID,
 							TypeID: pArray[i].TypeID,
 							tval_char: pArray[i].tval_char,
 							nval_num: pArray[i].nval_num,
@@ -213,26 +232,28 @@ function editQuestion(params, callBack) {
 				}
 			};
 			// Call helper function to insert or update Question Parameters
-			return recurseParam(params.QuestionParamsArray, 0);
+			return recurseParam(data.QuestionParamsArray, 0);
 		});
-	}).then(function(data) {
-		return callBack(null, data);
+	}).then(function(d) {
+		// Return data to callback
+		return callback(null, d);
 	}).catch(function(error) {
-		return callBack(error, null);
+		// Return error to callback
+		return callback(error, null);
 	});
 }
 
 /* Delete Question:
 		Completely deletes a Question from the Question table, as well as its dependent tables
-		callBack is used to return data or errors/exceptions
-	  Example params object:
+		callback is used to return data or errors/exceptions
+	  Example data object:
 		{
 		 	ID: 19
 		}
 
 		Change from initial requirements, AI Model data is no longer kept
 */
-function deleteQuestion(params, callBack) {
+function deleteQuestion(data, params, callback) {
 	// Initiate transaction, will be committed if things go smoothly or rolled back if there is an issue at any point
 	Sequelize.transaction(function(t) {
 		// Destroy parameters of question then
@@ -242,13 +263,13 @@ function deleteQuestion(params, callBack) {
 
 		return questionParameterModel.destroy({
 			where: {
-				QuestionID: params.ID
+				QuestionID: data.ID
 			}
 		}).then(function() {
 			// Get list of AI Model IDs to destroy
 			return aiModelModel.findAll({
 				where: {
-					QuestionID: params.ID
+					QuestionID: data.ID
 				}
 			}).then(function(aiModelData) {
 				var aiModelDataIDList = aiModelData.map(function(a) {
@@ -265,16 +286,18 @@ function deleteQuestion(params, callBack) {
 					//Finally delete the question itself
 					return questionModel.destroy({
 						where: {
-							ID: params.ID,
+							ID: data.ID,
 						}
 					});
 				});
 			});
 		});
-	}).then(function(data) {
-		return callBack(null, data);
+	}).then(function(d) {
+		// Return data to callback
+		return callback(null, d);
 	}).catch(function(error) {
-		return callBack(error, null);
+		// Return error to callback
+		return callback(error, null);
 	});
 }
 
@@ -288,8 +311,8 @@ function deleteQuestion(params, callBack) {
 			For each question, get the question event type
 			For each question, get the question status
 			For each question, get all of the AI Model data
-  	callBack is used to return data or errors/exceptions
-		Example params object:
+  	callback is used to return data or errors/exceptions
+		Example data object:
 		{
 		 	UserID: 1,
 			orderColumn: 'ID', 	//This is optional, it is the column from the Question table by which to order the questions,
@@ -301,14 +324,13 @@ function deleteQuestion(params, callBack) {
 		May need AI Parameter data in the future
 
 */
-function getQuestionsByUser(params, callBack) {
-	callBack = callBack;
-	var orderColumn = 'ID' || params.orderColumn;
-	var order = 'DESC' || params.order;
-	var offset = null || params.start;
-	var limit = null || params.chunk;
+function getQuestionsByUser(data, params, callback) {
+	var orderColumn = 'ID' || data.orderColumn;
+	var order = 'DESC' || data.order;
+	var offset = null || data.start;
+	var limit = null || data.chunk;
 	Sequelize.transaction(function() {
-		var userID = params.UserID;
+		var userID = data.UserID;
 		return questionModel.findAll({
 			include: [questionParameterModel, aiModelModel, {
 				model: questionStatusModel,
@@ -328,10 +350,12 @@ function getQuestionsByUser(params, callBack) {
 			where: {
 				UserID: userID
 			}
-		}).then(function(data) {
-			return callBack(null, data);
+		}).then(function(d) {
+			// Return data to callback
+			return callback(null, d);
 		}).catch(function(error) {
-			return callBack(error, null);
+			// Catch and return errors to callback
+			return callback(error, null);
 		});
 	});
 }
@@ -345,8 +369,8 @@ function getQuestionsByUser(params, callBack) {
 			For each question, get the question event type
 			For each question, get the question status
 			For each question, get all of the AI Model data
-  	callBack is used to return data or errors/exceptions
-		Example params object:
+  	callback is used to return data or errors/exceptions
+		Example data object:
 		{
 		 	UserID: 1,
 			orderColumn: 'ID', 	//This is optional, it is the column from the Question table by which to order the questions,
@@ -358,9 +382,9 @@ function getQuestionsByUser(params, callBack) {
 		May need AI Parameter data in the future
 
 */
-function getDashboardQuestions(params, callBack) {
-	var orderColumn = 'UserID' || params.orderColumn;
-	var order = 'DESC' || params.order;
+function getDashboardQuestions(data, params, callback) {
+	var orderColumn = 'UserID' || data.orderColumn;
+	var order = 'DESC' || data.order;
 	Sequelize.transaction(function() {
 		return questionModel.findAll({
 			include: [questionParameterModel, aiModelModel, {
@@ -373,21 +397,23 @@ function getDashboardQuestions(params, callBack) {
 				model: questionEventModel,
 				required: true //Inner join
 			}],
-			offset: params.start,
-			limit: params.chunk,
+			offset: data.start,
+			limit: data.chunk,
 			order: [
 				[orderColumn, order]
 			]
-		}).then(function(data) {
-			return callBack(null, data);
+		}).then(function(d) {
+			// Return data to callback
+			return callback(null, d);
 		}).catch(function(error) {
-			return callBack(error, null);
+			// Catch and return errors to callback
+			return callback(error, null);
 		});
 	});
 }
 
-function getParameterTypes(params, callBack) {
-	callBack = callBack;
+function getParameterTypes(params, callback) {
+	callback = callback;
 	Sequelize.transaction(function() {
 		return parameterTypeModel.findAll().then(function(data) {
 			console.log(data);
