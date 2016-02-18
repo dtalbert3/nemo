@@ -5,8 +5,8 @@ Nemo Web Applicaion User Dashboard
 
 ## Prerequisites
 
-1. Node.js v5.6.0
-2. NPM Modules defined in packages.json
+1.) Node.js v5.6.0
+2.) NPM Modules defined in packages.json
 
 Run `npm i` to download dependencies for application.
 Run 'npm run build' to convert src/ es6 files to client/ es5 files
