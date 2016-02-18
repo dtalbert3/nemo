@@ -34,17 +34,23 @@ User authentication and privileges still need to be implemented for all calls.
 2.02: User poses question via web application
 - Database calls are in nemoApi.js
 - Web client GUI is composed for this
+- Max number of questions not implemented yet
+- Unit Test(s): 2.2
 
 Handling for duplicate question has not been written yet (As in Requirement 2.03)
 
 2.04: User deletes a question
 - Database calls are in nemoApi.js
 - Web client GUI is not yet composed for this
+- Unit Test(s): 2.4
+
 
 Currently data is not retained as in the requirement, may discuss this requirement with client
 
 2.06: User does a soft edit of question
 - Database calls are in nemoApi.js
 - Web client GUI is not yet fully composed for this, but the create question partial will be adapted for it
+- Unit Tests: 2.6
+
 
 Handling for duplicate question has not been written yet
