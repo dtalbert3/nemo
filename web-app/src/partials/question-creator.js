@@ -8,11 +8,15 @@ import io from 'socket.io-client';
 // const socket = io(config.apiUrl); // Required for production
 const socket = io(); // Defaults to localhost
 
+// Creates token to display information about added parameters
 const Token = React.createClass({
+
+  // Handle removal of token when clicked
   removeToken() {
     this.props.removeToken(this.props.token);
   },
 
+  // Render token
   render() {
     return (
       <h4 className='token'>
@@ -25,17 +29,22 @@ const Token = React.createClass({
   }
 });
 
+// Helper to render dropdowns for Question Type/Event
 const QuestionDropdown = React.createClass({
+
+  // Handle dropdown selection to update Question Type/Event
   handleSelect(undefined, type) {
     this.props.handleSelect(type);
   },
 
+  // Set display tile to selected Question Type/Event
   getTitle() {
     return (this.props.index !== null) ?
       this.props.items[this.props.index][this.props.name] :
       this.props.defaultTitle;
   },
 
+  // Render dropdown menu
   render() {
     return (
       <SplitButton
@@ -52,7 +61,10 @@ const QuestionDropdown = React.createClass({
   }
 });
 
+// Create range input for questions that require upper/lower bounds
 const RangeInput = React.createClass({
+
+  // Update parent component with bounds
   updateBounds() {
     var min = this.refs.min.getValue();
     var max = this.refs.max.getValue();
@@ -65,6 +77,7 @@ const RangeInput = React.createClass({
     this.props.updateBounds({ min: min, max: max });
   },
 
+  // Initialize bounds
   getInitialState() {
     return {
       min: '',
@@ -72,6 +85,7 @@ const RangeInput = React.createClass({
     };
   },
 
+  // Render input for getting question bounds
   render() {
     return (
       <div className='rangeInput'> between
@@ -89,8 +103,14 @@ const RangeInput = React.createClass({
   }
 });
 
+// Creates a form that allows users to form a question for the data mart
 export default React.createClass({
+
+  // Submit question formed by user
   submitQuestion() {
+
+    // Validate to ensure all parameters have been bound
+    // Alert pops up if invalid input was given
     if (this.state.parameters.length < 1) {
       Alert('No Parameters Added', 'danger', 4 * 1000);
       return;
@@ -102,6 +122,7 @@ export default React.createClass({
       return;
     } else {
 
+      // If valid bind type/event/parameters to data
       var data = {
         UserID: 1, // Currently testing with hard-coded UserID
         QuestionStatusID: 1,
@@ -110,6 +131,7 @@ export default React.createClass({
         QuestionParamsArray: this.state.parameters
       };
 
+      // Send question to database
       socket.emit('question::create', data, (err) => {
         if (!err) {
           Alert('Question Submitted!', 'success', 4 * 1000);
@@ -120,6 +142,7 @@ export default React.createClass({
     }
   },
 
+  // Clear all form fields and tokens
   clearQuestion() {
     this.setState({
       selectedTypeIndex: null,
@@ -130,13 +153,16 @@ export default React.createClass({
     });
   },
 
+  // Add parameter created via typeahead and range (if required)
   addParameter() {
-    // Add error pop if with explanation if needed
-    // Valid Parameter
-    // Validate Bounds -> Valid numeric (ie no 3.5.1) and min < max
-    // BUG doesn't realize duplicate eixst all the time...
+
+    // Create parameter to break reference
     var parameter = Object.assign({}, this.state.parameter);
+
+    // Find if duplicate of parameter exist
     var duplicate = this.state.parameters.find((d) => isEqual(d.bounded1, parameter.bounded1));
+
+    // Validate parameter
     if (parameter.bounded) {
       var bounds = Object.assign({}, this.state.bounds);
       if (bounds.min === null || bounds.max === null) {
@@ -159,6 +185,8 @@ export default React.createClass({
     // Rebind parameter
     parameter.TypeID = parameter.ID;
     parameter.tval_char = 'null';
+
+    // Create upper bounded parameter for database during submission
     if (parameter.bounded) {
       parameter.nval_num = this.state.bounds.min;
       parameter.upper_bound = 0;
@@ -168,20 +196,22 @@ export default React.createClass({
       parameter.upper_bound = 1;
     }
 
+    // Update state of parameters listing
     this.setState({
       parameters: (!parameter.bounded) ?
         this.state.parameters.concat(parameter) :
         this.state.parameters.concat(parameter).concat(parameterUpper)
     });
-    return;
   },
 
+  // Handle updating of parameter from TypeAhead
   updateParameter(parameter) {
     this.setState({
       parameter: parameter
     });
   },
 
+  // Handle removal of parameter once Token clicked
   removeParameter(parameter) {
     this.setState({
       parameters: this.state.parameters.filter((d) => {
@@ -190,24 +220,28 @@ export default React.createClass({
     });
   },
 
+  // Handle updating of selected question type
   handleSelectedType(index) {
     this.setState({
       selectedTypeIndex: index
     });
   },
 
+  // Handle updating of selected question event
   handleSelectedEvent(index) {
     this.setState({
       selectedEventIndex: index
     });
   },
 
+  // Handle updating of question bounds
   updateBounds(bounds) {
     this.setState({
       bounds: bounds
     });
   },
 
+  // Once form is mounted update possible parameters and question types/events
   componentDidMount() {
     socket.emit('questionTypes::find', {}, (err, data) => {
       if (!err) {
@@ -230,6 +264,7 @@ export default React.createClass({
     });
   },
 
+  // Initialize question creator form
   getInitialState() {
     return {
       questionTypes: [],
@@ -242,10 +277,12 @@ export default React.createClass({
     };
   },
 
+  // Render question creator form
   render() {
     return (
       <Grid>
         <Row>
+          {/* Question Type Dropdown */}
           <QuestionDropdown
             items={this.state.questionTypes}
             index={this.state.selectedTypeIndex}
@@ -254,6 +291,7 @@ export default React.createClass({
             name={'Type'}
             id={1}/>
 
+          {/* Question Event Dropdown */}
           <QuestionDropdown
             items={this.state.questionEvents}
             index={this.state.selectedEventIndex}
@@ -264,6 +302,7 @@ export default React.createClass({
 
           <span> for patients with </span>
 
+          {/* TypeAhead for finding parameters */}
           <TypeAhead
             suggestions={[]}
             key='ID'
@@ -272,6 +311,7 @@ export default React.createClass({
             updateToken={this.updateParameter}
           />
 
+          {/* Create range input if required by parameter  */}
           { (Object.keys(this.state.parameter).length && this.state.parameter.bounded) ?
             <RangeInput
               bounds={this.state.bounds}
@@ -281,8 +321,8 @@ export default React.createClass({
 
           <Button onClick={this.addParameter}>Add</Button>
         </Row>
-
         <Row>
+          {/* Render parameters as tokens */}
           {this.state.parameters.map((parameter, i) => {
             return <Token
               key={i}
@@ -293,6 +333,7 @@ export default React.createClass({
         </Row>
 
         <Row>
+          {/* Create buttons for submitting/clearing question*/}
           <ButtonGroup>
             <Button onClick={this.submitQuestion}>Submit</Button>
             <Button onClick={this.clearQuestion}>Clear</Button>

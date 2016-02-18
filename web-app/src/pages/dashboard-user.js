@@ -3,34 +3,15 @@ import { Grid } from 'react-bootstrap';
 import QuestionCreator from '../partials/question-creator.js';
 import NemoTable from '../partials/nemo-table.js';
 
-var TEST_HEADERS = [
-  'Question',
-  'AI'
-];
-
-var TEST_ROWS = [
-  ['Q1', 'A1'],
-  ['Q2', 'A2']
-];
-
-// var UPDATE;
-
+// User Dashboard page uses partials question-creator and nemo-table
 export default React.createClass({
+
+  // Once page is mounted attach page title
   componentDidMount() {
     document.title = 'Nemo User Dashboard';
   },
 
-  componentWillUnmount() {
-    // clearInterval(UPDATE);
-  },
-
-  getInitialState() {
-    return {
-      headers: TEST_HEADERS,
-      rows: TEST_ROWS
-    };
-  },
-
+  // Render user dashboard page
   render() {
     return (
       <Grid>
@@ -38,7 +19,7 @@ export default React.createClass({
         <QuestionCreator />
 
         <h2>Your Questions</h2>
-        <NemoTable rows={this.state.rows} headers={this.state.headers} />
+        <NemoTable />
       </Grid>
     );
   }

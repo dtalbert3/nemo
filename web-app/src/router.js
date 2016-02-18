@@ -6,6 +6,13 @@ import DashboardUser from './pages/dashboard-user';
 // import DashboardGlobal from './pages/dashboard-global';
 import FourOhFour from './pages/404';
 
+/* Create specified routes for apps
+  Base
+  |--Login Page
+  |--User Page
+  |--Global Page
+  404 Page
+*/
 const routes = (
   <Route>
     <Route path='/' component={Base}>
@@ -18,6 +25,7 @@ const routes = (
 
 );
 
+// Handles app's page navigation
 export const router = (
   <Router routes={routes} history={browserHistory}/>
 );

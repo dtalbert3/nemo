@@ -2,11 +2,15 @@ import React from 'react';
 import { Nav, Navbar, Grid } from 'react-bootstrap';
 import { Link } from 'react-router';
 
+// Helper to create navigation links in page header
 const NavLink = React.createClass({
+
+  // Get context of app's router
   contextTypes: {
     router: React.PropTypes.object
   },
 
+  // Render navigation link
   render() {
     return (
       <li role='presentation' className={this.context.router.isActive(this.props.path) ? 'active' : ''}>
@@ -16,11 +20,15 @@ const NavLink = React.createClass({
   }
 });
 
+// Base page containing app's skeleton (Navigation + Content Container)
 export default React.createClass({
+
+  // Once page is mounted attach page title
   componentDidMount() {
     document.title = 'Nemo';
   },
 
+  // Render app skeleton
   render() {
     return (
       <Navbar>
