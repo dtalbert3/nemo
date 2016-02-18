@@ -88,7 +88,7 @@ export default React.createClass({
         this.updateToken({});
     });
   },
-
+  
   componentDidMount() {
     socket.emit('questionParameters::find', {}, (err, data) => {
       if (!err) {
@@ -114,7 +114,7 @@ export default React.createClass({
           var tokens = [];
           var stringSize = d[this.props.value].length;
           for (var size = 1; size <= stringSize; size++) {
-            for (var i = 0; i+size<= stringSize; i++) {
+            for (var i = 0; i + size <= stringSize; i++) {
               tokens.push(d[this.props.value].substr(i, size));
             }
           }

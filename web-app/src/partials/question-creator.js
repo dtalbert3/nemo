@@ -1,5 +1,5 @@
 import React from 'react';
-import { Input, Grid, Row, SplitButton, Button, MenuItem, Label, Glyphicon } from 'react-bootstrap';
+import { Input, Grid, Row, SplitButton, ButtonGroup, Button, MenuItem, Label, Glyphicon } from 'react-bootstrap';
 import TypeAhead from './typeahead';
 import Alert from './alert';
 import isEqual from 'lodash.isequal';
@@ -90,6 +90,46 @@ const RangeInput = React.createClass({
 });
 
 export default React.createClass({
+  submitQuestion() {
+    if (this.state.parameters.length < 1) {
+      Alert('No Parameters Added', 'danger', 4 * 1000);
+      return;
+    } else if (this.state.selectedTypeIndex === null) {
+      Alert('Missing Question Type', 'danger', 4 * 1000);
+      return;
+    } else if (this.state.selectedEventIndex === null) {
+      Alert('Missing Question Event', 'danger', 4 * 1000);
+      return;
+    } else {
+
+      var data = {
+        UserID: 1, // Currently testing with hard-coded UserID
+        QuestionStatusID: 1,
+        QuestionTypeID: this.state.questionTypes[this.state.selectedTypeIndex].ID,
+        QuestionEventID: this.state.questionEvents[this.state.selectedEventIndex].ID,
+        QuestionParamsArray: this.state.parameters
+      };
+
+      socket.emit('question::create', data, (err) => {
+        if (!err) {
+          Alert('Question Submitted!', 'success', 4 * 1000);
+        } else {
+          Alert('Error Submitting Question!', 'danger', 4 * 1000);
+        }
+      });
+    }
+  },
+
+  clearQuestion() {
+    this.setState({
+      selectedTypeIndex: null,
+      selectedEventIndex: null,
+      bounds: { min: null, max: null },
+      parameters: [],
+      parameter: {}
+    });
+  },
+
   addParameter() {
     // Add error pop if with explanation if needed
     // Valid Parameter
@@ -98,28 +138,40 @@ export default React.createClass({
     var parameter = Object.assign({}, this.state.parameter);
     var duplicate = this.state.parameters.find((d) => isEqual(d.bounded1, parameter.bounded1));
     if (parameter.bounded) {
-      var bounds = Object.assign({}, this.state.parameterBounds);
+      var bounds = Object.assign({}, this.state.bounds);
       if (bounds.min === null || bounds.max === null) {
         Alert('Missing Range', 'danger', 4 * 1000);
         return;
       } else if (bounds.min > bounds.max) {
         Alert('Invalid Parameter Range', 'danger', 4 * 1000);
         return;
-      } else {
-        parameter.bounded1 = bounds;
       }
     } else if (Object.keys(parameter).length < 1) {
       Alert('Invalid Parameter', 'danger', 4 * 1000);
       return;
-    } else if (duplicate !== undefined || duplicate.bounded1.min === parameter.bounded1.min) {
+    } else if (duplicate !== undefined) {
       Alert('Parameter Already Exist', 'danger', 4 * 1000);
       return;
     } else if (this.state.parameters.length > 0) {
       console.log(duplicate.bound1.min, parameter.bounded1.min);
     }
 
+    // Rebind parameter
+    parameter.TypeID = parameter.ID;
+    parameter.tval_char = 'null';
+    if (parameter.bounded) {
+      parameter.nval_num = this.state.bounds.min;
+      parameter.upper_bound = 0;
+
+      var parameterUpper = Object.assign({}, parameter);
+      parameterUpper.nval_num = this.state.bounds.max;
+      parameter.upper_bound = 1;
+    }
+
     this.setState({
-      parameters: this.state.parameters.concat(parameter)
+      parameters: (!parameter.bounded) ?
+        this.state.parameters.concat(parameter) :
+        this.state.parameters.concat(parameter).concat(parameterUpper)
     });
     return;
   },
@@ -152,7 +204,7 @@ export default React.createClass({
 
   updateBounds(bounds) {
     this.setState({
-      parameterBounds: bounds
+      bounds: bounds
     });
   },
 
@@ -162,6 +214,8 @@ export default React.createClass({
         this.setState({
           questionTypes: data.map((d) => d)
         });
+      } else {
+        Alert('Error Fetching Question Types', 'danger', 4 * 1000);
       }
     });
 
@@ -170,6 +224,8 @@ export default React.createClass({
         this.setState({
           questionEvents: data.map((d) => d)
         });
+      } else {
+        Alert('Error Fetching Question Events', 'danger', 4 * 1000);
       }
     });
   },
@@ -180,7 +236,7 @@ export default React.createClass({
       selectedTypeIndex: null,
       questionEvents: [],
       selectedEventIndex: null,
-      parameterBounds: { min: null, max: null },
+      bounds: { min: null, max: null },
       parameters: [],
       parameter: {}
     };
@@ -218,7 +274,7 @@ export default React.createClass({
 
           { (Object.keys(this.state.parameter).length && this.state.parameter.bounded) ?
             <RangeInput
-              bounds={this.state.parameterBounds}
+              bounds={this.state.bounds}
               updateBounds={this.updateBounds}/> :
             undefined
           }
@@ -234,6 +290,13 @@ export default React.createClass({
               token={parameter}
               removeToken={this.removeParameter} />;
           })}
+        </Row>
+
+        <Row>
+          <ButtonGroup>
+            <Button onClick={this.submitQuestion}>Submit</Button>
+            <Button onClick={this.clearQuestion}>Clear</Button>
+          </ButtonGroup>
         </Row>
       </Grid>
     );

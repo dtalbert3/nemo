@@ -2,12 +2,13 @@ import React from 'react';
 import ReactDom from 'react-dom';
 import { Alert } from 'react-bootstrap';
 
-export default function(message = '', style = 'info', timeout = -1) {
+export default function(message = '', style = 'info', timer = 0) {
   var alert = document.createElement('div');
   alert = document.getElementById('alert').appendChild(alert);
 
   const dismiss = () => {
     document.getElementById('alert').removeChild(alert);
+    clearTimeout(timeout);
   };
 
   const AlertPopup = (message, style) => {
@@ -23,7 +24,8 @@ export default function(message = '', style = 'info', timeout = -1) {
     alert
   );
 
-  if (timeout > 0) {
-    setTimeout(dismiss, timeout);
+  var timeout;
+  if (timer > 0) {
+    timeout = setTimeout(dismiss, timer);
   }
 }

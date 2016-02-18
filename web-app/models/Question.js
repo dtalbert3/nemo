@@ -1,7 +1,6 @@
 var Sequelize = require('sequelize');
-
 module.exports = function(sequelize) {
-  return sequelize.define('QuestionParameter', {
+  return sequelize.define('Question', {
     ID: {
       type: Sequelize.INTEGER(11),
       allowNull: false,
@@ -12,11 +11,19 @@ module.exports = function(sequelize) {
         key: ''
       }
     },
-    QuestionID: {
+    UserID: {
       type: Sequelize.INTEGER(11),
       allowNull: false,
       references: {
-        model: 'Question',
+        model: 'User',
+        key: 'ID'
+      }
+    },
+    StatusID: {
+      type: Sequelize.INTEGER(11),
+      allowNull: false,
+      references: {
+        model: 'QuestionStatus',
         key: 'ID'
       }
     },
@@ -24,24 +31,20 @@ module.exports = function(sequelize) {
       type: Sequelize.INTEGER(11),
       allowNull: false,
       references: {
-        model: 'ParameterType',
+        model: 'QuestionType',
         key: 'ID'
       }
     },
-    tval_char: {
-      type: Sequelize.STRING,
-      allowNull: true
-    },
-    nval_num: {
-      type: Sequelize.DECIMAL,
-      allowNull: true
-    },
-    upper_bound: {
-      type: Sequelize.BOOLEAN,
-      allowNull: true
+    EventID: {
+      type: Sequelize.INTEGER(11),
+      allowNull: false,
+      references: {
+        model: 'QuestionEvent',
+        key: 'ID'
+      }
     }
   }, {
-    tableName: 'QuestionParameter',
+    tableName: 'Question',
     freezeTableName: true,
     timestamps: false
   });
