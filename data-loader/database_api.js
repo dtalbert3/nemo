@@ -77,13 +77,11 @@ function createQuestion(params, callBack) {
 		TypeID: params.QuestionTypeID,
 		EventID: params.QuestionEventID
 	};
-	var questionID;
 	Sequelize.transaction(function(t) {
-
 		return questionModel.create(questionAttributes, {
 			transaction: t
 		}).then(function(data) {
-			questionID = data.dataValues.ID;
+			var questionID = data.dataValues.ID;
 			// Recursively chain questionParameter create promises
 			var recurseParam = function(pArray, i) {
 				if (pArray[i]) {
@@ -100,8 +98,6 @@ function createQuestion(params, callBack) {
 			};
 			return recurseParam(params.QuestionParamsArray, 0);
 		});
-	}).then(function() {
-		return questionID;
 	});
 }
 /* Edit Question:
@@ -111,6 +107,7 @@ function createQuestion(params, callBack) {
 */
 function editQuestion(params, callBack) {
 	callBack = callBack;
+	
 	var questionAttributes = {
 		ID: params.ID,
 		UserID: params.UserID,
@@ -162,7 +159,7 @@ function editQuestion(params, callBack) {
 */
 function deleteQuestion(params, callBack) {
 	callBack = callBack;
-
+	
 	Sequelize.transaction(function(t) {
 		// Destroy parameters of question then
 		// Destroy parameters of AI models then
@@ -375,84 +372,104 @@ var getQuestionStatus = function(params, callback) {
 function copyQuestion(params, callback) {
 	Sequelize.transaction(function(t) {
 		var id = params.ID;
-		var use_ai_models = params.use_ai_models;
-		var new_question;
-		return questionModel.findById(id).then(function(old_question) {
-			new_question = {
+		var useAiModels = params.useAiModels;
+		var newQuestion;
+		return questionModel.findById(id
+		).then(function(oldQuestion) {
+			newQuestion = {
 				UserID: params.UserID,
-				QuestionTypeID: old_question.TypeID,
-				QuestionStatusID: old_question.StatusID,
-				QuestionEventID: old_question.EventID
+				TypeID: oldQuestion.TypeID,
+				StatusID: oldQuestion.StatusID,
+				EventID: oldQuestion.EventID
 			};
-			// console.log("\n\n\n\nNew Question:", new_question);
-			return questionParameterModel.findAll({
-				where: {
-					QuestionID: id
-				}
-			}).then(function(old_params) {
-				new_question.QuestionParamsArray = [];
-				for (var i = 0; i < old_params.length; i++) {
-					new_question.QuestionParamsArray.push({
-						TypeID: old_params[i].dataValues.TypeID,
-						tval_char: old_params[i].dataValues.tval_char,
-						nval_num: old_params[i].dataValues.nval_num,
-						upper_bound: old_params[i].dataValues.upper_bound
-					});
-				}
-				var new_id = createQuestion(new_question, callback);
-				if (use_ai_models) {
-					return aiModelModel.findAll({
-						where: {
-							QuestionID: id
-						}
-					}).then(function(old_ai_models) {
-						var recurseAiModel = function(mArray, i) {
-							if (mArray[i]) {
-								return aiModelModel.create({
-									QuestionID: new_id,
-									Value: mArray[i].dataValues.Value,
-									Accuracy: mArray[i].dataValues.Accuracy,
-									AIFeedback: mArray[i].dataValues.AIFeedback,
-									PredictionFeedback: mArray[i].dataValues.PredictionFeedback,
-									AI: mArray[i].dataValues.AI,
-									Active: mArray[i].dataValues.Active
-								}, {
-									transaction: t
-								}).then(function(new_ai_model) {
-									var ai_model_id = data.dataValues.ID;
-									return aiParameterModel.findAll({
-										where: {
-											AIModelID: mArray[i].dataValues.ID
-										}
-									}).then(function(old_ai_parameters) {
-										var recurseAiParameter = function(pArray, i) {
-											if (pArray[i]) {
-												return aiParameterModel.create({
-													AIModelID: ai_model_id,
-													TypeID: pArray[i].dataValues.TypeID,
-													tval_char: pArray[i].dataValues.tval_char,
-													nval_num: pArray[i].dataValues.nval_num
-												}, {
-													transaction: t
-												}).then(recurseAiParameter(pArray, (i + 1)));
-											}
-										};
-										return recurseAiParameter(old_ai_parameters, 0);
-									});
-								});
+			return questionModel.create(newQuestion, {
+				transaction: t
+			}).then(function(data) {
+				return questionParameterModel.findAll({
+					where: {
+						QuestionID: id
+					}
+				}).then(function(oldParams) {
+					var newID = data.dataValues.ID;
+					var recurseParams = function(pArray, i) {
+						if (pArray[i]) {
+							return questionParameterModel.create({
+								QuestionID: newID,
+								TypeID: pArray[i].dataValues.TypeID,
+								tval_char: pArray[i].dataValues.tval_char,
+								nval_num: pArray[i].dataValues.nval_num,
+								upper_bound: pArray[i].dataValues.upper_bound
+							}, {
+								transaction: t
+							}).then(recurseParams(pArray, (i +1)));
+						}	
+					};
+					//console.log(useAiModels);
+					if (useAiModels) {
+					recurseParams(oldParams, 0);
+					
+					//console.log('Gonna run some ai copying code');
+						return aiModelModel.findAll({
+							where: {
+								QuestionID: id
 							}
-						};
-						return recurseAiModel(old_ai_models, 0);
+						}).then(function(oldAiModels) {
+							var recurseAiModel = function(mArray, i) {
+								if (mArray[i]) {
+									return aiModelModel.create({
+										QuestionID: newID,
+										Value: mArray[i].dataValues.Value,
+										Accuracy: mArray[i].dataValues.Accuracy,
+										AIFeedback: mArray[i].dataValues.AIFeedback,
+										PredictionFeedback: mArray[i].dataValues.PredictionFeedback,
+										AI: mArray[i].dataValues.AI,
+										Active: mArray[i].dataValues.Active
+									}, {
+										transaction: t
+									}).then(function(newAiModel) {
+										var aiModelID = newAiModel.dataValues.ID;
+										return aiParameterModel.findAll({
+											where: {
+												AIModelID: mArray[i].dataValues.ID
+											}
+										}).then(function(oldAiParameters) {
+											var recurseAiParameter = function(pArray, i) {
+												if (pArray[i]) {
+													return aiParameterModel.create({
+														AIModelID: aiModelID,
+														TypeID: pArray[i].dataValues.TypeID,
+														tval_char: pArray[i].dataValues.tval_char,
+														nval_num: pArray[i].dataValues.nval_num
+													}, {
+														transaction: t
+													}).then(recurseAiParameter(pArray, (i + 1)));
+												}
+											};
+											return recurseAiParameter(oldAiParameters, 0);
+										});
+									});
+								}
+							};
+							return recurseAiModel(oldAiModels, 0);
 
 
-					});
-				}
+						});
+					} else {
+					return recurseParams(oldParams, 0);
+					}
+
+				});
 
 			});
-
 		});
 	});
-}
+} 
+copyQuestion({
+	ID: 49,
+	UserID: 1,
+	useAiModels: true
+}, null);
+
 
 /*
  	var query = 'SELECT ID, TypeID, EventID FROM Question WHERE ID=' +
@@ -499,11 +516,6 @@ function copyQuestion(params, callback) {
 // // */
 // }
 
-copyQuestion({
-	ID: 49,
-	UserID: 1,
-	use_ai_models: true
-}, null);
 
 // var deleteQuestion = function(question_id) {
 // 	/* Delete question:
