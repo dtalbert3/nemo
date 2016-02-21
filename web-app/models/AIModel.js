@@ -1,15 +1,11 @@
 var Sequelize = require('sequelize');
 module.exports = function(sequelize) {
-  return sequelize.define('QuestionParameter', {
+  return sequelize.define('AIModel', {
     ID: {
       type: Sequelize.INTEGER(11),
       allowNull: false,
       primaryKey: true,
-      autoIncrement: true,
-      references: {
-        model: '',
-        key: ''
-      }
+      autoIncrement: true
     },
     QuestionID: {
       type: Sequelize.INTEGER(11),
@@ -19,28 +15,32 @@ module.exports = function(sequelize) {
         key: 'ID'
       }
     },
-    TypeID: {
-      type: Sequelize.INTEGER(11),
-      allowNull: false,
-      references: {
-        model: 'ParameterType',
-        key: 'ID'
-      }
-    },
-    tval_char: {
+    Value: {
       type: Sequelize.STRING,
       allowNull: true
     },
-    nval_num: {
+    Accuracy: {
       type: Sequelize.DECIMAL,
       allowNull: true
     },
-    upper_bound: {
-      type: Sequelize.BOOLEAN,
+    AIFeedback: {
+      type: 'BIT(1)',
+      allowNull: true
+    },
+    PredictionFeedback: {
+      type: Sequelize.DECIMAL,
+      allowNull: true
+    },
+    AI: {
+      type: 'BLOB',
+      allowNull: true
+    },
+    Active: {
+      type: 'BIT(1)',
       allowNull: true
     }
   }, {
-    tableName: 'QuestionParameter',
+    tableName: 'AIModel',
     freezeTableName: true,
     timestamps: false
   });

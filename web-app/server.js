@@ -44,6 +44,7 @@ app.use(function (req, res, next) {
 // Setup NEMO api
 var nemoApi = require('./nemoApi');
 app.use('/user', nemoApi.userService);
+app.use('/question', nemoApi.questionService);
 app.use('/questionParameters', nemoApi.questionParameters);
 app.use('/questionTypes', nemoApi.questionTypes);
 app.use('/questionEvents', nemoApi.questionEvents);

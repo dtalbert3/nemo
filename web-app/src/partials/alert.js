@@ -2,14 +2,21 @@ import React from 'react';
 import ReactDom from 'react-dom';
 import { Alert } from 'react-bootstrap';
 
-export default function(message = '', style = 'info', timeout = -1) {
+// Creates alert for web app
+export default function(message = '', style = 'info', timer = 0) {
+
+  // Point to attach alerts to
   var alert = document.createElement('div');
   alert = document.getElementById('alert').appendChild(alert);
 
+  // Destroy alert
   const dismiss = () => {
     document.getElementById('alert').removeChild(alert);
+    clearTimeout(timeout);
   };
 
+  // Create alert
+  // For style options see (http://getbootstrap.com/components/#alerts)
   const AlertPopup = (message, style) => {
     return (
       <Alert role='alert' bsStyle={style} onDismiss={dismiss}>
@@ -18,12 +25,15 @@ export default function(message = '', style = 'info', timeout = -1) {
     );
   };
 
+  // Render alert
   ReactDom.render(
     AlertPopup(message, style),
     alert
   );
 
-  if (timeout > 0) {
-    setTimeout(dismiss, timeout);
+  // Set timeout to destroy alert if timer passed
+  var timeout;
+  if (timer > 0) {
+    timeout = setTimeout(dismiss, timer);
   }
 }

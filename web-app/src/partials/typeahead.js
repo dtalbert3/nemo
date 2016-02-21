@@ -6,11 +6,15 @@ import io from 'socket.io-client';
 // const socket = io(config.apiUrl); // Required for production
 const socket = io(); // Defaults to localhost
 
+// Helper to display list of suggestions for TypeAhead
 const Suggestions = React.createClass({
+
+  // Pass to parent index of clicked suggestion
   handleClick(index) {
     this.props.handleClick(index);
   },
 
+  // Render listing of suggestions
   render() {
     var className = ((this.props.hidden) ? 'hidden ' : '') + 'suggestions';
     var absolute = {position: 'absolute'};
@@ -28,11 +32,15 @@ const Suggestions = React.createClass({
   }
 });
 
+// Create TypeAhead which displays listing of suggestions based on given input
 export default React.createClass({
+
+  // Update token for question creator
   updateToken(token) {
     this.props.updateToken(token);
   },
 
+  // Update input box to reflect clicked suggestion
   handleClick(index) {
     var token = this.state.suggestions[index];
     if (token !== undefined) {
@@ -45,6 +53,7 @@ export default React.createClass({
     }
   },
 
+  // If enter is pressed input box updates to display first suggestion
   handleKey(e) {
     if (e.key === 'Enter') {
       var token = this.state.suggestions[0];
@@ -59,6 +68,7 @@ export default React.createClass({
     }
   },
 
+  // Update suggestion listing based on user input
   handleChange() {
     var input = this.refs.input.getValue();
     this.setState({
@@ -67,6 +77,7 @@ export default React.createClass({
     this.search(input);
   },
 
+  // Check if input is valid for question creator
   validationState() {
     var token = this.state.engine.get(this.state.input);
     if (token[0] !== undefined) {
@@ -76,6 +87,7 @@ export default React.createClass({
     }
   },
 
+  // Search for possible suggestions given input
   search(input) {
     this.state.engine.search(input, (suggestions) => {
       this.setState({
@@ -89,6 +101,7 @@ export default React.createClass({
     });
   },
 
+  // Once TypeAhead is mounted fetch parameters to be used for suggestions
   componentDidMount() {
     socket.emit('questionParameters::find', {}, (err, data) => {
       if (!err) {
@@ -99,6 +112,7 @@ export default React.createClass({
     });
   },
 
+  // Initialize TypeAhead and search engine
   getInitialState() {
     return {
       suggestions: [],
@@ -114,7 +128,7 @@ export default React.createClass({
           var tokens = [];
           var stringSize = d[this.props.value].length;
           for (var size = 1; size <= stringSize; size++) {
-            for (var i = 0; i+size<= stringSize; i++) {
+            for (var i = 0; i + size <= stringSize; i++) {
               tokens.push(d[this.props.value].substr(i, size));
             }
           }
@@ -124,9 +138,11 @@ export default React.createClass({
     };
   },
 
+  // Render TypeAhead
   render() {
     return (
       <div className='typeahead'>
+        {/* TypeAhead input box */}
         <Input type='text' ref='input'
           value={this.state.input}
           bsStyle={this.validationState()}
@@ -134,6 +150,7 @@ export default React.createClass({
           onChange={this.handleChange}
           onKeyPress={this.handleKey}
         />
+        {/* Suggestion listing */}
         <Suggestions
           suggestions={Array.from(this.state.suggestions, (d) => d[this.props.value])}
           handleClick={this.handleClick}

@@ -1,6 +1,6 @@
 var Sequelize = require('sequelize');
 module.exports = function(sequelize) {
-  return sequelize.define('QuestionType', {
+  return sequelize.define('QuestionStatus', {
     ID: {
       type: Sequelize.INTEGER(11),
       allowNull: false,
@@ -10,12 +10,12 @@ module.exports = function(sequelize) {
         key: ''
       }
     },
-    Type: {
+    Status: {
       type: Sequelize.STRING,
       allowNull: false
     }
   }, {
-    tableName: 'QuestionType',
+    tableName: 'QuestionStatus',
     freezeTableName: true,
     timestamps: false
   });

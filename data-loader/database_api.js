@@ -69,21 +69,50 @@ questionModel.belongsTo(questionEventModel, {
 });
 aiModelModel.hasMany(aiParameterModel);
 
-function createQuestion(params, callBack) {
-	callBack = callBack;
+/* Create Question:
+	Takes attributes of question and parameters of question in object format
+	callback is used to return data or errors/exceptions
+	Example params object:
+	var param = {
+		UserID: 1,
+		QuestionStatusID: 2,
+		QuestionTypeID: 1,
+		QuestionEventID: 1,
+		QuestionParamsArray: [{
+			TypeID: 1,
+			tval_char: 'Some data',
+			nval_num: min,
+			upper_bound: 0
+		}, {
+			TypeID: 1,
+			tval_char: 'Some more data',
+			nval_num: max,
+			upper_bound: 1
+		}]
+	};
+
+	Needs a check added to detect if this exact question has been created yet, as per requirements
+*/
+function createQuestion(params, callback) {
+	// Compile a question attributes for upsert
 	var questionAttributes = {
 		UserID: params.UserID,
 		StatusID: params.QuestionStatusID,
 		TypeID: params.QuestionTypeID,
 		EventID: params.QuestionEventID
 	};
+	// Declare questionID for use later
+	var questionID;
+	// Initiate transaction, will be committed if things go smoothly or rolled back if there is an issue at any point
 	Sequelize.transaction(function(t) {
 		return questionModel.create(questionAttributes, {
 			transaction: t
 		}).then(function(data) {
-			var questionID = data.dataValues.ID;
-			// Recursively chain questionParameter create promises
+			// QuestionID is needed as a foreign key for QuestionParameter
+			questionID = data.dataValues.ID;
+			// Helper function to recursively chain questionParameter create promises
 			var recurseParam = function(pArray, i) {
+				// If the current parameter exists only, otherwise nothing is done and promise chain is ended
 				if (pArray[i]) {
 					return questionParameterModel.create({
 						QuestionID: questionID,
@@ -96,30 +125,85 @@ function createQuestion(params, callBack) {
 					}).then(recurseParam(pArray, (i + 1)));
 				}
 			};
+			// Call helper function to insert Question Parameters
 			return recurseParam(params.QuestionParamsArray, 0);
 		});
+	}).then(function() {
+		// Return the Question ID of the created question
+		return questionID;
+	}).catch(function(error) {
+		return callback(error, null);
 	});
 }
+var param = {
+	UserID: 2,
+	QuestionStatusID: 2,
+	QuestionTypeID: 1,
+	QuestionEventID: 1,
+	QuestionParamsArray: [{
+		TypeID: 1,
+		tval_char: 'Some data',
+		nval_num: 1,
+		upper_bound: 0
+	}, {
+		TypeID: 1,
+		tval_char: 'Some more data',
+		nval_num: 7,
+		upper_bound: 1
+	}]
+};
+createQuestion(param, function(x, y) {
+	return x;
+});
 /* Edit Question:
-		Would work the same ways as a copy question, except that the original is deleted afterwards
-		Get the question ID from the web client
-		query the database for the corresponding question entry
-*/
-function editQuestion(params, callBack) {
-	callBack = callBack;
-	
-	var questionAttributes = {
-		ID: params.ID,
-		UserID: params.UserID,
-		StatusID: params.QuestionStatusID,
-		TypeID: params.QuestionTypeID,
-		EventID: params.QuestionEventID
+	Takes attributes of question and parameters of question in object format
+	ID is specified for the Question, but optional for parameters, since paramters may be added or updated (upsert)
+	Parameter layout is very similar to createQuestion, since a hard edit in the web client will be calling createQuestion,
+	and a soft edit in the web client will call editQuestion. This switching functionality has not yet been implemented.
+	callback is used to return data or errors/exceptions
+	Example params object:
+	var data = {
+		ID: 18,
+		UserID: 1,
+		QuestionStatusID: 2,
+		QuestionTypeID: 1,
+		QuestionEventID: 1,
+		QuestionParamsArray: [{
+			ID: 19,
+			TypeID: 1,
+			tval_char: 'Edited parameter 1 Some data',
+			nval_num: 7777,
+			upper_bound: 0
+		}, {
+			ID: 20,
+			TypeID: 1,
+			tval_char: 'Edited Parameter 2 Some more data',
+			nval_num: 7788,
+			upper_bound: 1
+		}, {
+			TypeID: 1,
+			tval_char: 'Added Parameter 3 On Edit',
+			nval_num: 123,
+			upper_bound: 1
+		}]
 	};
-	Sequelize.transaction(function(t) {
+*/
+function editQuestion(data, params, callback) {
+	var questionAttributes = {
+		ID: data.ID,
+		UserID: data.UserID,
+		StatusID: data.QuestionStatusID,
+		TypeID: data.QuestionTypeID,
+		EventID: data.QuestionEventID
+	};
+	// Initiate transaction, will be committed if things go smoothly or rolled back if there is an issue at any point
+	// Example data object:
 
+	Sequelize.transaction(function(t) {
 		return questionModel.upsert(questionAttributes, {
 			transaction: t
-		}).then(function() { // Recursively chain questionParameter upsert promises
+		}).then(function() {
+			// Helper function to recursively chain questionParameter upsert promises
 			var recurseParam = function(pArray, i) {
 				if (pArray[i]) {
 					var questionParamData;
@@ -127,7 +211,7 @@ function editQuestion(params, callBack) {
 					if (pArray[i].ID) {
 						questionParamData = {
 							ID: pArray[i].ID,
-							QuestionID: params.ID,
+							QuestionID: data.ID,
 							TypeID: pArray[i].TypeID,
 							tval_char: pArray[i].tval_char,
 							nval_num: pArray[i].nval_num,
@@ -135,7 +219,7 @@ function editQuestion(params, callBack) {
 						};
 					} else { //If adding a new parameter, omit ID so the ID will be created by the database
 						questionParamData = {
-							QuestionID: params.ID,
+							QuestionID: data.ID,
 							TypeID: pArray[i].TypeID,
 							tval_char: pArray[i].tval_char,
 							nval_num: pArray[i].nval_num,
@@ -147,19 +231,30 @@ function editQuestion(params, callBack) {
 					}).then(recurseParam(pArray, (i + 1)));
 				}
 			};
-			return recurseParam(params.QuestionParamsArray, 0);
+			// Call helper function to insert or update Question Parameters
+			return recurseParam(data.QuestionParamsArray, 0);
 		});
+	}).then(function(d) {
+		// Return data to callback
+		return callback(null, d);
+	}).catch(function(error) {
+		// Return error to callback
+		return callback(error, null);
 	});
 }
 
-/* Edit Question:
-		Would work the same ways as a copy question, except that the original is deleted afterwards
-		Get the question ID from the web client
-		query the database for the corresponding question entry
+/* Delete Question:
+		Completely deletes a Question from the Question table, as well as its dependent tables
+		callback is used to return data or errors/exceptions
+	  Example data object:
+		{
+		 	ID: 19
+		}
+
+		Change from initial requirements, AI Model data is no longer kept
 */
-function deleteQuestion(params, callBack) {
-	callBack = callBack;
-	
+function deleteQuestion(data, params, callback) {
+	// Initiate transaction, will be committed if things go smoothly or rolled back if there is an issue at any point
 	Sequelize.transaction(function(t) {
 		// Destroy parameters of question then
 		// Destroy parameters of AI models then
@@ -168,13 +263,13 @@ function deleteQuestion(params, callBack) {
 
 		return questionParameterModel.destroy({
 			where: {
-				QuestionID: params.ID
+				QuestionID: data.ID
 			}
 		}).then(function() {
 			// Get list of AI Model IDs to destroy
 			return aiModelModel.findAll({
 				where: {
-					QuestionID: params.ID
+					QuestionID: data.ID
 				}
 			}).then(function(aiModelData) {
 				var aiModelDataIDList = aiModelData.map(function(a) {
@@ -191,41 +286,61 @@ function deleteQuestion(params, callBack) {
 					//Finally delete the question itself
 					return questionModel.destroy({
 						where: {
-							ID: params.ID,
+							ID: data.ID,
 						}
 					});
 				});
 			});
 		});
+	}).then(function(d) {
+		// Return data to callback
+		return callback(null, d);
+	}).catch(function(error) {
+		// Return error to callback
+		return callback(error, null);
 	});
 }
 
 /* Get Questions by user:
+		Get a list of all the Questions for a particular user
 		Get the user ID from the web client
-		query the question database for all corresponding questions.
-		Retreive additional info for each question
-			for each question, get all of the corresponding parameters
-			for each question, get the question type
-			for each question, get the event type
+		Query the database for all corresponding questions.
+		Retrieve additional info for each question
+			For each question, get all of the corresponding parameters
+			For each question, get the question type
+			For each question, get the question event type
+			For each question, get the question status
+			For each question, get all of the AI Model data
+  	callback is used to return data or errors/exceptions
+		Example data object:
+		{
+		 	UserID: 1,
+			orderColumn: 'ID', 	//This is optional, it is the column from the Question table by which to order the questions,
+			order: 'DESC',			//This is optional, its the order by which to organize the results, ascending or descending
+			start: 0,						//This is optional, used for paging results
+			chunk: 10, 					//This is optional, used for limiting amount of the paged results returned
+		}
+
+		May need AI Parameter data in the future
+
 */
-function getQuestionsByUser(params, callBack) {
-	callBack = callBack;
-	var orderColumn = 'ID' || params.orderColumn;
-	var order = 'DESC' || params.order;
-	var offset = null || params.start;
-	var limit = null || params.chunk;
+function getQuestionsByUser(data, params, callback) {
+	var orderColumn = 'ID' || data.orderColumn;
+	var order = 'DESC' || data.order;
+	var offset = null || data.start;
+	var limit = null || data.chunk;
 	Sequelize.transaction(function() {
-		var userID = params.UserID;
+		var userID = data.UserID;
 		return questionModel.findAll({
 			include: [questionParameterModel, aiModelModel, {
 				model: questionStatusModel,
-				required: true
+				required: true //Inner join
 			}, {
 				model: questionTypeModel,
-				required: true
+				required: true //Inner join
 			}, {
 				model: questionEventModel,
-				required: true
+				required: true //Inner join
 			}],
 			offset: offset,
 			limit: limit,
@@ -235,41 +350,70 @@ function getQuestionsByUser(params, callBack) {
 			where: {
 				UserID: userID
 			}
-		}).then(function(data) {
-			console.log(data);
+		}).then(function(d) {
+			// Return data to callback
+			return callback(null, d);
+		}).catch(function(error) {
+			// Catch and return errors to callback
+			return callback(error, null);
 		});
 	});
 }
 
-function getDashboardQuestions(params, callBack) {
-	callBack = callBack;
-	var orderColumn = 'UserID' || params.orderColumn;
-	var order = 'DESC' || params.order;
+/* Get Dashboard Questions:
+		Get a list of all the Questions in the NEMO Datamart
+		query the question database for all corresponding questions.
+		Retrieve additional info for each question
+			For each question, get all of the corresponding parameters
+			For each question, get the question type
+			For each question, get the question event type
+			For each question, get the question status
+			For each question, get all of the AI Model data
+  	callback is used to return data or errors/exceptions
+		Example data object:
+		{
+		 	UserID: 1,
+			orderColumn: 'ID', 	//This is optional, it is the column from the Question table by which to order the questions,
+			order: 'DESC',			//This is optional, its the order by which to organize the results, ascending or descending
+			start: 0,						//This is NOT optional, used for paging results
+			chunk: 10, 					//This is NOT optional, used for limiting amount of the paged results returned
+		}
+
+		May need AI Parameter data in the future
+
+*/
+function getDashboardQuestions(data, params, callback) {
+	var orderColumn = 'UserID' || data.orderColumn;
+	var order = 'DESC' || data.order;
 	Sequelize.transaction(function() {
 		return questionModel.findAll({
 			include: [questionParameterModel, aiModelModel, {
 				model: questionStatusModel,
-				required: true
+				required: true //Inner join
 			}, {
 				model: questionTypeModel,
-				required: true
+				required: true //Inner join
 			}, {
 				model: questionEventModel,
-				required: true
+				required: true //Inner join
 			}],
-			offset: params.start,
-			limit: params.chunk,
+			offset: data.start,
+			limit: data.chunk,
 			order: [
 				[orderColumn, order]
 			]
-		}).then(function(data) {
-			console.log(data);
+		}).then(function(d) {
+			// Return data to callback
+			return callback(null, d);
+		}).catch(function(error) {
+			// Catch and return errors to callback
+			return callback(error, null);
 		});
 	});
 }
 
-function getParameterTypes(params, callBack) {
-	callBack = callBack;
+function getParameterTypes(params, callback) {
+	callback = callback;
 	Sequelize.transaction(function() {
 		return parameterTypeModel.findAll().then(function(data) {
 			console.log(data);
@@ -309,53 +453,6 @@ var getQuestionStatus = function(params, callback) {
 			});
 	});
 };
-
-// deleteQuestion({
-// 	ID: 19
-// }, null);
-
-// getQuestionsByUser({
-// 	UserID: 1
-// }, null);
-
-// getQuestionsByUser({
-//
-// 	UserID: 1
-// }, null);
-//
-// getDashboardQuestions({
-// 	start: 0,
-// 	chunk: 2
-// }, null);
-//
-// getParameterTypes(null, null);
-
-// var param = {
-// 	ID: 18,
-// 	UserID: 1,
-// 	QuestionStatusID: 2,
-// 	QuestionTypeID: 1,
-// 	QuestionEventID: 1,
-// 	QuestionParamsArray: [{
-// 		ID: 19,
-// 		TypeID: 1,
-// 		tval_char: 'Edited parameter 1 Some data',
-// 		nval_num: 7777,
-// 		upper_bound: 0
-// 	}, {
-// 		ID: 20,
-// 		TypeID: 1,
-// 		tval_char: 'Edited Parameter 2 Some more data',
-// 		nval_num: 7788,
-// 		upper_bound: 1
-// 	}, {
-// 		TypeID: 1,
-// 		tval_char: 'Added Parameter 3 On Edit',
-// 		nval_num: 123,
-// 		upper_bound: 1
-// 	}]
-// };
-
 
 /* Copy question:
 		receive the question ID from the web client.
@@ -404,11 +501,9 @@ function copyQuestion(params, callback) {
 							}).then(recurseParams(pArray, (i +1)));
 						}	
 					};
-					//console.log(useAiModels);
 					if (useAiModels) {
 					recurseParams(oldParams, 0);
 					
-					//console.log('Gonna run some ai copying code');
 						return aiModelModel.findAll({
 							where: {
 								QuestionID: id
@@ -417,7 +512,6 @@ function copyQuestion(params, callback) {
 							console.log(oldAiModels);
 							var recurseAiModel = function(mArray, i) {
 								if (mArray[i]) {
-									console.log('adding a new AIModel');
 									return aiModelModel.create({
 										QuestionID: newID,
 										Value: mArray[i].dataValues.Value,

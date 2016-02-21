@@ -1,3 +1,6 @@
+/*
+  Login page requires heavy refactoring
+*/
 import React from 'react';
 // import { Link } from 'react-router';
 

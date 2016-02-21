@@ -1,42 +1,35 @@
 var Sequelize = require('sequelize');
+
 module.exports = function(sequelize) {
-  return sequelize.define('ParameterType', {
+  return sequelize.define('User', {
     ID: {
       type: Sequelize.INTEGER(11),
       allowNull: false,
       primaryKey: true,
       autoIncrement: true
     },
+    UserTypeID: {
+      type: Sequelize.INTEGER(11),
+      allowNull: false,
+      references: {
+        model: 'UserType',
+        key: 'ID'
+      }
+    },
     Name: {
       type: Sequelize.STRING,
-      allowNull: false
+      allowNull: true
     },
-    concept_path: {
+    Hash: {
       type: Sequelize.STRING,
       allowNull: true
     },
-    concept_cd: {
+    Salt: {
       type: Sequelize.STRING,
-      allowNull: true
-    },
-    valtype_cd: {
-      type: Sequelize.STRING,
-      allowNull: false
-    },
-    TableName: {
-      type: Sequelize.STRING,
-      allowNull: true
-    },
-    TableColumn: {
-      type: Sequelize.STRING,
-      allowNull: true
-    },
-    bounded: {
-      type: Sequelize.BOOLEAN,
       allowNull: true
     }
   }, {
-    tableName: 'ParameterType',
+    tableName: 'User',
     freezeTableName: true,
     timestamps: false
   });
