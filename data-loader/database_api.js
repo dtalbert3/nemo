@@ -414,8 +414,10 @@ function copyQuestion(params, callback) {
 								QuestionID: id
 							}
 						}).then(function(oldAiModels) {
+							console.log(oldAiModels);
 							var recurseAiModel = function(mArray, i) {
 								if (mArray[i]) {
+									console.log('adding a new AIModel');
 									return aiModelModel.create({
 										QuestionID: newID,
 										Value: mArray[i].dataValues.Value,
@@ -445,7 +447,9 @@ function copyQuestion(params, callback) {
 													}).then(recurseAiParameter(pArray, (i + 1)));
 												}
 											};
-											return recurseAiParameter(oldAiParameters, 0);
+											return recurseAiParameter(oldAiParameters, 0).then(function() {
+												return recurseAiModel(mArray, (i + 1));
+											});
 										});
 									});
 								}
