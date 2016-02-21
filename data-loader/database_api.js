@@ -509,7 +509,6 @@ function copyQuestion(params, callback) {
 								QuestionID: id
 							}
 						}).then(function(oldAiModels) {
-							console.log(oldAiModels);
 							var recurseAiModel = function(mArray, i) {
 								if (mArray[i]) {
 									return aiModelModel.create({
