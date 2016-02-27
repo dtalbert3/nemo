@@ -19,6 +19,7 @@
   "main": "server.js",
   "private": true,
   "dependencies": {
+    "apidoc": "^0.15.1",
     "bloodhound-js": "^1.2.1",
     "body-parser": "~1.14.2",
     "bootstrap": "~3.3.6",
@@ -115,13 +116,20 @@
       "react"
     ]
   },
+  "apidoc": {
+    "name": "NEMO",
+    "version": "0.1.0",
+    "title": "NEMO"
+
+  },
   "scripts": {
     "build": "rm -rf client/ && babel --presets es2015,react --plugins syntax-object-rest-spread -d client/ src/",
     "start": "node server.js",
     "dev": "NODE_ENV=dev node server",
     "prod": "NODE_ENV=prod node server",
     "lint": "eslint .",
-    "validate": "npm ls"
+    "validate": "npm ls",
+    "postinstall": "apidoc -i ./ -f \".*Api\\.js\"  -o public\/apidoc"
   },
   "pre-commit": [
     "lint",
