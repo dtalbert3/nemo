@@ -3,10 +3,9 @@ import { Input, Grid, Row, SplitButton, ButtonGroup, Button, MenuItem, Label, Gl
 import TypeAhead from './typeahead';
 import Alert from './alert';
 import isEqual from 'lodash.isequal';
-// import config from 'clientconfig';
+import config from 'clientconfig';
 import io from 'socket.io-client';
-// const socket = io(config.apiUrl); // Required for production
-const socket = io(); // Defaults to localhost
+const qstn = io.connect(config.apiUrl + '/qstn');
 
 // Creates token to display information about added parameters
 const Token = React.createClass({
@@ -132,7 +131,7 @@ export default React.createClass({
       };
 
       // Send question to database
-      socket.emit('question::create', data, (err) => {
+      qstn.emit('create', data, (err) => {
         if (!err) {
           Alert('Question Submitted!', 'success', 4 * 1000);
         } else {
@@ -243,7 +242,7 @@ export default React.createClass({
 
   // Once form is mounted update possible parameters and question types/events
   componentDidMount() {
-    socket.emit('questionTypes::find', {}, (err, data) => {
+    qstn.emit('getTypes', {}, (err, data) => {
       if (!err) {
         this.setState({
           questionTypes: data.map((d) => d)
@@ -253,7 +252,7 @@ export default React.createClass({
       }
     });
 
-    socket.emit('questionEvents::find', {}, (err, data) => {
+    qstn.emit('getEvents', {}, (err, data) => {
       if (!err) {
         this.setState({
           questionEvents: data.map((d) => d)

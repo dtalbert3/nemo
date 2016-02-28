@@ -10,6 +10,7 @@ var cookieParser = require('cookie-parser');
 var app = require('express')();
 var server = require('http').createServer(app);
 var io = require('socket.io')(server);
+var socketioJwt = require('socketio-jwt');
 
 app
   .use(helmet())
@@ -34,9 +35,40 @@ if (config.isDev) {
 
 // Setup our API
 var nemoApi = require('./nemoApi');
-io.on('connection', function(socket) {
-  nemoApi.userService(socket, 'user');
+io.of('/auth').on('connection', function(socket) {
+  nemoApi.authService(socket);
 });
+
+io
+  .of('/user')
+  .use(socketioJwt.authorize({
+    secret: config.session.secret,
+    algorithm : 'HS256'
+  }))
+  .on('connection', function(socket) {
+    nemoApi.hooks.auth(socket);
+    nemoApi.userService(socket);
+  });
+
+io
+  .of('/qstn')
+  .use(socketioJwt.authorize({
+    secret: 'your secret or public key',
+    handshake: true
+  })).on('connection', function(socket) {
+    nemoApi.hooks.auth(socket);
+    nemoApi.questionService(socket);
+  });
+
+io
+  .of('/dash')
+  .use(socketioJwt.authorize({
+    secret: 'your secret or public key',
+    handshake: true
+  })).on('connection', function(socket) {
+    nemoApi.hooks.auth(socket);
+    nemoApi.dashboardService(socket);
+  });
 
 
 // Setup files to be used for client side app

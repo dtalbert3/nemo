@@ -1,10 +1,9 @@
 import React from 'react';
 import Bloodhound from 'bloodhound-js';
 import { Input, ListGroup, ListGroupItem } from 'react-bootstrap';
-// import config from 'clientconfig';
+import config from 'clientconfig';
 import io from 'socket.io-client';
-// const socket = io(config.apiUrl); // Required for production
-const socket = io(); // Defaults to localhost
+const qstn = io.connect(config.apiUrl + '/qstn');
 
 // Helper to display list of suggestions for TypeAhead
 const Suggestions = React.createClass({
@@ -103,7 +102,7 @@ export default React.createClass({
 
   // Once TypeAhead is mounted fetch parameters to be used for suggestions
   componentDidMount() {
-    socket.emit('questionParameters::find', {}, (err, data) => {
+    qstn.emit('getSuggestions', {}, (err, data) => {
       if (!err) {
         this.state.engine.clear();
         this.state.engine.add(data);

@@ -1,5 +1,6 @@
 var Sequelize = require('sequelize');
 var bcrypt = require('bcrypt');
+var jwt = require('jsonwebtoken');
 var config = require('getconfig');
 
 // Create database connection
@@ -67,35 +68,57 @@ questionModel.belongsTo(questionStatusModel, { foreignKey: 'StatusID' });
 questionModel.belongsTo(questionTypeModel, { foreignKey: 'TypeID' });
 questionModel.belongsTo(questionEventModel, { foreignKey: 'EventID' });
 
-exports.userService = function(socket, path) {
+exports.hooks = {
+  auth(socket) {
+    console.log('authed');
+    return socket;
+  }
+};
+
+exports.authService = function(socket, hooks) {
+  hooks = (typeof hooks !== 'undefined') ?  hooks : [];
 
   // Authenticate user
-  socket.on(path + '::authenticate', function(params, callback) {
+  socket.on('local', function(params, callback) {
+    hooks.forEach(function(func) {
+      func(socket);
+    });
+    var error = 'Invalid Password/Username';
+    var result = null;
+    console.log(params, callback);
     userModel.findOne({
       where: {email: params.email}
     })
     .then(function(data) {
-      // If user doesn't exist send back error
-      if (data === null) {
-        return callback('Invalid Password/Username', null);
+      // If user exists validate password
+      if (data !== null) {
+        var user = data.dataValues;
+        if (bcrypt.compareSync(params.password, user.Hash)) {
+          user = {
+            email: user.Email,
+            userType: user.UserTypeID
+          };
+          error = null;
+          result = jwt.sign(user, config.session.secret, { expiresInMinutes: 60 });
+        }
       }
 
-      // If user exists validate password
-      var user = data.dataValues;
-      bcrypt.compare(params.password, user.Hash, function(err, res) {
-        if (res) {
-          return callback(null, user);
-        } else {
-          return callback('Invalid Password/Username', null);
-        }
-      });
+      return callback(error, result);
     }, function() {
-      return callback('Invalid Password/Username', null);
+      return callback(error, result);
     });
   });
 
+};
+
+exports.userService = function(socket, hooks) {
+  hooks = (typeof hooks !== 'undefined') ?  hooks : [];
+
   // Sign user up
-  socket.on(path + '::signup', function(data, callback) {
+  socket.on('signup', function(data, callback) {
+    hooks.forEach(function(func) {
+      func(socket);
+    });
     bcrypt.genSalt(10, function(err, salt) {
       bcrypt.hash(data.password, salt, function(err, hash) {
         // SWITCH TO FIND OR CREATE!!
@@ -115,7 +138,8 @@ exports.userService = function(socket, path) {
 
 };
 
-exports.questionService = function(socket, path) {
+exports.questionService = function(socket, hooks) {
+  hooks = (typeof hooks !== 'undefined') ?  hooks : [];
 
   /* Create Question:
   	Takes attributes of question and parameters of question in object format
@@ -139,10 +163,10 @@ exports.questionService = function(socket, path) {
   		}]
   	};
   */
-
-  // NOTE: User authenticate not currently implemented
-  // Using 'hard-passed' UserID currently
-  socket.on(path + '::create', function(data, callback) {
+  socket.on('create', function(data, callback) {
+    hooks.forEach(function(func) {
+      func(socket);
+    });
     console.log(data.QuestionParamsArray);
     // Compile a question attributes for upsert
     var questionAttributes = {
@@ -187,9 +211,55 @@ exports.questionService = function(socket, path) {
     });
   });
 
+  // Fetch parameters allowed to be used by client from database
+  socket.on('getSuggestions', function(callback) {
+    hooks.forEach(function(func) {
+      func(socket);
+    });
+    sequelize.transaction(function() {
+      return parameterTypeModel.findAll()
+        .then(function(data) {
+          return callback(null, data);
+        }, function(error) {
+          return callback(error, null);
+        });
+    });
+  });
+
+  // Fetch question types allowed to be used by the client from the database
+  socket.on('getTypes', function(callback) {
+    hooks.forEach(function(func) {
+      func(socket);
+    });
+    sequelize.transaction(function() {
+      return questionTypeModel.findAll()
+        .then(function(data) {
+          return callback(null, data);
+        }, function(error) {
+          return callback(error, null);
+        });
+    });
+  });
+
+  // Fetch question events allowed to be used by the client from the database
+  socket.on('getEvents', function(callback) {
+    hooks.forEach(function(func) {
+      func(socket);
+    });
+    sequelize.transaction(function() {
+      return questionEventModel.findAll()
+        .then(function(data) {
+          return callback(null, data);
+        }, function(error) {
+          return callback(error, null);
+        });
+    });
+  });
+
 };
 
-exports.dashboardService = function(socket, path) {
+exports.dashboardService = function(socket, hooks) {
+  hooks = (typeof hooks !== 'undefined') ?  hooks : [];
 
   /* Get Dashboard for global:
   		Get a list of all the Questions in the NEMO Datamart
@@ -213,7 +283,10 @@ exports.dashboardService = function(socket, path) {
   		May need AI Parameter data in the future
 
   */
-  socket.on(path + '::create', function(params, callback) {
+  socket.on('getGlobal', function(params, callback) {
+    hooks.forEach(function(func) {
+      func(socket);
+    });
     var orderColumn = 'UserID' || params.orderColumn;
     var order = 'DESC' || params.order;
     Sequelize.transaction(function() {
@@ -266,7 +339,10 @@ exports.dashboardService = function(socket, path) {
   		May need AI Parameter data in the future
 
   */
-  socket.on(path + '::get', function(id, params, callback) {
+  socket.on('getUser', function(id, params, callback) {
+    hooks.forEach(function(func) {
+      func(socket);
+    });
     var orderColumn = 'ID' || params.orderColumn;
     var order = 'DESC' || params.order;
     var offset = null || params.start;
@@ -335,7 +411,10 @@ exports.dashboardService = function(socket, path) {
   		}]
   	};
   */
-  socket.on(path + '::find', function(id, data, params, callback) {
+  socket.on('find', function(id, data, params, callback) {
+    hooks.forEach(function(func) {
+      func(socket);
+    });
     var questionAttributes = {
       ID: data.ID,
       UserID: data.UserID,
@@ -400,7 +479,10 @@ exports.dashboardService = function(socket, path) {
 
   		Change from initial requirements, AI Model data is no longer kept
   */
-  socket.on(path + '::remove', function(id, params, callback) {
+  socket.on('remove', function(id, params, callback) {
+    hooks.forEach(function(func) {
+      func(socket);
+    });
     // Initiate transaction, will be committed if things go smoothly or rolled back if there is an issue at any point
     Sequelize.transaction(function() {
       // Destroy parameters of question then
@@ -448,49 +530,4 @@ exports.dashboardService = function(socket, path) {
     });
   });
 
-};
-
-exports.questionParameters = {
-
-  // Fetch parameters allowed to be used by client from database
-  find: function(params, callback) {
-    sequelize.transaction(function() {
-      return parameterTypeModel.findAll()
-        .then(function(data) {
-          return callback(null, data);
-        }, function(error) {
-          return callback(error, null);
-        });
-    });
-  }
-};
-
-exports.questionTypes = {
-
-  // Fetch question types allowed to be used by the client from the database
-  find: function(params, callback) {
-    sequelize.transaction(function() {
-      return questionTypeModel.findAll()
-        .then(function(data) {
-          return callback(null, data);
-        }, function(error) {
-          return callback(error, null);
-        });
-    });
-  }
-};
-
-exports.questionEvents = {
-
-  // Fetch question events allowed to be used by the client from the database
-  find: function(params, callback) {
-    sequelize.transaction(function() {
-      return questionEventModel.findAll()
-        .then(function(data) {
-          return callback(null, data);
-        }, function(error) {
-          return callback(error, null);
-        });
-    });
-  }
 };

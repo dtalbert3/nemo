@@ -1,46 +1,35 @@
+import config from 'clientconfig';
 import io from 'socket.io-client';
-const socket = io();
+var jwt = require('jsonwebtoken');
+
+const auth = io.connect(config.apiUrl + '/auth', {
+  'query': 'token=' + localStorage.token
+});
+
+const user = io.connect(config.apiUrl + '/user', {
+  'query': 'token=' + localStorage.token
+});
 
 export default {
   login(email, password, callback) {
-    // Do stuff with token?
-    // if (localStorage.token) {
-    //   if (callback) {
-    //     callback(false);
-    //   }
-    //   this.onChange(true);
-    //   return;
-    // }
-    socket.emit('user::authenticate', {
-      type: 'local',
+    auth.emit('local', {
       email: email,
       password: password
-    }, (error, results) => {
+    }, (error, result) => {
       if (!error) {
-        console.log(results);
+        console.log(result);
+        localStorage.token = result;
+        localStorage.userType = jwt.decode(result, {complete: true, force: true}).payload.userType;
         callback(true);
       } else {
         console.log(error);
         callback(false);
       }
     });
-    // socket.emit('user::find',
-    //   {email: email, password: password},
-    //   (err, data) => {
-    //     if (!err) {
-    //       localStorage.token = data.token;
-    //       localStorage.userType = data.userType;
-    //       callback(true);
-    //     } else {
-    //       callback(false);
-    //     }
-    //   }
-    // );
-    // Else get a new token from server
   },
 
   getToken() {
-    // Get and validate token against e
+    // possibly remove?
     return localStorage.token;
   },
 
@@ -70,7 +59,7 @@ export default {
       password: password
     };
 
-    socket.emit('user::signup', userInfo, {}, (err, data) => {
+    user.emit('/user/signup', userInfo, {}, (err, data) => {
       if (!err) {
         console.log(data);
       }

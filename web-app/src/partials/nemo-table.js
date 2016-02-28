@@ -2,10 +2,10 @@ import React from 'react';
 import { Collapse, Well, Table } from 'react-bootstrap';
 import Alert from './alert';
 
-// import config from 'clientconfig';
+import config from 'clientconfig';
 import io from 'socket.io-client';
-// const socket = io(config.apiUrl); // Required for production
-const socket = io(); // Defaults to localhost
+const dash = io.connect(config.apiUrl + '/dash');
+
 // Test headers until API call integrated
 var TEST_HEADERS = [
   'Question',
@@ -112,7 +112,7 @@ export default React.createClass({
 
   // Once page is mounted fetch table data
   componentDidMount() {
-    socket.emit('dashboard::get', 1, {}, (err, data) => {
+    dash.emit('getUser', 1, {}, (err, data) => {
       console.log(data);
       if (!err) {
         this.setState({
