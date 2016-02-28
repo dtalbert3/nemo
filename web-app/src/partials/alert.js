@@ -7,6 +7,7 @@ export default function(message = '', style = 'info', timer = 0) {
 
   // Point to attach alerts to
   var alert = document.createElement('div');
+  alert.style.cssText = 'position:relative;';
   alert = document.getElementById('alert').appendChild(alert);
 
   // Destroy alert
@@ -18,8 +19,14 @@ export default function(message = '', style = 'info', timer = 0) {
   // Create alert
   // For style options see (http://getbootstrap.com/components/#alerts)
   const AlertPopup = (message, style) => {
+    var absolute = {
+      position: 'absolute',
+      top: 8,
+      left: 0,
+      right: 0
+    };
     return (
-      <Alert role='alert' bsStyle={style} onDismiss={dismiss}>
+      <Alert role='alert' style={absolute} bsStyle={style} onDismiss={dismiss}>
         <p> {message} </p>
       </Alert>
     );

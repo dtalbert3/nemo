@@ -16,17 +16,13 @@ module.exports = function(sequelize) {
         key: 'ID'
       }
     },
-    Name: {
+    Email: {
       type: Sequelize.STRING,
-      allowNull: true
+      allowNull: false
     },
     Hash: {
       type: Sequelize.STRING,
-      allowNull: true
-    },
-    Salt: {
-      type: Sequelize.STRING,
-      allowNull: true
+      allowNull: false
     }
   }, {
     tableName: 'User',

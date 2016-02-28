@@ -11,6 +11,8 @@ domReady(() => {
   app.id = 'app';
   app = document.body.appendChild(app);
 
+  document.title = 'Nemo';
+
   // Set fav icon
   setFavicon('/favicon.ico');
 

@@ -1,6 +1,11 @@
 import React from 'react';
 import { Collapse, Well, Table } from 'react-bootstrap';
+import Alert from './alert';
 
+// import config from 'clientconfig';
+import io from 'socket.io-client';
+// const socket = io(config.apiUrl); // Required for production
+const socket = io(); // Defaults to localhost
 // Test headers until API call integrated
 var TEST_HEADERS = [
   'Question',
@@ -107,11 +112,18 @@ export default React.createClass({
 
   // Once page is mounted fetch table data
   componentDidMount() {
-    // Hard coded for testing now until API integrated
-    this.setState({
-      headers: TEST_HEADERS,
-      rows: TEST_ROWS
+    socket.emit('dashboard::get', 1, {}, (err, data) => {
+      console.log(data);
+      if (!err) {
+        this.setState({
+          headers: TEST_HEADERS,
+          rows: TEST_ROWS
+        });
+      } else {
+        Alert('Error Fetching Questions', 'danger', 4 * 1000);
+      }
     });
+
   },
 
   // Initialize headers and rows to empty

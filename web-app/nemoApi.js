@@ -1,4 +1,5 @@
 var Sequelize = require('sequelize');
+var bcrypt = require('bcrypt');
 var config = require('getconfig');
 
 // Create database connection
@@ -45,7 +46,7 @@ sequelize
  */
 
 // Define models
-var userModel = require('./models/User');
+var userModel = require('./models/User')(sequelize);
 var questionModel = require('./models/Question')(sequelize);
 var questionParameterModel = require('./models/QuestionParameter')(sequelize);
 var questionStatusModel = require('./models/QuestionStatus')(sequelize);
@@ -66,26 +67,55 @@ questionModel.belongsTo(questionStatusModel, { foreignKey: 'StatusID' });
 questionModel.belongsTo(questionTypeModel, { foreignKey: 'TypeID' });
 questionModel.belongsTo(questionEventModel, { foreignKey: 'EventID' });
 
-// User service not implemented yet
-exports.userService = {
+exports.userService = function(socket, path) {
 
-  // Can use this to authenticate
-  // We should send back a token to be used upon each request
-  // Find query to authenticate user correctly
-  find: function(params, callback) {
-    sequelize
-      .query('SELECT * FROM User', {
-        model: userModel
-      })
-      .then(function(data) {
-        return callback(null, data);
-      }, function(error) {
-        return callback(error, null);
+  // Authenticate user
+  socket.on(path + '::authenticate', function(params, callback) {
+    userModel.findOne({
+      where: {email: params.email}
+    })
+    .then(function(data) {
+      // If user doesn't exist send back error
+      if (data === null) {
+        return callback('Invalid Password/Username', null);
+      }
+
+      // If user exists validate password
+      var user = data.dataValues;
+      bcrypt.compare(params.password, user.Hash, function(err, res) {
+        if (res) {
+          return callback(null, user);
+        } else {
+          return callback('Invalid Password/Username', null);
+        }
       });
-  }
+    }, function() {
+      return callback('Invalid Password/Username', null);
+    });
+  });
+
+  // Sign user up
+  socket.on(path + '::signup', function(data, callback) {
+    bcrypt.genSalt(10, function(err, salt) {
+      bcrypt.hash(data.password, salt, function(err, hash) {
+        // SWITCH TO FIND OR CREATE!!
+        userModel.upsert({
+          UserTypeID: 1,
+          Email: data.email,
+          Hash: hash
+        })
+        .then(function(data) {
+          return callback(null, data);
+        }, function(error) {
+          return callback(error, null);
+        });
+      });
+    });
+  });
+
 };
 
-exports.questionService = {
+exports.questionService = function(socket, path) {
 
   /* Create Question:
   	Takes attributes of question and parameters of question in object format
@@ -112,7 +142,7 @@ exports.questionService = {
 
   // NOTE: User authenticate not currently implemented
   // Using 'hard-passed' UserID currently
-  create: function(data, params, callback) {
+  socket.on(path + '::create', function(data, callback) {
     console.log(data.QuestionParamsArray);
     // Compile a question attributes for upsert
     var questionAttributes = {
@@ -155,12 +185,13 @@ exports.questionService = {
     }).catch(function(error) {
       return callback(error, null);
     });
-  }
+  });
+
 };
 
-exports.dashboardService = {
+exports.dashboardService = function(socket, path) {
 
-  /* Get Dashboard Questions:
+  /* Get Dashboard for global:
   		Get a list of all the Questions in the NEMO Datamart
   		query the question database for all corresponding questions.
   		Retrieve additional info for each question
@@ -182,7 +213,7 @@ exports.dashboardService = {
   		May need AI Parameter data in the future
 
   */
-  find: function(params, callback) {
+  socket.on(path + '::create', function(params, callback) {
     var orderColumn = 'UserID' || params.orderColumn;
     var order = 'DESC' || params.order;
     Sequelize.transaction(function() {
@@ -210,9 +241,9 @@ exports.dashboardService = {
         return callback(error, null);
       });
     });
-  },
+  });
 
-  /* Get Questions by user:
+  /* Get Dashboard for user:
   		Get a list of all the Questions for a particular user
   		Get the user ID from the web client
   		Query the database for all corresponding questions.
@@ -235,7 +266,7 @@ exports.dashboardService = {
   		May need AI Parameter data in the future
 
   */
-  get: function(id, params, callback) {
+  socket.on(path + '::get', function(id, params, callback) {
     var orderColumn = 'ID' || params.orderColumn;
     var order = 'DESC' || params.order;
     var offset = null || params.start;
@@ -269,9 +300,9 @@ exports.dashboardService = {
         return callback(error, null);
       });
     });
-  },
+  });
 
-  /* Edit Question:
+  /* Edit Dashboard Question:
   	Takes attributes of question and parameters of question in object format
   	ID is specified for the Question, but optional for parameters, since paramters may be added or updated (upsert)
   	Parameter layout is very similar to createQuestion, since a hard edit in the web client will be calling createQuestion,
@@ -304,7 +335,7 @@ exports.dashboardService = {
   		}]
   	};
   */
-  update: function(id, data, params, callback) {
+  socket.on(path + '::find', function(id, data, params, callback) {
     var questionAttributes = {
       ID: data.ID,
       UserID: data.UserID,
@@ -357,9 +388,9 @@ exports.dashboardService = {
       // Return error to callback
       return callback(error, null);
     });
-  },
+  });
 
-  /* Delete Question:
+  /* Delete Dashboard Question:
   		Completely deletes a Question from the Question table, as well as its dependent tables
   		callback is used to return data or errors/exceptions
   	  Example data object:
@@ -369,7 +400,7 @@ exports.dashboardService = {
 
   		Change from initial requirements, AI Model data is no longer kept
   */
-  remove: function(id, params, callback) {
+  socket.on(path + '::remove', function(id, params, callback) {
     // Initiate transaction, will be committed if things go smoothly or rolled back if there is an issue at any point
     Sequelize.transaction(function() {
       // Destroy parameters of question then
@@ -415,7 +446,8 @@ exports.dashboardService = {
       // Return error to callback
       return callback(error, null);
     });
-  }
+  });
+
 };
 
 exports.questionParameters = {

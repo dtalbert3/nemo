@@ -1,5 +1,3 @@
-var feathers = require('feathers');
-var socketio = require('feathers-socketio');
 var helmet = require('helmet');
 var Moonboots = require('moonboots-express');
 var config = require('getconfig');
@@ -8,8 +6,21 @@ var serveStatic = require('serve-static');
 var bodyParser = require('body-parser');
 var cookieParser = require('cookie-parser');
 
-// Our Featherjs app
-var app = feathers().configure(socketio());
+// Setup our express app
+var app = require('express')();
+var server = require('http').createServer(app);
+var io = require('socket.io')(server);
+
+app
+  .use(helmet())
+  .use(serveStatic(__dirname + '/public'))
+  .use(bodyParser.json())
+  .use(bodyParser.urlencoded({ extended: true }))
+  .use(cookieParser())
+  .use(function (req, res, next) {
+    res.cookie('config', JSON.stringify(config.client));
+    next();
+  });
 
 // Enable hot reloading of es6 client files in src/
 if (config.isDev) {
@@ -17,37 +28,16 @@ if (config.isDev) {
   var fsmonitor = require('fsmonitor');
   fsmonitor.watch('src/', null, function() {
     console.log('\nRebuilding . . .');
-    shelljs.exec('npm run build');
+    shelljs.exec('npm run build &');
   });
 }
 
-// Serve public folder
-app.use(serveStatic(__dirname + '/public'));
-
-// Setup HTTP headers
-app.use(helmet());
-
-// TODO look into compressing express page
-// parse application/x-www-form-urlencoded
-app.use(bodyParser.urlencoded({ extended: true }));
-
-// parse application/json
-app.use(bodyParser.json());
-app.use(cookieParser());
-
-// Set client config cookies
-app.use(function (req, res, next) {
-  res.cookie('config', JSON.stringify(config.client));
-  next();
+// Setup our API
+var nemoApi = require('./nemoApi');
+io.on('connection', function(socket) {
+  nemoApi.userService(socket, 'user');
 });
 
-// Setup NEMO api
-var nemoApi = require('./nemoApi');
-app.use('/user', nemoApi.userService);
-app.use('/question', nemoApi.questionService);
-app.use('/questionParameters', nemoApi.questionParameters);
-app.use('/questionTypes', nemoApi.questionTypes);
-app.use('/questionEvents', nemoApi.questionEvents);
 
 // Setup files to be used for client side app
 new Moonboots({
@@ -89,6 +79,5 @@ new Moonboots({
   server: app
 });
 
-// Start listen server
-app.listen(config.http.port);
+server.listen(config.http.port);
 console.log('[*] HTTP server listening on port:' + config.http.port);
