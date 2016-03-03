@@ -116,10 +116,18 @@ function createQuestion(params, callback) {
 				if (pArray[i]) {
 					return questionParameterModel.create({
 						QuestionID: questionID,
-						TypeID: pArray[i].TypeID,
+						//TypeID: pArray[i].TypeID,
 						tval_char: pArray[i].tval_char,
 						nval_num: pArray[i].nval_num,
-						upper_bound: pArray[i].upper_bound
+						//upper_bound: pArray[i].upper_bound,
+						Name: pArray[i].Name,
+						concept_path: pArray[i].concept_path,
+						concept_cd: pArray[i].concept_cd,
+						valtype_cd: pArray[i].valtype_cd,
+						TableName: pArray[i].TableName,
+						TableColumn: pArray[i].TableColumn,
+						min: pArray[i].min,
+						max: pArray[i].max
 					}, {
 						transaction: t
 					}).then(recurseParam(pArray, (i + 1)));
@@ -141,20 +149,23 @@ var param = {
 	QuestionTypeID: 1,
 	QuestionEventID: 1,
 	QuestionParamsArray: [{
-		TypeID: 1,
+		//TypeID: 1,
 		tval_char: 'Some data',
 		nval_num: 1,
-		upper_bound: 0
+		//upper_bound: 0
 	}, {
-		TypeID: 1,
+		//TypeID: 1,
 		tval_char: 'Some more data',
 		nval_num: 7,
-		upper_bound: 1
+		//upper_bound: 1
 	}]
 };
+console.log('---------------------------------------------------');
 createQuestion(param, function(x, y) {
 	return x;
 });
+console.log('---------------------------------------------------');
+
 /* Edit Question:
 	Takes attributes of question and parameters of question in object format
 	ID is specified for the Question, but optional for parameters, since paramters may be added or updated (upsert)
@@ -212,18 +223,34 @@ function editQuestion(data, params, callback) {
 						questionParamData = {
 							ID: pArray[i].ID,
 							QuestionID: data.ID,
-							TypeID: pArray[i].TypeID,
+							//TypeID: pArray[i].TypeID,
 							tval_char: pArray[i].tval_char,
 							nval_num: pArray[i].nval_num,
-							upper_bound: pArray[i].upper_bound
+							Name: pArray[i].Name,
+							concept_path: pArray[i].concept_path,
+							concept_cd: pArray[i].concept_cd,
+							valtype_cd: pArray[i].valtype_cd,
+							TableName: pArray[i].TableName,
+							TableColumn: pArray[i].TableColumn,
+							min: pArray[i].min,
+							max: pArray[i].max
+							//upper_bound: pArray[i].upper_bound
 						};
 					} else { //If adding a new parameter, omit ID so the ID will be created by the database
 						questionParamData = {
 							QuestionID: data.ID,
-							TypeID: pArray[i].TypeID,
+							//TypeID: pArray[i].TypeID,
 							tval_char: pArray[i].tval_char,
 							nval_num: pArray[i].nval_num,
-							upper_bound: pArray[i].upper_bound
+							Name: pArray[i].Name,
+							concept_path: pArray[i].concept_path,
+							concept_cd: pArray[i].concept_cd,
+							valtype_cd: pArray[i].valtype_cd,
+							TableName: pArray[i].TableName,
+							TableColumn: pArray[i].TableColumn,
+							min: pArray[i].min,
+							max: pArray[i].max
+							//upper_bound: pArray[i].upper_bound
 						};
 					}
 					return questionParameterModel.upsert(questionParamData, {
@@ -300,6 +327,16 @@ function deleteQuestion(data, params, callback) {
 		return callback(error, null);
 	});
 }
+
+var data = {
+	ID: 105
+};
+
+/*
+deleteQuestion(data, null, function(x, y){
+	return x;
+});
+*/
 
 /* Get Questions by user:
 		Get a list of all the Questions for a particular user
@@ -412,6 +449,7 @@ function getDashboardQuestions(data, params, callback) {
 	});
 }
 
+/*
 function getParameterTypes(params, callback) {
 	callback = callback;
 	Sequelize.transaction(function() {
@@ -420,6 +458,7 @@ function getParameterTypes(params, callback) {
 		});
 	});
 }
+*/
 
 var getQuestionTypes = function(params, callback) {
 	sequelize.transaction(function() {
@@ -492,10 +531,18 @@ function copyQuestion(params, callback) {
 						if (pArray[i]) {
 							return questionParameterModel.create({
 								QuestionID: newID,
-								TypeID: pArray[i].dataValues.TypeID,
+								//TypeID: pArray[i].dataValues.TypeID,
 								tval_char: pArray[i].dataValues.tval_char,
 								nval_num: pArray[i].dataValues.nval_num,
-								upper_bound: pArray[i].dataValues.upper_bound
+								Name: pArray[i].dataValues.Name,
+								concept_path: pArray[i].dataValues.concept_path,
+								concept_cd: pArray[i].dataValues.concept_cd,
+								valtype_cd: pArray[i].dataValues.valtype_cd,
+								TableName: pArray[i].dataValues.TableName,
+								TableColumn: pArray[i].dataValues.TableColumn,
+								min: pArray[i].dataValues.min,
+								max: pArray[i].dataValues.max
+								//upper_bound: pArray[i].dataValues.upper_bound
 							}, {
 								transaction: t
 							}).then(recurseParams(pArray, (i +1)));
@@ -548,15 +595,11 @@ function copyQuestion(params, callback) {
 								}
 							};
 							return recurseAiModel(oldAiModels, 0);
-
-
 						});
 					} else {
 					return recurseParams(oldParams, 0);
 					}
-
 				});
-
 			});
 		});
 	});
