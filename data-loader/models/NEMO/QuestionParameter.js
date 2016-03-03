@@ -23,7 +23,7 @@ module.exports = function(sequelize) {
     },
     TypeID: {
       type: Sequelize.INTEGER(11),
-      allowNull: false,
+      allowNull: true,
       references: {
         model: 'ParameterType',
         key: 'ID'
