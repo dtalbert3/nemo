@@ -41,10 +41,6 @@ io.of('/auth').on('connection', function(socket) {
 
 io
   .of('/user')
-  .use(socketioJwt.authorize({
-    secret: config.session.secret,
-    algorithm : 'HS256'
-  }))
   .on('connection', function(socket) {
     nemoApi.hooks.auth(socket);
     nemoApi.userService(socket);

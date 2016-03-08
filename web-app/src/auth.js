@@ -1,6 +1,6 @@
 import config from 'clientconfig';
 import io from 'socket.io-client';
-var jwt = require('jsonwebtoken');
+import jwt from 'jsonwebtoken';
 
 const auth = io.connect(config.apiUrl + '/auth', {
   'query': 'token=' + localStorage.token
@@ -59,9 +59,11 @@ export default {
       password: password
     };
 
-    user.emit('/user/signup', userInfo, {}, (err, data) => {
+    user.emit('signup', userInfo, (err, data) => {
       if (!err) {
         console.log(data);
+      } else {
+        console.log(err);
       }
     });
   }

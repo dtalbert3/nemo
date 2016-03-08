@@ -85,21 +85,19 @@ exports.authService = function(socket, hooks) {
     });
     var error = 'Invalid Password/Username';
     var result = null;
-    console.log(params, callback);
     userModel.findOne({
       where: {email: params.email}
     })
     .then(function(data) {
       // If user exists validate password
       if (data !== null) {
-        var user = data.dataValues;
-        if (bcrypt.compareSync(params.password, user.Hash)) {
-          user = {
-            email: user.Email,
-            userType: user.UserTypeID
+        if (bcrypt.compareSync(params.password, data.dataValues.Hash)) {
+          var user = {
+            email: data.dataValues.Email,
+            userType: data.dataValues.UserTypeID
           };
           error = null;
-          result = jwt.sign(user, config.session.secret, { expiresInMinutes: 60 });
+          result = jwt.sign(user, config.session.secret, { expiresIn: 60 * 1000 });
         }
       }
 
@@ -128,6 +126,7 @@ exports.userService = function(socket, hooks) {
           Hash: hash
         })
         .then(function(data) {
+          // Return error codes as needed here
           return callback(null, data);
         }, function(error) {
           return callback(error, null);
