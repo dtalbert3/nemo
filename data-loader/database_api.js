@@ -120,7 +120,7 @@ function createQuestion(params, callback) {
 						tval_char: pArray[i].tval_char,
 						nval_num: pArray[i].nval_num,
 						//upper_bound: pArray[i].upper_bound,
-						Name: pArray[i].Name,
+						// Name: pArray[i].Name,
 						concept_path: pArray[i].concept_path,
 						concept_cd: pArray[i].concept_cd,
 						valtype_cd: pArray[i].valtype_cd,
@@ -226,7 +226,7 @@ function editQuestion(data, params, callback) {
 							//TypeID: pArray[i].TypeID,
 							tval_char: pArray[i].tval_char,
 							nval_num: pArray[i].nval_num,
-							Name: pArray[i].Name,
+							// Name: pArray[i].Name,
 							concept_path: pArray[i].concept_path,
 							concept_cd: pArray[i].concept_cd,
 							valtype_cd: pArray[i].valtype_cd,
@@ -234,7 +234,7 @@ function editQuestion(data, params, callback) {
 							TableColumn: pArray[i].TableColumn,
 							min: pArray[i].min,
 							max: pArray[i].max
-							//upper_bound: pArray[i].upper_bound
+								//upper_bound: pArray[i].upper_bound
 						};
 					} else { //If adding a new parameter, omit ID so the ID will be created by the database
 						questionParamData = {
@@ -242,7 +242,7 @@ function editQuestion(data, params, callback) {
 							//TypeID: pArray[i].TypeID,
 							tval_char: pArray[i].tval_char,
 							nval_num: pArray[i].nval_num,
-							Name: pArray[i].Name,
+							// Name: pArray[i].Name,
 							concept_path: pArray[i].concept_path,
 							concept_cd: pArray[i].concept_cd,
 							valtype_cd: pArray[i].valtype_cd,
@@ -250,7 +250,7 @@ function editQuestion(data, params, callback) {
 							TableColumn: pArray[i].TableColumn,
 							min: pArray[i].min,
 							max: pArray[i].max
-							//upper_bound: pArray[i].upper_bound
+								//upper_bound: pArray[i].upper_bound
 						};
 					}
 					return questionParameterModel.upsert(questionParamData, {
@@ -510,8 +510,7 @@ function copyQuestion(params, callback) {
 		var id = params.ID;
 		var useAiModels = params.useAiModels;
 		var newQuestion;
-		return questionModel.findById(id
-		).then(function(oldQuestion) {
+		return questionModel.findById(id).then(function(oldQuestion) {
 			newQuestion = {
 				UserID: params.UserID,
 				TypeID: oldQuestion.TypeID,
@@ -534,7 +533,7 @@ function copyQuestion(params, callback) {
 								//TypeID: pArray[i].dataValues.TypeID,
 								tval_char: pArray[i].dataValues.tval_char,
 								nval_num: pArray[i].dataValues.nval_num,
-								Name: pArray[i].dataValues.Name,
+								// Name: pArray[i].dataValues.Name,
 								concept_path: pArray[i].dataValues.concept_path,
 								concept_cd: pArray[i].dataValues.concept_cd,
 								valtype_cd: pArray[i].dataValues.valtype_cd,
@@ -542,15 +541,15 @@ function copyQuestion(params, callback) {
 								TableColumn: pArray[i].dataValues.TableColumn,
 								min: pArray[i].dataValues.min,
 								max: pArray[i].dataValues.max
-								//upper_bound: pArray[i].dataValues.upper_bound
+									//upper_bound: pArray[i].dataValues.upper_bound
 							}, {
 								transaction: t
-							}).then(recurseParams(pArray, (i +1)));
-						}	
+							}).then(recurseParams(pArray, (i + 1)));
+						}
 					};
 					if (useAiModels) {
-					recurseParams(oldParams, 0);
-					
+						recurseParams(oldParams, 0);
+
 						return aiModelModel.findAll({
 							where: {
 								QuestionID: id
@@ -587,9 +586,10 @@ function copyQuestion(params, callback) {
 													}).then(recurseAiParameter(pArray, (i + 1)));
 												}
 											};
-											return recurseAiParameter(oldAiParameters, 0).then(function() {
-												return recurseAiModel(mArray, (i + 1));
-											});
+											return recurseAiParameter(oldAiParameters, 0).then(
+												function() {
+													return recurseAiModel(mArray, (i + 1));
+												});
 										});
 									});
 								}
@@ -597,13 +597,13 @@ function copyQuestion(params, callback) {
 							return recurseAiModel(oldAiModels, 0);
 						});
 					} else {
-					return recurseParams(oldParams, 0);
+						return recurseParams(oldParams, 0);
 					}
 				});
 			});
 		});
 	});
-} 
+}
 copyQuestion({
 	ID: 49,
 	UserID: 1,
