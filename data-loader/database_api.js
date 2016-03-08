@@ -43,6 +43,9 @@ var aiParameterModel = require('./models/NEMO/AIParameter')(
 var parameterTypeModel = require('./models/NEMO/ParameterType')(
 	Sequelize);
 
+var conceptModel = require('./models/NEMO/concept_dimension')(
+	Sequelize);
+
 //
 // var userModel = require('./models/NEMO/User')(
 // 	Sequelize);
@@ -160,11 +163,11 @@ var param = {
 		//upper_bound: 1
 	}]
 };
-console.log('---------------------------------------------------');
-createQuestion(param, function(x, y) {
-	return x;
-});
-console.log('---------------------------------------------------');
+// console.log('---------------------------------------------------');
+// createQuestion(param, function(x, y) {
+// 	return x;
+// });
+// console.log('---------------------------------------------------');
 
 /* Edit Question:
 	Takes attributes of question and parameters of question in object format
@@ -604,12 +607,27 @@ function copyQuestion(params, callback) {
 		});
 	});
 }
-copyQuestion({
-	ID: 49,
-	UserID: 1,
-	useAiModels: true
-}, null);
+// copyQuestion({
+// 	ID: 49,
+// 	UserID: 1,
+// 	useAiModels: true
+// }, null);
 
+conceptModel.findAll({
+		attributes: ['concept_cd'],
+		where: {
+			concept_cd: {
+				$or: [{
+					$like: 'ICD9:%'
+				}, {
+					$like: 'LOINC:%'
+				}]
+			}
+		}
+	})
+	.then(function(data) {
+		console.log(data);
+	});
 
 /*
  	var query = 'SELECT ID, TypeID, EventID FROM Question WHERE ID=' +

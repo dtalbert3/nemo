@@ -56,6 +56,7 @@ var questionEventModel = require('./models/QuestionEvent')(sequelize);
 var aiModelModel = require('./models/AIModel')(sequelize);
 var aiParameterModel = require('./models/AIParameter')(sequelize);
 var parameterTypeModel = require('./models/ParameterType')(sequelize);
+var conceptModel = require('./models/concept_dimension')(sequelize);
 
 // Define associations
 questionModel.hasMany(questionParameterModel);
@@ -64,9 +65,15 @@ questionModel.hasMany(aiModelModel);
 aiModelModel.hasMany(aiParameterModel);
 
 // questionStatusModel.hasMany(questionModel);
-questionModel.belongsTo(questionStatusModel, { foreignKey: 'StatusID' });
-questionModel.belongsTo(questionTypeModel, { foreignKey: 'TypeID' });
-questionModel.belongsTo(questionEventModel, { foreignKey: 'EventID' });
+questionModel.belongsTo(questionStatusModel, {
+  foreignKey: 'StatusID'
+});
+questionModel.belongsTo(questionTypeModel, {
+  foreignKey: 'TypeID'
+});
+questionModel.belongsTo(questionEventModel, {
+  foreignKey: 'EventID'
+});
 
 exports.hooks = {
   auth(socket) {
@@ -76,7 +83,7 @@ exports.hooks = {
 };
 
 exports.authService = function(socket, hooks) {
-  hooks = (typeof hooks !== 'undefined') ?  hooks : [];
+  hooks = (typeof hooks !== 'undefined') ? hooks : [];
 
   // Authenticate user
   socket.on('local', function(params, callback) {
@@ -86,31 +93,35 @@ exports.authService = function(socket, hooks) {
     var error = 'Invalid Password/Username';
     var result = null;
     userModel.findOne({
-      where: {email: params.email}
-    })
-    .then(function(data) {
-      // If user exists validate password
-      if (data !== null) {
-        if (bcrypt.compareSync(params.password, data.dataValues.Hash)) {
-          var user = {
-            email: data.dataValues.Email,
-            userType: data.dataValues.UserTypeID
-          };
-          error = null;
-          result = jwt.sign(user, config.session.secret, { expiresIn: 60 * 1000 });
+        where: {
+          email: params.email
         }
-      }
+      })
+      .then(function(data) {
+        // If user exists validate password
+        if (data !== null) {
+          if (bcrypt.compareSync(params.password, data.dataValues.Hash)) {
+            var user = {
+              email: data.dataValues.Email,
+              userType: data.dataValues.UserTypeID
+            };
+            error = null;
+            result = jwt.sign(user, config.session.secret, {
+              expiresIn: 60 * 1000
+            });
+          }
+        }
 
-      return callback(error, result);
-    }, function() {
-      return callback(error, result);
-    });
+        return callback(error, result);
+      }, function() {
+        return callback(error, result);
+      });
   });
 
 };
 
 exports.userService = function(socket, hooks) {
-  hooks = (typeof hooks !== 'undefined') ?  hooks : [];
+  hooks = (typeof hooks !== 'undefined') ? hooks : [];
 
   // Sign user up
   socket.on('signup', function(data, callback) {
@@ -121,16 +132,16 @@ exports.userService = function(socket, hooks) {
       bcrypt.hash(data.password, salt, function(err, hash) {
         // SWITCH TO FIND OR CREATE!!
         userModel.upsert({
-          UserTypeID: 1,
-          Email: data.email,
-          Hash: hash
-        })
-        .then(function(data) {
-          // Return error codes as needed here
-          return callback(null, data);
-        }, function(error) {
-          return callback(error, null);
-        });
+            UserTypeID: 1,
+            Email: data.email,
+            Hash: hash
+          })
+          .then(function(data) {
+            // Return error codes as needed here
+            return callback(null, data);
+          }, function(error) {
+            return callback(error, null);
+          });
       });
     });
   });
@@ -138,7 +149,7 @@ exports.userService = function(socket, hooks) {
 };
 
 exports.questionService = function(socket, hooks) {
-  hooks = (typeof hooks !== 'undefined') ?  hooks : [];
+  hooks = (typeof hooks !== 'undefined') ? hooks : [];
 
   /* Create Question:
   	Takes attributes of question and parameters of question in object format
@@ -216,7 +227,19 @@ exports.questionService = function(socket, hooks) {
       func(socket);
     });
     sequelize.transaction(function() {
-      return parameterTypeModel.findAll()
+      // return parameterTypeModel.findAll() OLD CODE
+      return conceptModel.findAll({
+          attributes: ['concept_cd'],
+          where: {
+            concept_cd: {
+              $or: [{
+                $like: 'ICD9:%'
+              }, {
+                $like: 'LOINC:%'
+              }]
+            }
+          }
+        })
         .then(function(data) {
           return callback(null, data);
         }, function(error) {
@@ -258,7 +281,7 @@ exports.questionService = function(socket, hooks) {
 };
 
 exports.dashboardService = function(socket, hooks) {
-  hooks = (typeof hooks !== 'undefined') ?  hooks : [];
+  hooks = (typeof hooks !== 'undefined') ? hooks : [];
 
   /* Get Dashboard for global:
   		Get a list of all the Questions in the NEMO Datamart
@@ -451,9 +474,10 @@ exports.dashboardService = function(socket, hooks) {
                 upper_bound: pArray[i].upper_bound
               };
             }
-            return questionParameterModel.upsert(questionParamData, {
-              transaction: t
-            }).then(recurseParam(pArray, (i + 1)));
+            return questionParameterModel.upsert(
+              questionParamData, {
+                transaction: t
+              }).then(recurseParam(pArray, (i + 1)));
           }
         };
         // Call helper function to insert or update Question Parameters
