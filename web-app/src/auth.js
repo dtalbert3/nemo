@@ -18,8 +18,10 @@ export default {
     }, (error, result) => {
       if (!error) {
         console.log(result);
+        var payload = jwt.decode(result, {complete: true, force: true}).payload;
         localStorage.token = result;
-        localStorage.userType = jwt.decode(result, {complete: true, force: true}).payload.userType;
+        localStorage.userType = payload.userType;
+        localStorage.userID = payload.ID;
         callback(true);
       } else {
         console.log(error);

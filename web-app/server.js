@@ -10,7 +10,7 @@ var cookieParser = require('cookie-parser');
 var app = require('express')();
 var server = require('http').createServer(app);
 var io = require('socket.io')(server);
-var socketioJwt = require('socketio-jwt');
+// var socketioJwt = require('socketio-jwt');
 
 app
   .use(helmet())
@@ -42,27 +42,29 @@ io.of('/auth').on('connection', function(socket) {
 io
   .of('/user')
   .on('connection', function(socket) {
-    nemoApi.hooks.auth(socket);
+    // nemoApi.hooks.auth(socket);
     nemoApi.userService(socket);
   });
 
 io
   .of('/qstn')
-  .use(socketioJwt.authorize({
-    secret: 'your secret or public key',
-    handshake: true
-  })).on('connection', function(socket) {
-    nemoApi.hooks.auth(socket);
+  // .use(socketioJwt.authorize({
+  //   secret: 'your secret or public key',
+  //   handshake: true
+  // }))
+  .on('connection', function(socket) {
+    // nemoApi.hooks.auth(socket);
     nemoApi.questionService(socket);
   });
 
 io
   .of('/dash')
-  .use(socketioJwt.authorize({
-    secret: 'your secret or public key',
-    handshake: true
-  })).on('connection', function(socket) {
-    nemoApi.hooks.auth(socket);
+  // .use(socketioJwt.authorize({
+  //   secret: 'your secret or public key',
+  //   handshake: true
+  // }))
+  .on('connection', function(socket) {
+    // nemoApi.hooks.auth(socket);
     nemoApi.dashboardService(socket);
   });
 

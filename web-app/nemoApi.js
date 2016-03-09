@@ -94,7 +94,8 @@ exports.authService = function(socket, hooks) {
         if (bcrypt.compareSync(params.password, data.dataValues.Hash)) {
           var user = {
             email: data.dataValues.Email,
-            userType: data.dataValues.UserTypeID
+            userType: data.dataValues.UserTypeID,
+            ID: data.dataValues.ID
           };
           error = null;
           result = jwt.sign(user, config.session.secret, { expiresIn: 60 * 1000 });

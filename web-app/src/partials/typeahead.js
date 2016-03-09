@@ -102,7 +102,7 @@ export default React.createClass({
 
   // Once TypeAhead is mounted fetch parameters to be used for suggestions
   componentDidMount() {
-    qstn.emit('getSuggestions', {}, (err, data) => {
+    qstn.emit('getSuggestions', (err, data) => {
       if (!err) {
         this.state.engine.clear();
         this.state.engine.add(data);

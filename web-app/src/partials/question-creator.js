@@ -123,7 +123,7 @@ export default React.createClass({
 
       // If valid bind type/event/parameters to data
       var data = {
-        UserID: 1, // Currently testing with hard-coded UserID
+        UserID: localStorage.ID, // Currently testing with hard-coded UserID
         QuestionStatusID: 1,
         QuestionTypeID: this.state.questionTypes[this.state.selectedTypeIndex].ID,
         QuestionEventID: this.state.questionEvents[this.state.selectedEventIndex].ID,
@@ -159,7 +159,9 @@ export default React.createClass({
     var parameter = Object.assign({}, this.state.parameter);
 
     // Find if duplicate of parameter exist
-    var duplicate = this.state.parameters.find((d) => isEqual(d.bounded1, parameter.bounded1));
+    var duplicate = this.state.parameters.find((d) => {
+      isEqual(d.bounds, parameter.bounds);
+    });
 
     // Validate parameter
     if (parameter.bounded) {
@@ -178,35 +180,31 @@ export default React.createClass({
       Alert('Parameter Already Exist', 'danger', 4 * 1000);
       return;
     } else if (this.state.parameters.length > 0) {
+      // Check if one already exist
       console.log(duplicate.bound1.min, parameter.bounded1.min);
     }
 
     // Rebind parameter
-    parameter.TypeID = parameter.ID;
-    parameter.tval_char = 'null';
-
-    // Create upper bounded parameter for database during submission
-    if (parameter.bounded) {
-      parameter.nval_num = this.state.bounds.min;
-      parameter.upper_bound = 0;
-
-      var parameterUpper = Object.assign({}, parameter);
-      parameterUpper.nval_num = this.state.bounds.max;
-      parameter.upper_bound = 1;
-    }
+    parameter.tval_char = null;
+    parameter.nval_num = null;
+    parameter.concept_path = null;
+    // parameter.concept_cd = // Check if this actually has to be rebinded
+    parameter.valtype_cd = 'N';
+    parameter.TableName = null;
+    parameter.TableColumn = null;
+    parameter.min = this.state.bounds.min;
+    parameter.max = this.state.bounds.max;
 
     // Update state of parameters listing
     this.setState({
-      parameters: (!parameter.bounded) ?
-        this.state.parameters.concat(parameter) :
-        this.state.parameters.concat(parameter).concat(parameterUpper)
+      parameters: parameter
     });
   },
 
   // Handle updating of parameter from TypeAhead
   updateParameter(parameter) {
     this.setState({
-      parameter: parameter
+      parameter: this.state.parameters.concat(parameter)
     });
   },
 
@@ -242,7 +240,8 @@ export default React.createClass({
 
   // Once form is mounted update possible parameters and question types/events
   componentDidMount() {
-    qstn.emit('getTypes', {}, (err, data) => {
+    console.log('Create question');
+    qstn.emit('getTypes', (err, data) => {
       if (!err) {
         this.setState({
           questionTypes: data.map((d) => d)
@@ -252,7 +251,7 @@ export default React.createClass({
       }
     });
 
-    qstn.emit('getEvents', {}, (err, data) => {
+    qstn.emit('getEvents', (err, data) => {
       if (!err) {
         this.setState({
           questionEvents: data.map((d) => d)
