@@ -136,7 +136,7 @@ export default React.createClass({
 
       // If valid bind type/event/parameters to data
       var data = {
-        UserID: localStorage.ID, // Currently testing with hard-coded UserID
+        UserID: parseInt(localStorage.userID), // Currently testing with hard-coded UserID
         QuestionStatusID: 1,
         QuestionTypeID: this.state.questionTypes[this.state.selectedTypeIndex].ID,
         QuestionEventID: this.state.questionEvents[this.state.selectedEventIndex].ID,

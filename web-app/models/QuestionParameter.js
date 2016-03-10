@@ -1,4 +1,3 @@
-/* jshint indent: 2 */
 var Sequelize = require('sequelize');
 
 module.exports = function(sequelize) {
@@ -35,10 +34,6 @@ module.exports = function(sequelize) {
     },
     nval_num: {
       type: Sequelize.DECIMAL,
-      allowNull: true,
-    },
-    upper_bound: {
-      type: Sequelize.BOOLEAN,
       allowNull: true
     },
     concept_path: {
@@ -63,11 +58,11 @@ module.exports = function(sequelize) {
     },
     min: {
       type: Sequelize.DECIMAL,
-      allowNull: true,
+      allowNull: true
     },
     max: {
       type: Sequelize.DECIMAL,
-      allowNull: true,
+      allowNull: true
     }
   }, {
     tableName: 'QuestionParameter',

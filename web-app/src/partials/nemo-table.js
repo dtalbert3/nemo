@@ -6,7 +6,7 @@ import config from 'clientconfig';
 import io from 'socket.io-client';
 const dash = io.connect(config.apiUrl + '/dash');
 
-// Test headers until API call integrated
+// Hard code headers for now
 var TEST_HEADERS = [
   'Question',
   'AI'
@@ -112,7 +112,7 @@ export default React.createClass({
 
   // Once page is mounted fetch table data
   componentDidMount() {
-    dash.emit('getUser', 1, {}, (err, data) => {
+    dash.emit('getUser', localStorage.userID, {}, (err, data) => {
       console.log(data);
       if (!err) {
         this.setState({
