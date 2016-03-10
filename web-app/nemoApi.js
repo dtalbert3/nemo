@@ -55,7 +55,8 @@ var questionTypeModel = require('./models/QuestionType')(sequelize);
 var questionEventModel = require('./models/QuestionEvent')(sequelize);
 var aiModelModel = require('./models/AIModel')(sequelize);
 var aiParameterModel = require('./models/AIParameter')(sequelize);
-var parameterTypeModel = require('./models/ParameterType')(sequelize);
+// var parameterTypeModel = require('./models/ParameterType')(sequelize);
+// DELTE ABOVE??!?!??!
 var conceptModel = require('./models/concept_dimension')(sequelize);
 
 // Define associations
@@ -93,25 +94,29 @@ exports.authService = function(socket, hooks) {
     var error = 'Invalid Password/Username';
     var result = null;
     userModel.findOne({
-      where: {email: params.email}
-    })
-    .then(function(data) {
-      // If user exists validate password
-      if (data !== null) {
-        if (bcrypt.compareSync(params.password, data.dataValues.Hash)) {
-          var user = {
-            email: data.dataValues.Email,
-            userType: data.dataValues.UserTypeID,
-            ID: data.dataValues.ID
-          };
-          error = null;
-          result = jwt.sign(user, config.session.secret, { expiresIn: 60 * 1000 });
+        where: {
+          email: params.email
         }
-      }
-      return callback(error, result);
-    }, function() {
-      return callback(error, result);
-    });
+      })
+      .then(function(data) {
+        // If user exists validate password
+        if (data !== null) {
+          if (bcrypt.compareSync(params.password, data.dataValues.Hash)) {
+            var user = {
+              email: data.dataValues.Email,
+              userType: data.dataValues.UserTypeID,
+              ID: data.dataValues.ID
+            };
+            error = null;
+            result = jwt.sign(user, config.session.secret, {
+              expiresIn: 60 * 1000
+            });
+          }
+        }
+        return callback(error, result);
+      }, function() {
+        return callback(error, result);
+      });
   });
 
 };
@@ -169,17 +174,17 @@ exports.questionService = function(socket, hooks) {
   		}]
   	};
   */
-  socket.on('create', function(data, callback) {
+  socket.on('create', function(params, callback) {
     hooks.forEach(function(func) {
       func(socket);
     });
-    console.log(data.QuestionParamsArray);
+
     // Compile a question attributes for upsert
     var questionAttributes = {
-      UserID: data.UserID,
-      StatusID: data.QuestionStatusID,
-      TypeID: data.QuestionTypeID,
-      EventID: data.QuestionEventID
+      UserID: params.UserID,
+      StatusID: params.QuestionStatusID,
+      TypeID: params.QuestionTypeID,
+      EventID: params.QuestionEventID
     };
     // Declare questionID for use later
     var questionID;
@@ -187,31 +192,38 @@ exports.questionService = function(socket, hooks) {
     sequelize.transaction(function(t) {
       return questionModel.create(questionAttributes, {
         transaction: t
-      }).then(function(d) {
+      }).then(function(data) {
         // QuestionID is needed as a foreign key for QuestionParameter
-        questionID = d.dataValues.ID;
+        questionID = data.dataValues.ID;
         // Helper function to recursively chain questionParameter create promises
-        function recurseParam(pArray, i) {
-          console.log(pArray);
+        var recurseParam = function(pArray, i) {
           // If the current parameter exists only, otherwise nothing is done and promise chain is ended
           if (pArray[i]) {
             return questionParameterModel.create({
               QuestionID: questionID,
-              TypeID: pArray[i].TypeID,
+              //TypeID: pArray[i].TypeID,
               tval_char: pArray[i].tval_char,
               nval_num: pArray[i].nval_num,
-              upper_bound: pArray[i].upper_bound
+              //upper_bound: pArray[i].upper_bound,
+              // Name: pArray[i].Name,
+              concept_path: pArray[i].concept_path,
+              concept_cd: pArray[i].concept_cd,
+              valtype_cd: pArray[i].valtype_cd,
+              TableName: pArray[i].TableName,
+              TableColumn: pArray[i].TableColumn,
+              min: pArray[i].min,
+              max: pArray[i].max
             }, {
               transaction: t
             }).then(recurseParam(pArray, (i + 1)));
           }
-        }
+        };
         // Call helper function to insert Question Parameters
-        return recurseParam(data.QuestionParamsArray, 0);
+        return recurseParam(params.QuestionParamsArray, 0);
       });
     }).then(function() {
       // Return the Question ID of the created question
-      return callback(null, '');
+      return questionID;
     }).catch(function(error) {
       return callback(error, null);
     });
@@ -307,7 +319,7 @@ exports.dashboardService = function(socket, hooks) {
     });
     var orderColumn = 'UserID' || params.orderColumn;
     var order = 'DESC' || params.order;
-    Sequelize.transaction(function() {
+    sequelize.transaction(function() {
       return questionModel.findAll({
         include: [questionParameterModel, aiModelModel, {
           model: questionStatusModel,
@@ -365,7 +377,7 @@ exports.dashboardService = function(socket, hooks) {
     var order = 'DESC' || params.order;
     var offset = null || params.start;
     var limit = null || params.chunk;
-    Sequelize.transaction(function() {
+    sequelize.transaction(function() {
       var userID = id;
       return questionModel.findAll({
         include: [questionParameterModel, aiModelModel, {
@@ -443,7 +455,7 @@ exports.dashboardService = function(socket, hooks) {
     // Initiate transaction, will be committed if things go smoothly or rolled back if there is an issue at any point
     // Example data object:
 
-    Sequelize.transaction(function(t) {
+    sequelize.transaction(function(t) {
       return questionModel.upsert(questionAttributes, {
         transaction: t
       }).then(function() {
@@ -503,7 +515,7 @@ exports.dashboardService = function(socket, hooks) {
       func(socket);
     });
     // Initiate transaction, will be committed if things go smoothly or rolled back if there is an issue at any point
-    Sequelize.transaction(function() {
+    sequelize.transaction(function() {
       // Destroy parameters of question then
       // Destroy parameters of AI models then
       // Destroy AI models of question then
@@ -548,5 +560,4 @@ exports.dashboardService = function(socket, hooks) {
       return callback(error, null);
     });
   });
-
 };

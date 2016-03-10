@@ -7,6 +7,19 @@ import config from 'clientconfig';
 import io from 'socket.io-client';
 const qstn = io.connect(config.apiUrl + '/qstn');
 
+// Whitelist which parameters are bounded
+const BOUNDED_PARAMETERS = [
+  'LOINC'
+]
+
+const isBounded = (parameter) => {
+  var bounded = true;
+  BOUNDED_PARAMETERS.forEach((p) => {
+    bounded = bounded && parameter.concept_cd.startsWith(p);
+  })
+  return bounded;
+}
+
 // Creates token to display information about added parameters
 const Token = React.createClass({
 
@@ -154,17 +167,17 @@ export default React.createClass({
 
   // Add parameter created via typeahead and range (if required)
   addParameter() {
-
     // Create parameter to break reference
     var parameter = Object.assign({}, this.state.parameter);
 
     // Find if duplicate of parameter exist
+    // BUG IN FINDING OUT IF DUPLICATE EXIST
     var duplicate = this.state.parameters.find((d) => {
-      isEqual(d.bounds, parameter.bounds);
+      isEqual(d, parameter);
     });
 
     // Validate parameter
-    if (parameter.bounded) {
+    if (isBounded(parameter)) {
       var bounds = Object.assign({}, this.state.bounds);
       if (bounds.min === null || bounds.max === null) {
         Alert('Missing Range', 'danger', 4 * 1000);
@@ -181,14 +194,14 @@ export default React.createClass({
       return;
     } else if (this.state.parameters.length > 0) {
       // Check if one already exist
-      console.log(duplicate.bound1.min, parameter.bounded1.min);
+      // console.log(duplicate.bound1.min, parameter.bounded1.min);
     }
 
     // Rebind parameter
     parameter.tval_char = null;
     parameter.nval_num = null;
     parameter.concept_path = null;
-    // parameter.concept_cd = // Check if this actually has to be rebinded
+    parameter.concept_cd = parameter.concept_cd
     parameter.valtype_cd = 'N';
     parameter.TableName = null;
     parameter.TableColumn = null;
@@ -197,14 +210,14 @@ export default React.createClass({
 
     // Update state of parameters listing
     this.setState({
-      parameters: parameter
+      parameters: this.state.parameters.concat(parameter)
     });
   },
 
   // Handle updating of parameter from TypeAhead
   updateParameter(parameter) {
     this.setState({
-      parameter: this.state.parameters.concat(parameter)
+      parameter: parameter
     });
   },
 
@@ -240,7 +253,6 @@ export default React.createClass({
 
   // Once form is mounted update possible parameters and question types/events
   componentDidMount() {
-    console.log('Create question');
     qstn.emit('getTypes', (err, data) => {
       if (!err) {
         this.setState({
@@ -304,13 +316,13 @@ export default React.createClass({
           <TypeAhead
             suggestions={[]}
             key='ID'
-            value='Name'
+            value='concept_cd'
             limit={10}
             updateToken={this.updateParameter}
           />
 
           {/* Create range input if required by parameter  */}
-          { (Object.keys(this.state.parameter).length && this.state.parameter.bounded) ?
+          { (Object.keys(this.state.parameter).length && isBounded(this.state.parameter)) ?
             <RangeInput
               bounds={this.state.bounds}
               updateBounds={this.updateBounds}/> :
@@ -324,7 +336,7 @@ export default React.createClass({
           {this.state.parameters.map((parameter, i) => {
             return <Token
               key={i}
-              value={'Name'}
+              value={'concept_cd'}
               token={parameter}
               removeToken={this.removeParameter} />;
           })}
