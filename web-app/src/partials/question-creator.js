@@ -10,15 +10,15 @@ const qstn = io.connect(config.apiUrl + '/qstn');
 // Whitelist which parameters are bounded
 const BOUNDED_PARAMETERS = [
   'LOINC'
-]
+];
 
 const isBounded = (parameter) => {
   var bounded = true;
   BOUNDED_PARAMETERS.forEach((p) => {
     bounded = bounded && parameter.concept_cd.startsWith(p);
-  })
+  });
   return bounded;
-}
+};
 
 // Creates token to display information about added parameters
 const Token = React.createClass({
@@ -201,7 +201,7 @@ export default React.createClass({
     parameter.tval_char = null;
     parameter.nval_num = null;
     parameter.concept_path = null;
-    parameter.concept_cd = parameter.concept_cd
+    parameter.concept_cd = parameter.concept_cd;
     parameter.valtype_cd = 'N';
     parameter.TableName = null;
     parameter.TableColumn = null;

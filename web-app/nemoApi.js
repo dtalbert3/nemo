@@ -61,7 +61,6 @@ var conceptModel = require('./models/concept_dimension')(sequelize);
 
 // Define associations
 questionModel.hasMany(questionParameterModel);
-questionModel.hasMany(questionParameterModel);
 questionModel.hasMany(aiModelModel);
 aiModelModel.hasMany(aiParameterModel);
 
@@ -94,29 +93,28 @@ exports.authService = function(socket, hooks) {
     var error = 'Invalid Password/Username';
     var result = null;
     userModel.findOne({
-        where: {
-          email: params.email
+      where: {
+        email: params.email
+      }
+    }).then(function(data) {
+      // If user exists validate password
+      if (data !== null) {
+        if (bcrypt.compareSync(params.password, data.dataValues.Hash)) {
+          var user = {
+            email: data.dataValues.Email,
+            userType: data.dataValues.UserTypeID,
+            ID: data.dataValues.ID
+          };
+          error = null;
+          result = jwt.sign(user, config.session.secret, {
+            expiresIn: 60 * 1000
+          });
         }
-      })
-      .then(function(data) {
-        // If user exists validate password
-        if (data !== null) {
-          if (bcrypt.compareSync(params.password, data.dataValues.Hash)) {
-            var user = {
-              email: data.dataValues.Email,
-              userType: data.dataValues.UserTypeID,
-              ID: data.dataValues.ID
-            };
-            error = null;
-            result = jwt.sign(user, config.session.secret, {
-              expiresIn: 60 * 1000
-            });
-          }
-        }
-        return callback(error, result);
-      }, function() {
-        return callback(error, result);
-      });
+      }
+      return callback(error, result);
+    }, function() {
+      return callback(error, result);
+    });
   });
 
 };
@@ -133,16 +131,16 @@ exports.userService = function(socket, hooks) {
       bcrypt.hash(data.password, salt, function(err, hash) {
         // SWITCH TO FIND OR CREATE!!
         userModel.upsert({
-            UserTypeID: 1,
-            Email: data.email,
-            Hash: hash
-          })
-          .then(function(data) {
-            // Return error codes as needed here
-            return callback(null, data);
-          }, function(error) {
-            return callback(error, null);
-          });
+          UserTypeID: 1,
+          Email: data.email,
+          Hash: hash
+        })
+        .then(function(data) {
+          // Return error codes as needed here
+          return callback(null, data);
+        }, function(error) {
+          return callback(error, null);
+        });
       });
     });
   });
@@ -237,22 +235,22 @@ exports.questionService = function(socket, hooks) {
     sequelize.transaction(function() {
       // return parameterTypeModel.findAll() OLD CODE
       return conceptModel.findAll({
-          attributes: ['concept_cd'],
-          where: {
-            concept_cd: {
-              $or: [{
-                $like: 'ICD9:%'
-              }, {
-                $like: 'LOINC:%'
-              }]
-            }
+        attributes: ['concept_cd'],
+        where: {
+          concept_cd: {
+            $or: [{
+              $like: 'ICD9:%'
+            }, {
+              $like: 'LOINC:%'
+            }]
           }
-        })
-        .then(function(data) {
-          return callback(null, data);
-        }, function(error) {
-          return callback(error, null);
-        });
+        }
+      })
+      .then(function(data) {
+        return callback(null, data);
+      }, function(error) {
+        return callback(error, null);
+      });
     });
   });
 
