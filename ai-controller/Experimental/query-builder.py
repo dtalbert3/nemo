@@ -102,6 +102,18 @@ except:
 question.params[0].displayConceptCode()
 question.params[1].displayConceptCode()
 
+#learnerDataQuery = "Select * From "
+# Need to be able to dynamically build a query as below
+# Sample query of question with two parameters, ICD9:427.9 and ICD9:382.9
+# select DISTINCT * from patient_dimension p
+# INNER JOIN observation_fact o on p.patient_num = o.patient_num
+# INNER JOIN observation_fact o2 on p.patient_num = o2.patient_num
+# INNER JOIN LearnerPatients lp on p.patient_num = lp.patient_num
+# #LEFT OUTER JOIN ReadmittancePatients rp on p.patient_num = rp.patient_num
+# WHERE
+# o.concept_cd Like 'ICD9:427.9'
+# AND o2.concept_cd Like 'ICD9:382.9'
+
 
 
 # disconnect from server
