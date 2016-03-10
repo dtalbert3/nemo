@@ -147,7 +147,7 @@ function createQuestion(params, callback) {
 	});
 }
 var param = {
-	UserID: 2,
+	UserID: 9,
 	QuestionStatusID: 2,
 	QuestionTypeID: 1,
 	QuestionEventID: 1,
@@ -155,19 +155,23 @@ var param = {
 		//TypeID: 1,
 		tval_char: 'Some data',
 		nval_num: 1,
-		//upper_bound: 0
+		valtype_cd: 'N',
+		min: 9,
+		max: 100
+			//upper_bound: 0
 	}, {
 		//TypeID: 1,
 		tval_char: 'Some more data',
 		nval_num: 7,
-		//upper_bound: 1
+		valtype_cd: 'N'
+			//upper_bound: 1
 	}]
 };
-// console.log('---------------------------------------------------');
-// createQuestion(param, function(x, y) {
-// 	return x;
-// });
-// console.log('---------------------------------------------------');
+console.log('---------------------------------------------------');
+createQuestion(param, function(x, y) {
+	return x;
+});
+console.log('---------------------------------------------------');
 
 /* Edit Question:
 	Takes attributes of question and parameters of question in object format
@@ -613,21 +617,21 @@ function copyQuestion(params, callback) {
 // 	useAiModels: true
 // }, null);
 
-conceptModel.findAll({
-		attributes: ['concept_cd'],
-		where: {
-			concept_cd: {
-				$or: [{
-					$like: 'ICD9:%'
-				}, {
-					$like: 'LOINC:%'
-				}]
-			}
-		}
-	})
-	.then(function(data) {
-		console.log(data);
-	});
+// conceptModel.findAll({
+// 		attributes: ['concept_cd'],
+// 		where: {
+// 			concept_cd: {
+// 				$or: [{
+// 					$like: 'ICD9:%'
+// 				}, {
+// 					$like: 'LOINC:%'
+// 				}]
+// 			}
+// 		}
+// 	})
+// 	.then(function(data) {
+// 		console.log(data);
+// 	});
 
 /*
  	var query = 'SELECT ID, TypeID, EventID FROM Question WHERE ID=' +
