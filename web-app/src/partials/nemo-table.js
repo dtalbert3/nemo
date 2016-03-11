@@ -6,17 +6,7 @@ import config from 'clientconfig';
 import io from 'socket.io-client';
 const dash = io.connect(config.apiUrl + '/dash');
 
-// Hard code headers for now
-var TEST_HEADERS = [
-  'Question',
-  'AI'
-];
-
-// Test rows until API call integrated
-var TEST_ROWS = [
-  ['Q1', 'A1'],
-  ['Q2', 'A2']
-];
+import { objectByString } from '../util';
 
 // Helper to create table headers
 const Thead = React.createClass({
@@ -54,7 +44,7 @@ const Tbody = React.createClass({
             this.state.open[i] = false;
           }
 
-          {/* Create minimal row */}
+          {/* Helper to create minimal row */}
           const minimalRow =
             <tr
               key={i}
@@ -69,13 +59,13 @@ const Tbody = React.createClass({
               })}
             </tr>;
 
-          {/* Create hidden row */}
+          {/* Helper to create hidden row */}
           const hiddenRow =
             <tr>
               <td colSpan={row.length} className={this.state.open[i] ? '' : 'hidden'}>
                 <InfoWell
                   open={this.state.open[i]}
-                  data={row}
+                  data={this.props.data[i]}
                 />
               </td>
             </tr>;
@@ -113,11 +103,33 @@ export default React.createClass({
   // Once page is mounted fetch table data
   componentDidMount() {
     dash.emit('getUser', localStorage.userID, {}, (err, data) => {
+      var rows = [];
       console.log(data);
+      data.forEach((d) => {
+        var row = [];
+
+        var question = objectByString(d, 'QuestionType.Type') + ' ' +
+          objectByString(d, 'QuestionEvent.Name');
+        var parameters = '';
+        var numParams = Math.min(d['QuestionParameters'].length, 3);
+        for (var i = 0; i < numParams; i++) {
+          parameters += d['QuestionParameters'][i]['concept_cd'];
+          parameters += (i !== numParams - 1)
+            ? ', '
+            : (numParams < d['QuestionParameters'].length) ? ' . . .' : '';
+        }
+        var status = objectByString(d, 'QuestionStatus.Status');
+
+        row.push(question);
+        row.push(parameters);
+        row.push(status);
+
+        rows.push(row);
+      });
       if (!err) {
         this.setState({
-          headers: TEST_HEADERS,
-          rows: TEST_ROWS
+          data: data,
+          rows: rows
         });
       } else {
         Alert('Error Fetching Questions', 'danger', 4 * 1000);
@@ -129,7 +141,12 @@ export default React.createClass({
   // Initialize headers and rows to empty
   getInitialState() {
     return {
-      headers: [],
+      data: [],
+      headers: [
+        'Question',
+        'Parameters',
+        'Status'
+      ],
       rows: []
     };
   },
@@ -139,7 +156,9 @@ export default React.createClass({
     return (
       <Table responsive condensed>
         <Thead headers={this.state.headers} />
-        <Tbody rows={this.state.rows} />
+        <Tbody
+          rows={this.state.rows}
+          data={this.state.data} />
       </Table>
     );
   }
