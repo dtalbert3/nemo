@@ -34,6 +34,9 @@ class Parameter:
       self.max = max
 
 def getDataQuery(host, user, password, database, questionID, dataSetType):
+    # Whitelist of database attributes to select in query
+    observationAttributes = ["encounter_num", "concept_cd", "provider_id", "nval_num"]
+    patientAttributes = ["vital_status_cd", "sex_cd", "age_in_years_num", "language_cd", "race_cd", "marital_status_cd", "zip_cd", "income_cd"]
     # Open database connection
     db = MySQLdb.connect(host, user, password, database)
 
@@ -90,19 +93,30 @@ def getDataQuery(host, user, password, database, questionID, dataSetType):
     except:
        print "Error: Unable to fetch parameter data"
 
+  # Need to be able to dynamically build a query as below
+  # Sample query of question with two parameters, ICD9:427.9 and ICD9:382.9
+  # select DISTINCT * from patient_dimension p
+  # INNER JOIN observation_fact o on p.patient_num = o.patient_num
+  # INNER JOIN observation_fact o2 on p.patient_num = o2.patient_num
+  # INNER JOIN LearnerPatients lp on p.patient_num = lp.patient_num
+  # #LEFT OUTER JOIN ReadmittancePatients rp on p.patient_num = rp.patient_num
+  # WHERE
+  # o.concept_cd Like 'ICD9:427.9'
+  # AND o2.concept_cd Like 'ICD9:382.9'
 
-    learnerDataQuery = "Select DISTINCT * from patient_dimension p"
-    # Need to be able to dynamically build a query as below
-    # Sample query of question with two parameters, ICD9:427.9 and ICD9:382.9
-    # select DISTINCT * from patient_dimension p
-    # INNER JOIN observation_fact o on p.patient_num = o.patient_num
-    # INNER JOIN observation_fact o2 on p.patient_num = o2.patient_num
-    # INNER JOIN LearnerPatients lp on p.patient_num = lp.patient_num
-    # #LEFT OUTER JOIN ReadmittancePatients rp on p.patient_num = rp.patient_num
-    # WHERE
-    # o.concept_cd Like 'ICD9:427.9'
-    # AND o2.concept_cd Like 'ICD9:382.9'
+    learnerDataQuery = "Select DISTINCT "
+    # Add patient_dimension attributes to statement
+    for attribute in patientAttributes:
+        learnerDataQuery += " p.{0}, ".format(attribute)    
+    # Add each diagnosis/lab's data to statement
+    for i, param in enumerate(question.params):
+        for j, attribute in enumerate(observationAttributes):
+            if(j == (len(observationAttributes) - 1) and i == (len(question.params) - 1)):
+                learnerDataQuery += "o{0}.{1} as o{0}{1} ".format(i, attribute)
+            else:
+                learnerDataQuery += "o{0}.{1} as o{0}{1}, ".format(i, attribute)
 
+    learnerDataQuery += " from patient_dimension p"
     # Build query, add observation_fact joins for each parameter
     for i, param in enumerate(question.params):
         learnerDataQuery += " INNER JOIN observation_fact o{0} on p.patient_num = o{0}.patient_num ".format(i)
