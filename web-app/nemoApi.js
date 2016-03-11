@@ -221,7 +221,7 @@ exports.questionService = function(socket, hooks) {
       });
     }).then(function() {
       // Return the Question ID of the created question
-      return questionID;
+      return callback(null, questionID);
     }).catch(function(error) {
       return callback(error, null);
     });

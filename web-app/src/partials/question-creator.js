@@ -13,6 +13,10 @@ const BOUNDED_PARAMETERS = [
 ];
 
 const isBounded = (parameter) => {
+  if (Object.keys(parameter).length === 0) {
+    return false;
+  }
+
   var bounded = true;
   BOUNDED_PARAMETERS.forEach((p) => {
     bounded = bounded && parameter.concept_cd.startsWith(p);
