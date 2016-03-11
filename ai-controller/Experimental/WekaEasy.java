@@ -1,3 +1,6 @@
+// Compile: javac -cp "weka.jar:mysql-connector-java-5.1.38-bin.jar" WekaEasy.java
+// Run: java -cp "weka.jar:mysql-connector-java-5.1.38-bin.jar:./" WekaEasy
+
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
