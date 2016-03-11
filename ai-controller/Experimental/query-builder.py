@@ -102,7 +102,7 @@ except:
 question.params[0].displayConceptCode()
 question.params[1].displayConceptCode()
 
-#learnerDataQuery = "Select * From "
+learnerDataQuery = "Select DISTINCT * from patient_dimension p"
 # Need to be able to dynamically build a query as below
 # Sample query of question with two parameters, ICD9:427.9 and ICD9:382.9
 # select DISTINCT * from patient_dimension p
@@ -113,6 +113,31 @@ question.params[1].displayConceptCode()
 # WHERE
 # o.concept_cd Like 'ICD9:427.9'
 # AND o2.concept_cd Like 'ICD9:382.9'
+
+# Build query, add observation_fact joins for each parameter
+for i, param in enumerate(question.params):
+    learnerDataQuery += " INNER JOIN observation_fact o{0} on p.patient_num = o{0}.patient_num ".format(i)
+
+# TODO: Add the left outer join when the ReadmittancePatients table is up
+
+# Add the learner patients join to select only learner patients
+learnerDataQuery += " INNER JOIN LearnerPatients lp on p.patient_num = lp.patient_num "
+
+# Add WHERE clause for each parameter
+if(len(question.params) > 0):
+    learnerDataQuery += " WHERE "
+    for i, param in enumerate(question.params):
+        if(i == 0):
+            learnerDataQuery += " o{0}.concept_cd = '{1}' ".format(i, param.concept_cd)
+        else:
+            learnerDataQuery += "AND o{0}.concept_cd = '{1}' ".format(i, param.concept_cd)
+        if(param.min != None and param.max != None):
+            learnerDataQuery += " AND o{0}.nval_num BETWEEN {1} AND {2} ".format(i, param.min, param.max)
+learnerDataQuery += ";"
+print learnerDataQuery
+
+
+
 
 
 
