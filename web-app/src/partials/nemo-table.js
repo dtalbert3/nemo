@@ -38,39 +38,38 @@ const Tbody = React.createClass({
     return (
       <tbody>
         {/* Map each 'row' to a minimal and hidden row */}
-        {this.props.rows.map((row, i) => {
+        {this.props.minimalRowsDom.map((undefined, i) => {
 
           if (this.state.open[i] === undefined) {
             this.state.open[i] = false;
           }
 
-          {/* Helper to create minimal row */}
-          const minimalRow =
+          // Surround minimal row dom in tr
+          const minimalRow = (
             <tr
-              key={i}
+              key={this.props.minimalRowsDom[i].id}
               className='custom-hover'
               onClick={() => {
                 var state = this.state.open;
                 state[i] = !this.state.open[i];
-                this.setState({ open: state });
-              }}>
-              {row.map((col, j) => {
-                return <td key={j}>{col}</td>;
-              })}
-            </tr>;
+                this.setState({ open: state }); }
+              }>
+              {this.props.minimalRowsDom[i]}
+            </tr>
+          );
 
-          {/* Helper to create hidden row */}
-          const hiddenRow =
-            <tr>
-              <td colSpan={row.length} className={this.state.open[i] ? '' : 'hidden'}>
-                <InfoWell
-                  open={this.state.open[i]}
-                  data={this.props.data[i]}
-                />
+          // Surround hidden row dom in tr
+          const hiddenRow = (
+            <tr key={this.props.hiddenRowsDom[i].id} className={this.state.open[i] ? '' : 'hidden'}>
+              <td colSpan={this.props.colCount}>
+                <Collapse in={ this.state.open[i] }>
+                  {this.props.hiddenRowsDom[i]}
+                </Collapse>
               </td>
-            </tr>;
+            </tr>
+          );
 
-          {/* Render rows */}
+          // Render rows
           return ([
             minimalRow,
             hiddenRow
@@ -81,55 +80,52 @@ const Tbody = React.createClass({
   }
 });
 
-// Helper to create well with extra information on submitted questions
-const InfoWell = React.createClass({
-
-  // Render well
-  render() {
-    var { data, open, ...props } = this.props;
-    return (
-      <Collapse in={ open }>
-        <Well bsSize='large'>
-          <h1>Hidden Content</h1>
-        </Well>
-      </Collapse>
-    );
-  }
-});
-
 // Create table to display questions within the nemo data mart
 export default React.createClass({
 
   // Once page is mounted fetch table data
   componentDidMount() {
     dash.emit('getUser', localStorage.userID, {}, (err, data) => {
-      var rows = [];
-      console.log(data);
-      data.forEach((d) => {
-        var row = [];
-
-        var question = objectByString(d, 'QuestionType.Type') + ' ' +
-          objectByString(d, 'QuestionEvent.Name');
-        var parameters = '';
-        var numParams = Math.min(d['QuestionParameters'].length, 3);
-        for (var i = 0; i < numParams; i++) {
-          parameters += d['QuestionParameters'][i]['concept_cd'];
-          parameters += (i !== numParams - 1)
-            ? ', '
-            : (numParams < d['QuestionParameters'].length) ? ' . . .' : '';
-        }
-        var status = objectByString(d, 'QuestionStatus.Status');
-
-        row.push(question);
-        row.push(parameters);
-        row.push(status);
-
-        rows.push(row);
-      });
       if (!err) {
+        var minimalRowsDom = [];
+        var hiddenRowsDom = [];
+        console.log(data);
+        data.forEach((d) => {
+
+          // Get information to be used for minimal row
+          var question = objectByString(d, 'QuestionType.Type') + ' ' +
+            objectByString(d, 'QuestionEvent.Name');
+          var parameters = '';
+          var numParams = Math.min(d['QuestionParameters'].length, 3);
+          for (var i = 0; i < numParams; i++) {
+            parameters += d['QuestionParameters'][i]['concept_cd'];
+            parameters += (i !== numParams - 1)
+              ? ', '
+              : (numParams < d['QuestionParameters'].length) ? ' . . .' : '';
+          }
+          var status = objectByString(d, 'QuestionStatus.Status');
+
+          // Create minimal row
+          var minimalRow = ([
+            <td key={1}>{question}</td>,
+            <td key={2}>{parameters}</td>,
+            <td key={3}>{status}</td>
+          ]);
+
+          var hiddenRow = (
+            <Well bsSize='large'>
+              <h2> Hello </h2>
+            </Well>
+          );
+
+          minimalRowsDom.push(minimalRow);
+          hiddenRowsDom.push(hiddenRow);
+        });
+
         this.setState({
-          data: data,
-          rows: rows
+          rowCount: data.length,
+          minimalRowsDom: minimalRowsDom,
+          hiddenRowsDom: hiddenRowsDom
         });
       } else {
         Alert('Error Fetching Questions', 'danger', 4 * 1000);
@@ -141,13 +137,15 @@ export default React.createClass({
   // Initialize headers and rows to empty
   getInitialState() {
     return {
-      data: [],
+      rowCount: 0,
+      colCount: 3,
       headers: [
         'Question',
         'Parameters',
         'Status'
       ],
-      rows: []
+      minimalRowsDom: [],
+      hiddenRowsDom: []
     };
   },
 
@@ -157,7 +155,10 @@ export default React.createClass({
       <Table responsive condensed>
         <Thead headers={this.state.headers} />
         <Tbody
-          rows={this.state.rows}
+          rowCount={this.state.rowCount}
+          colCount={this.state.colCount}
+          minimalRowsDom={this.state.minimalRowsDom}
+          hiddenRowsDom={this.state.hiddenRowsDom}
           data={this.state.data} />
       </Table>
     );
