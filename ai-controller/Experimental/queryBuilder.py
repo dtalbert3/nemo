@@ -107,7 +107,7 @@ def getDataQuery(host, user, password, database, questionID, dataSetType):
     learnerDataQuery = "Select DISTINCT "
     # Add patient_dimension attributes to statement
     for attribute in patientAttributes:
-        learnerDataQuery += " p.{0}, ".format(attribute)    
+        learnerDataQuery += " p.{0}, ".format(attribute)
     # Add each diagnosis/lab's data to statement
     for i, param in enumerate(question.params):
         for j, attribute in enumerate(observationAttributes):
@@ -116,6 +116,7 @@ def getDataQuery(host, user, password, database, questionID, dataSetType):
             else:
                 learnerDataQuery += "o{0}.{1} as o{0}{1}, ".format(i, attribute)
 
+    learnerDataQuery += " ,pr.readmitted"
     learnerDataQuery += " from patient_dimension p"
     # Build query, add observation_fact joins for each parameter
     for i, param in enumerate(question.params):
@@ -129,6 +130,7 @@ def getDataQuery(host, user, password, database, questionID, dataSetType):
     else:
         learnerDataQuery += " INNER JOIN TestPatients tp on p.patient_num = tp.patient_num "
 
+    learnerDataQuery += " INNER JOIN PatientReadmittance pr on p.patient_num = pr.patient_num "
     # Add WHERE clause for each parameter
     if(len(question.params) > 0):
         learnerDataQuery += " WHERE "

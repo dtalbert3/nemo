@@ -26,8 +26,8 @@ iquery.password = "NEMO"
 # iquery.query = "Select * from IrisData;"
 iquery.query = learnerQuery
 learnerData = iquery.retrieve_instances()
-# data.class_is_last()   # set class attribute
-learnerData.class_index = 1 #Sets the class to gender (F or M)
+learnerData.class_is_last()   # set class attribute
+# learnerData.class_index = 1 #Sets the class to gender (F or M)
 
 print "\n\n\n"
 print "Current class: {0}".format(learnerData.class_attribute)
