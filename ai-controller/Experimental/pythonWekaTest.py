@@ -1,6 +1,8 @@
 # Test for python-weka-wrapper
 # FIRST: Follow the instructions at http://pythonhosted.org/python-weka-wrapper/install.html
 # to install python-weka-wrapper
+# To install mysql for python
+# sudo apt-get install python-mysqldb
 
 from weka.classifiers import Classifier, Evaluation
 from weka.core.classes import Random
