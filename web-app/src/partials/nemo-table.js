@@ -1,5 +1,5 @@
 import React from 'react';
-import { Collapse, Well, Table } from 'react-bootstrap';
+import { Collapse, Well, Table, Row, Col } from 'react-bootstrap';
 import Alert from './alert';
 
 import config from 'clientconfig';
@@ -95,26 +95,50 @@ export default React.createClass({
           // Get information to be used for minimal row
           var question = objectByString(d, 'QuestionType.Type') + ' ' +
             objectByString(d, 'QuestionEvent.Name');
-          var parameters = '';
-          var numParams = Math.min(d['QuestionParameters'].length, 3);
+
+          var paramsLong = '';
+          var paramsShort = '';
+          var numParams = d['QuestionParameters'].length;
           for (var i = 0; i < numParams; i++) {
-            parameters += d['QuestionParameters'][i]['concept_cd'];
-            parameters += (i !== numParams - 1)
-              ? ', '
-              : (numParams < d['QuestionParameters'].length) ? ' . . .' : '';
+            paramsLong += d['QuestionParameters'][i]['concept_cd'];
+            paramsLong += (i !== numParams - 1) ? ', ' : '';
+
+            if (i < 3) {
+              paramsShort += d['QuestionParameters'][i]['concept_cd'];
+              paramsShort += (i !== 2 && i !== numParams - 1) ? ', ' : '';
+              if (i === 2 && numParams > 3) {
+                paramsShort += ' . . .';
+              }
+            }
           }
+
           var status = objectByString(d, 'QuestionStatus.Status');
 
           // Create minimal row
           var minimalRow = ([
             <td key={1}>{question}</td>,
-            <td key={2}>{parameters}</td>,
+            <td key={2}>{paramsShort}</td>,
             <td key={3}>{status}</td>
           ]);
 
           var hiddenRow = (
-            <Well bsSize='large'>
-              <h2> Hello </h2>
+            <Well bsStyle='sm'>
+              <Row>
+                <Col sm={6} md={6}>
+                  <dl className='dl-horizontal'>
+                    <dt>Question: </dt>
+                    <dd>{question}</dd>
+                    <dt>Parameters: </dt>
+                    <dd>{paramsLong}</dd>
+                  </dl>
+                </Col>
+                <Col sm={6} md={6}>
+                  <dl className='dl-horizontal'>
+                    <dt>Status: </dt>
+                    <dd>{status}</dd>
+                  </dl>
+                </Col>
+              </Row>
             </Well>
           );
 

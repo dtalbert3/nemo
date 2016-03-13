@@ -31,7 +31,7 @@ export default React.createClass({
   render() {
     return (
       <div id='base'>
-        <Navbar staticTop={true}>
+        <Navbar>
           <Navbar.Header>
             <Navbar.Brand>
               <Link to='/'>Nemo</Link>

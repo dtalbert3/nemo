@@ -33,7 +33,7 @@ export default React.createClass({
 
   render() {
     return (
-      <Col md={4} mdOffset={4}>
+      <Col sm={4} smOffset={4} md={4} mdOffset={4}>
         <form className='form-signin' onSubmit={this.handleSubmit} autoComplete='on'>
           <h2 className='form-signin-heading'>Please sign in</h2>
           <Input ref='email' type='email' label='Email Address' placeholder='Enter email' required={true} />
