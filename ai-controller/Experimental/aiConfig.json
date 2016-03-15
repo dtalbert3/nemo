@@ -1,0 +1,8 @@
+{
+  "MAX_QUEUE_SIZE": 5,
+  "MAX_NUM_THREADS": 3,
+  "HOST": "codyemoffitt.com",
+  "USER": "NEMO_WEB",
+  "f": "NEMO",
+  "DB": "NEMO_Datamart"
+}
