@@ -15,6 +15,10 @@ HOST = None
 USER = None
 PASS = None
 DB = None
+QUEUEDSTATUS = None
+RUNNINGSTATUS = None
+AWAITINGFEEDBACKSTATUS = None
+
 
 semaphore = threading.BoundedSemaphore(MAX_NUM_THREADS)
 queue = Queue.Queue()
@@ -54,7 +58,7 @@ def loadConfig():
             print "No previous config to restore to."
 
 def setConfig(config):
-    global MAX_QUEUE_SIZE, MAX_NUM_THREADS, HOST, PASS, USER, DB, semaphore
+    global MAX_QUEUE_SIZE, MAX_NUM_THREADS, HOST, PASS, USER, DB, QUEUEDSTATUS,RUNNINGSTATUS, AWAITINGFEEDBACKSTATUS, semaphore
     MAX_QUEUE_SIZE = config['MAX_QUEUE_SIZE']
     MAX_NUM_THREADS = config['MAX_NUM_THREADS']
     semaphore = threading.BoundedSemaphore(MAX_NUM_THREADS)
@@ -62,10 +66,13 @@ def setConfig(config):
     USER = config['USER']
     PASS = config['PASS']
     DB = config['DB']
+    QUEUEDSTATUS = config['QUEUEDSTATUS']
+    RUNNINGSTATUS =  config['RUNNINGSTATUS']
+    AWAITINGFEEDBACKSTATUS =  config['AWAITINGFEEDBACKSTATUS']
 
 # Fetch questions to be worked on by their di
 def fetchQuestions():
-    global MAX_QUEUE_SIZE, HOST, PASS, USER, DB
+    global MAX_QUEUE_SIZE, HOST, PASS, USER, DB, QUEUEDSTATUS,RUNNINGSTATUS, AWAITINGFEEDBACKSTATUS
     global queue
     # try:
     db = MySQLdb.connect(HOST, USER, PASS, DB)
@@ -74,6 +81,7 @@ def fetchQuestions():
     cursor.execute(
         "SELECT ID " +
         "FROM Question " +
+        "WHERE StatusID = " + str(QUEUEDSTATUS) + " " +
         "ORDER BY DateModified DESC " +
         "LIMIT " + str(MAX_QUEUE_SIZE))
     results = cursor.fetchall()

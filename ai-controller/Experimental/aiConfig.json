@@ -4,5 +4,8 @@
   "HOST": "codyemoffitt.com",
   "USER": "NEMO_WEB",
   "PASS": "NEMO",
-  "DB": "NEMO_Datamart"
+  "DB": "NEMO_Datamart",
+  "QUEUEDSTATUS": 1,
+  "RUNNINGSTATUS": 2,
+  "AWAITINGFEEDBACKSTATUS": 3
 }
