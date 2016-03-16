@@ -9,7 +9,7 @@ import os
 CONFIG = None
 MAX_QUEUE_SIZE = 10
 MAX_NUM_THREADS = 1
-TIMEOUT = 5 # in seconds
+TIMEOUT = 5 * 60 # In seconds
 
 HOST = None
 USER = None
@@ -25,8 +25,7 @@ def printConfig():
 
 # Load CONFIG file for settings to be used during runtime
 def loadConfig():
-    global MAX_QUEUE_SIZE, MAX_NUM_THREADS, HOST, PASS, USER, DB, CONFIG
-    global semaphore
+    global CONFIG
 
     if os.path.isfile('aiConfig.json'):
         try:
@@ -44,34 +43,25 @@ def loadConfig():
         return
 
     try:
-            MAX_QUEUE_SIZE = NEW_CONFIG['MAX_QUEUE_SIZE']
-            MAX_NUM_THREADS = NEW_CONFIG['MAX_NUM_THREADS']
-            semaphore = threading.BoundedSemaphore(MAX_NUM_THREADS)
-
-            # Set database config
-
-            HOST = NEW_CONFIG['HOST']
-            USER = NEW_CONFIG['USER']
-            PASS = NEW_CONFIG['PASS']
-            DB = NEW_CONFIG['DB']
-            CONFIG = NEW_CONFIG
+        setConfig(NEW_CONFIG)
+        CONFIG = NEW_CONFIG
     except KeyError as e:
-        print e
-        print "Reverting to old config"
-
+        print 'No keyfield for', e
         if CONFIG != None:
-            MAX_QUEUE_SIZE = CONFIG['MAX_QUEUE_SIZE']
-            MAX_NUM_THREADS = CONFIG['MAX_NUM_THREADS']
-            semaphore = threading.BoundedSemaphore(MAX_NUM_THREADS)
-
-            # Set database config
-
-            HOST = CONFIG['HOST']
-            USER = CONFIG['USER']
-            PASS = CONFIG['PASS']
-            DB = CONFIG['DB']
+            print "Reverting to old config"
+            setConfig(CONFIG)
         else:
             print "No previous config to restore to."
+
+def setConfig(config):
+    global MAX_QUEUE_SIZE, MAX_NUM_THREADS, HOST, PASS, USER, DB, semaphore
+    MAX_QUEUE_SIZE = config['MAX_QUEUE_SIZE']
+    MAX_NUM_THREADS = config['MAX_NUM_THREADS']
+    semaphore = threading.BoundedSemaphore(MAX_NUM_THREADS)
+    HOST = config['HOST']
+    USER = config['USER']
+    PASS = config['PASS']
+    DB = config['DB']
 
 # Fetch questions to be worked on by their di
 def fetchQuestions():
@@ -81,7 +71,11 @@ def fetchQuestions():
     db = MySQLdb.connect(HOST, USER, PASS, DB)
     # except
     cursor = db.cursor()
-    cursor.execute("SELECT ID FROM Question LIMIT " + str(MAX_QUEUE_SIZE))
+    cursor.execute(
+        "SELECT ID " +
+        "FROM Question " +
+        "ORDER BY DateModified DESC " +
+        "LIMIT " + str(MAX_QUEUE_SIZE))
     results = cursor.fetchall()
     for row in results:
         queue.put(row[0])
