@@ -1,20 +1,29 @@
 {
-  "MAX_QUEUE_SIZE": 10,
-  "MAX_NUM_THREADS": 3,
-  "HOST": "codyemoffitt.com",
-  "USER": "NEMO_WEB",
-  "PASS": "NEMO",
-  "DB": "NEMO_Datamart",
-  "QUEUEDSTATUS": 1,
-  "RUNNINGSTATUS": 2,
-  "AWAITINGFEEDBACKSTATUS": 3,
-  "ALGORITHM_LIST":
-   {
-    "RandomForest":
-      {"CVDefault": ""},
-    "SVM":
-      {"CVDefault": ""},
-    "NaiveBayes":
-      {"CVDefault": ""}
+  "CONTROLLER": {
+    "MAX_QUEUE_SIZE": 10,
+    "MAX_NUM_THREADS": 3
   },
+  "DATABASE": {
+    "HOST": "codyemoffitt.com",
+    "USER": "NEMO_WEB",
+    "PASS": "NEMO",
+    "DB": "NEMO_Datamart",
+    "QUEUED_STATUS": 1,
+    "RUNNING_STATUS": 2,
+    "AWAITING_FEEDBACK_STATUS": 3
+  },
+  "ALGORITHMS": {
+    "RandomForest": {
+      "Active": true,
+      "CVDefault": ""
+    },
+    "SVM":{
+      "Active": true,
+      "CVDefault": ""
+    },
+    "NaiveBayes": {
+      "Active": true,
+      "CVDefault": ""
+    }
+  }
 }
