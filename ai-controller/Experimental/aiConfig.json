@@ -7,5 +7,14 @@
   "DB": "NEMO_Datamart",
   "QUEUEDSTATUS": 1,
   "RUNNINGSTATUS": 2,
-  "AWAITINGFEEDBACKSTATUS": 3
+  "AWAITINGFEEDBACKSTATUS": 3,
+  "ALGORITHM_LIST":
+   {
+    "RandomForest":
+      {"CVDefault": ""},
+    "SVM":
+      {"CVDefault": ""},
+    "NaiveBayes":
+      {"CVDefault": ""}
+  },
 }
