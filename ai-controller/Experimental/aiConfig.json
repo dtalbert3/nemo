@@ -3,6 +3,6 @@
   "MAX_NUM_THREADS": 3,
   "HOST": "codyemoffitt.com",
   "USER": "NEMO_WEB",
-  "f": "NEMO",
+  "PASS": "NEMO",
   "DB": "NEMO_Datamart"
 }
