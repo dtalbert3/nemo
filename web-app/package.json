@@ -132,8 +132,6 @@
     "postinstall": "apidoc -i ./ -f \".*Api\\.js\"  -o public/apidoc"
   },
   "pre-commit": [
-    "lint",
-    "validate",
-    "test"
+    "lint"
   ]
 }
