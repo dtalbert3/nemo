@@ -23,15 +23,12 @@ def validate(config):
 
         RandomForest = ALGORITHMS['RandomForest']
         Active = RandomForest['Active']
-        CVDefault = RandomForest['CVDefault']
 
         SVM = ALGORITHMS['SVM']
         Active = SVM['Active']
-        CVDefault = SVM['CVDefault']
 
         NaiveBayes = ALGORITHMS['NaiveBayes']
         Active = NaiveBayes['Active']
-        CVDefault = NaiveBayes['CVDefault']
         return True
     except KeyError as e:
         print 'Invalid config file, ', e

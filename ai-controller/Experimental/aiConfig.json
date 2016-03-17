@@ -1,7 +1,8 @@
 {
   "CONTROLLER": {
     "MAX_QUEUE_SIZE": 10,
-    "MAX_NUM_THREADS": 3
+    "MAX_NUM_THREADS": 3,
+    "TIMEOUT": 300
   },
   "DATABASE": {
     "HOST": "codyemoffitt.com",
@@ -15,15 +16,32 @@
   "ALGORITHMS": {
     "RandomForest": {
       "Active": true,
-      "CVDefault": ""
+      "DefaultCVParams": {
+        "CV_I": "I 1 100 100",
+        "CV_K": "K 1 100 100",
+        "CV_S": "S 1 100 100"
+      },
+      "DefaultOptions": {
+        "CV_O": true,
+        "CV_B": true
+      }
     },
     "SVM":{
       "Active": true,
-      "CVDefault": ""
+      "DefaultCVParams": {
+        "CV_C": "C 1 4 4",
+        "CV_V": "V 1 5 5",
+        "CV_W": "W 1 10 10"
+      },
+      "DefaultOptions": {}
     },
     "NaiveBayes": {
       "Active": true,
-      "CVDefault": ""
+      "DefaultCVParams": {},
+      "DefaultOptions": {
+        "CV_K": true,
+        "CV_D": true
+      }
     }
   }
 }
