@@ -43,7 +43,8 @@ print learnerData
 #SMO SVM
 #cls = Classifier(classname="weka.classifiers.functions.SMO")
 #Random Forest
-cls = Classifier(classname="weka.classifiers.trees.RandomForest")
+#cls = Classifier(classname="weka.classifiers.trees.RandoForest")
+cls = Classifier(classname="weka.classifiers.meta.CVParameterSelection", options=["-W", "weka.classifiers.bayes.NaiveBayes"])
 cls.build_classifier(learnerData)
 for index, inst in enumerate(learnerData):
     pred = cls.classify_instance(inst)
