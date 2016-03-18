@@ -127,7 +127,7 @@ def getDataQuery(host, user, password, database, questionID, dataSetType):
     # Add the learner or test patients join to select only learner or test patients
     if(dataSetType.upper() == "LEARNER"):
         learnerDataQuery += " INNER JOIN LearnerPatients lp on p.patient_num = lp.patient_num "
-    else:
+    elif(dataSetType.upper() == "TEST"):
         learnerDataQuery += " INNER JOIN TestPatients tp on p.patient_num = tp.patient_num "
 
     learnerDataQuery += " INNER JOIN PatientReadmittance pr on p.patient_num = pr.patient_num "
