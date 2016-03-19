@@ -27,11 +27,9 @@ class nemoApi():
     def addModel(self, id, value, accuracy, blob, algorithm, active):
         db = MySQLdb.connect(self.host, self.user, self.password, self.database)
         cursor = db.cursor()
-        cursor.execute(
-            "INSERT INTO AIModel(QuestionID, Value, Accuracy, AI, Algorithm, Active) " +
-            "VALUES (%(id)d, %(val)f, %(acc)f, %(blob)s, %(alg)s, %(active)s)" %
-            {"id": id, "val": value, "acc": accuracy, "blob": blob, "alg": algorithm, "active": active}
-        )
+        sql = "INSERT INTO AIModel(QuestionID, Value, Accuracy, AI, Algorithm, Active) " + \
+            "VALUES (%s, %s, %s, %s, %s, %s)"
+        cursor.execute(sql, (id, value, accuracy, blob, algorithm, active))
         db.commit()
         db.close()
 
@@ -61,8 +59,6 @@ class nemoApi():
         db.close()
         # Return true/false?
 
-    def getDataQuery(self, id, data):
-        print id, data
     # Get info on specific question
     def fetchQuestionInfo(self, id):
         db = MySQLdb.connect(self.host, self.user, self.password, self.database)
@@ -73,7 +69,7 @@ class nemoApi():
             "WHERE QuestionID = " + str(id) + " " +
             "ORDER BY DateModified DESC " +
             "LIMIT 1")
-        result = cursor.fetchone()
+        result =  cursor.fetchone()
         db.close()
         return result
 
@@ -93,45 +89,44 @@ class nemoApi():
         questionQuery = "Select * from Question where ID = %d" % questionID
 
         try:
-           # Execute the SQL command
-           cursor.execute(questionQuery)
-           # Fetch all the rows in a list of lists.
-           results = cursor.fetchall()
-           for row in results:
-              questionID = row["ID"]
-              userID = row["UserID"]
-              statusID = row["StatusID"]
-              typeID = row["TypeID"]
-              eventID = row["EventID"]
-              question = Question(questionID, userID, statusID, typeID, eventID)
-
+            # Execute the SQL command
+            cursor.execute(questionQuery)
+            # Fetch all the rows in a list of lists.
+            results = cursor.fetchall()
+            for row in results:
+                questionID = row["ID"]
+                userID = row["UserID"]
+                statusID = row["StatusID"]
+                typeID = row["TypeID"]
+                eventID = row["EventID"]
+                question = Question(questionID, userID, statusID, typeID, eventID)
         except:
-           print "Error: Unable to fetch question data"
+            print "Error: Unable to fetch question data"
 
         # Get Parameter info
         paramQuery = "Select * from QuestionParameter where QuestionID = %d" % questionID
 
         try:
-           # Execute the SQL command
-           cursor.execute(paramQuery)
-           # Fetch all the rows in a list of lists.
-           results = cursor.fetchall()
-           for row in results:
-              id = row["ID"]
-              #self.QuestionID = questionID
-              tval_char = row["tval_char"]
-              nval_num = row["nval_num"]
-              concept_path = row["concept_path"]
-              concept_cd = row["concept_cd"]
-              valtype_cd = row["valtype_cd"]
-              tableName = row["TableName"]
-              tableColumn = row["TableColumn"]
-              min = row["min"]
-              max = row["max"]
-              parameter = Parameter(id, questionID, tval_char, nval_num, concept_path, concept_cd, valtype_cd, tableName, tableColumn, min, max)
-              question.addParam(parameter)
+            # Execute the SQL command
+            cursor.execute(paramQuery)
+            # Fetch all the rows in a list of lists.
+            results = cursor.fetchall()
+            for row in results:
+                id = row["ID"]
+                #self.QuestionID = questionID
+                tval_char = row["tval_char"]
+                nval_num = row["nval_num"]
+                concept_path = row["concept_path"]
+                concept_cd = row["concept_cd"]
+                valtype_cd = row["valtype_cd"]
+                tableName = row["TableName"]
+                tableColumn = row["TableColumn"]
+                min = row["min"]
+                max = row["max"]
+                parameter = Parameter(id, questionID, tval_char, nval_num, concept_path, concept_cd, valtype_cd, tableName, tableColumn, min, max)
+                question.addParam(parameter)
         except:
-           print "Error: Unable to fetch parameter data"
+            print "Error: Unable to fetch parameter data"
 
         # Need to be able to dynamically build a query as below
         # Sample query of question with two parameters, ICD9:427.9 and ICD9:382.9
