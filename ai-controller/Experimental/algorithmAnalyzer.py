@@ -1,53 +1,49 @@
 import MySQLdb
 import MySQLdb.cursors
 import random
+from nemoApi import nemoApi
+from nemoConfig import nemoConfig
+from wekaWrapper import WekaWrapper
 
-CONFIG = None
+def run(id):
+    api = nemoApi()
+    config = nemoConfig()
 
-def updateQuestionStatus(id, status):
-    global CONFIG
-    DATABASE = CONFIG['DATABASE']
-    db = MySQLdb.connect(DATABASE['HOST'], DATABASE['USER'], DATABASE['PASS'], DATABASE['DB'])
-    cursor = db.cursor()
-    cursor.execute(
-        "UPDATE Question " +
-        "SET StatusID = " + str(status) + " "
-        "WHERE ID = " + str(id))
-    db.commit()
+    # Set question status running
+    # api.updateQuestionStatus(id, config.RUNNING_STATUS)
 
-def fetchInfo(id):
-    global CONFIG
-    DATABASE = CONFIG['DATABASE']
-    db = MySQLdb.connect(DATABASE['HOST'], DATABASE['USER'], DATABASE['PASS'], DATABASE['DB'])
-    cursor = db.cursor(cursorclass=MySQLdb.cursors.DictCursor)
-    cursor.execute(
-        "SELECT ID, Accuracy, AIFeedback, PredictionFeedback, Algorithm " +
-        "FROM AIModel " +
-        "WHERE QuestionID = " + str(id) + " " +
-        "ORDER BY DateModified DESC " +
-        "LIMIT 1")
-    return cursor.fetchone()
+    # Fetch question info
+    info = api.fetchQuestionInfo(id)
 
-# def defaultCVParams(id):
-
-def run(id, config):
-    global CONFIG
-    CONFIG = config
-
-    info = fetchInfo(id)
+    # Declare vars to collect
     algorithm = None
-    params = None
+    parameters = None
     options = None
+
+    # Determine which algorithm to use
     if info is None:
-        algorithms = {k: v for k, v in CONFIG['ALGORITHMS'].iteritems() if v['Active'] is True}
+        # If this is the first time running, choose one at random
+        algorithms = {k: v for k, v in config.ALGORITHMS.iteritems() if v['Active'] is True}
         algorithm = random.choice(algorithms.keys())
     else:
+        # Need to check if algorithm picked is currently active
         algorithm = info['Algorithm']
 
-    # if alg == 'RandomForest':
-        # Run wrapper
-    # elif alg == 'SVM':
-        # Run wrapper
-    # elif alg == 'NaiveBayes':
-        # Run wrapper
-    # updateQuestionStatus(id, config['DATABASE']['RUNNING_STATUS'])
+    # Get parameters
+
+    # Get options
+
+    # Run
+    instance = None
+    if algorithm == "SMO":
+        instance = WekaWrapper(id, 'weka.classifiers.functions.SMO', parameters)
+    elif algorithm == "RandomForest":
+        instance = WekaWrapper(id, 'weka.classifiers.trees.RandoForest', parameters)
+    elif algorithm == "NaiveBayes":
+        instance = WekaWrapper(id, 'weka.classifiers.bayes.NaiveBayes', parameters)
+
+    # instance.run()
+
+    print algorithm
+    # Set question status to awaiting feedback
+    # api.updateQuestionStatus(id, config.AWAITING_FEEDBACK_STATUS)

@@ -1,70 +1,44 @@
-import json
+#!/usr/bin/python
+
 import threading
 import Queue
-import MySQLdb
-import MySQLdb.cursors
 import time
 
-import config
+from nemoApi import nemoApi
+from nemoConfig import nemoConfig
 import algorithmAnalyzer
 
-CONFIG = None
-SEMAPHORE = None
-
-# Load config file for settings to be used during runtime
-def loadConfig():
-    global CONFIG, SEMAPHORE
-
-    NEW_CONFIG = config.load('aiConfig.json')
-
-    if config.validate(NEW_CONFIG):
-        CONFIG = NEW_CONFIG
-        CONTROLLER = CONFIG['CONTROLLER']
-        SEMAPHORE = threading.BoundedSemaphore(CONTROLLER['MAX_NUM_THREADS'])
-
-# Fetch questions to be worked on by their di
-def fetchQuestions(queue):
-    global CONFIG
-    DATABASE = CONFIG['DATABASE']
-    CONTROLLER = CONFIG['CONTROLLER']
-    db = MySQLdb.connect(DATABASE['HOST'], DATABASE['USER'], DATABASE['PASS'], DATABASE['DB'])
-    cursor = db.cursor(cursorclass=MySQLdb.cursors.DictCursor)
-    cursor.execute(
-        "SELECT ID " +
-        "FROM Question " +
-        # "WHERE StatusID = " + str(DATABASE['QUEUED_STATUS']) + " " +
-        "ORDER BY DateModified DESC " +
-        "LIMIT " + str(CONTROLLER['MAX_QUEUE_SIZE']))
-    results = cursor.fetchall()
-    for row in results:
-        queue.put(row['ID'])
-    db.close()
-
 # Create worker to process question
-def worker(id, SEMAPHORE):
-    global CONFIG
-    algorithmAnalyzer.run(id, CONFIG)
-    SEMAPHORE.release()
+def worker(id, s):
+    algorithmAnalyzer.run(id)
+    s.release()
 
 def main():
-    global CONFIG, SEMAPHORE
 
-    SEMAPHORE = threading.BoundedSemaphore(1)
-    # Fetch config
-    loadConfig()
-    if CONFIG is None:
+    # Load config file
+    CONFIG = nemoConfig('nemoConfig.json')
+    if CONFIG.CONFIG is None:
         print 'Could not load config file on . . .'
+        return
 
-    queue = Queue.Queue()
+    # Set semaphore
+    SEMAPHORE = threading.BoundedSemaphore(CONFIG.MAX_NUM_THREADS)
+
+    # Instantiate api for use by sub modules
+    API = nemoApi(CONFIG.HOST, CONFIG.PORT, CONFIG.USER, CONFIG.PASS, CONFIG.DB)
+
+    QUEUE = Queue.Queue()
     # Run indefinitely
     while True:
-        fetchQuestions(queue)
-        if queue.empty():
-            time.sleep(CONFIG['CONTROLLER']['TIMEOUT'])
+        RESULTS = API.fetchQuestions(CONFIG.MAX_QUEUE_SIZE, CONFIG.QUEUED_STATUS)
+        for ROW in RESULTS:
+            QUEUE.put(ROW['ID'])
+        if QUEUE.empty():
+            time.sleep(CONFIG.TIMEOUT)
         else:
-            while not queue.empty():
+            while not QUEUE.empty():
                 SEMAPHORE.acquire()
-                t = threading.Thread(target=worker, args=(queue.get(), SEMAPHORE))
+                t = threading.Thread(target=worker, args=(QUEUE.get(), SEMAPHORE))
                 t.start()
 
 if  __name__ =='__main__':
