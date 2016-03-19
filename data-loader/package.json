@@ -19,7 +19,8 @@
     "sequelize": "~3.19.1",
     "pg": "~4.4.4",
     "pg-hstore": "~2.3.2",
-    "promise": "~7.1.1"
+    "promise": "~7.1.1",
+    "q": "~1.4.1"
   },
   "peerDependencies": {},
   "devDependencies": {
