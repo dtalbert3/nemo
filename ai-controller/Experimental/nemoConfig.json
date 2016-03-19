@@ -6,6 +6,7 @@
   },
   "DATABASE": {
     "HOST": "codyemoffitt.com",
+    "PORT": 3306,
     "USER": "NEMO_WEB",
     "PASS": "NEMO",
     "DB": "NEMO_Datamart",
@@ -26,7 +27,7 @@
         "CV_B": true
       }
     },
-    "SVM":{
+    "SMO":{
       "Active": true,
       "DefaultCVParams": {
         "CV_C": "C 1 4 4",
