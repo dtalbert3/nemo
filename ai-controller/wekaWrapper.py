@@ -7,11 +7,15 @@ from weka.core.database import InstanceQuery
 # from weka.classifiers.meta import CVParameterSelection
 import weka.core.serialization as serialization
 import weka.core.jvm as jvm
+import javabridge
 
 import os
 
 from nemoApi import nemoApi
 from nemoConfig import nemoConfig
+
+# Start JVM on import
+jvm.start(class_path=["mysql-connector-java-5.1.38-bin.jar"])
 
 class WekaWrapper:
 
@@ -24,8 +28,6 @@ class WekaWrapper:
 		self.config = nemoConfig()
 
 	def retrieveData(self, id, dataset):
-		# print self.api.__dir__()
-		# api = self.api.fetchQuestions(123, 2)
 		query = self.api.getDataQuery(id, dataset)
 		iquery = InstanceQuery()
 		iquery.db_url = "jdbc:mysql://" + self.config.HOST + ":" + str(self.config.PORT) + "/" + self.config.DB
@@ -41,13 +43,17 @@ class WekaWrapper:
 		self.api.addModel(self.questionID, '?', self.acc, self.model, self.algorithm, False)
 
 	def run(self):
-		# Startup JVM
-		jvm.start(class_path=["mysql-connector-java-5.1.38-bin.jar"])
+		# Attach JVM
+		javabridge.attach()
 
 		# Get data for testing and learning
 		learnerData = self.retrieveData(self.questionID, "learner")
 		testData = self.retrieveData(self.questionID, 'test')
 		masterData = self.retrieveData(self.questionID, 'all')
+
+		# Check if there is enough correct data to run
+		if (learnerData.num_instances < 1 or testData.num_instances < 1):
+			return False
 
 		# Fix data up
 		masterData.delete()
@@ -76,10 +82,15 @@ class WekaWrapper:
 		evl.test_model(self.cls, test)
 
 		self.acc = evl.percent_correct
-		print(evl.summary())
+		self.val = None
 
+		print 'Classifier: ', self.classifier
+		print 'ID: ', self.questionID
+		print 'ACC: ', self.acc
+		# print(evl.summary())
+		
 		# Temporarily store file to serialize to
-		fileName = str(self.questionID) + ".model"
+		fileName = str(self.questionID) + self.algorithm + ".model"
 		serialization.write(fileName, self.cls)
 
 		# Open that file and store it
@@ -90,12 +101,14 @@ class WekaWrapper:
 		# Remove temporary file
 		os.remove(fileName)
 
-		jvm.stop()
+		# jvm.stop()
+		print '\nFINISHED JOB\n'
+		return True
 
 # Main method for direct testing
 def main():
 	# Load config file
-	CONFIG = nemoConfig('nemoConfig.json')
+	CONFIG = nemoConfig('config/nemoConfig.json')
 
 	# Instantiate api
 	API = nemoApi(CONFIG.HOST, CONFIG.PORT, CONFIG.USER, CONFIG.PASS, CONFIG.DB)
@@ -103,5 +116,6 @@ def main():
 	instance = WekaWrapper(123, 'J48', 'weka.classifiers.trees.J48', ["-C", "0.3"])
 	instance.run()
 	instance.uploadData()
+
 if  __name__ =='__main__':
 	main()

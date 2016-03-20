@@ -25,11 +25,14 @@ def run(id):
         algorithms = {k: v for k, v in config.ALGORITHMS.iteritems() if v['Active'] is True}
         algorithm = random.choice(algorithms.keys())
     else:
-        # Need to check if algorithm picked is currently active
+        # Need to check if algorithm picked is currently active in config file
+        # IF we need to swtich algs based on info of ai model
         algorithm = info['Algorithm']
 
     # Get parameters
 
+
+    # TODO: Next iteration, maybe?
     # Get options
 
     # Run
@@ -37,13 +40,10 @@ def run(id):
     if algorithm == "SMO":
         instance = WekaWrapper(id, algorithm, 'weka.classifiers.functions.SMO', parameters)
     elif algorithm == "RandomForest":
-        instance = WekaWrapper(id, algorithm, 'weka.classifiers.trees.RandoForest', parameters)
+        instance = WekaWrapper(id, algorithm, 'weka.classifiers.trees.RandomForest', parameters)
     elif algorithm == "NaiveBayes":
         instance = WekaWrapper(id, algorithm, 'weka.classifiers.bayes.NaiveBayes', parameters)
+    elif algorithm == "J48": # TODO: J48 THREADS WILL CRASH
+        instance = WekaWrapper(id, algorithm, 'weka.classifiers.trees.J48', parameters)
 
-    # TODO: J48 THREADS WILL CRASH
-
-    # instance.run()
-    print algorithm
-    # Set question status to awaiting feedback
-    # api.updateQuestionStatus(id, config.AWAITING_FEEDBACK_STATUS)
+    return instance

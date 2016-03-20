@@ -1,5 +1,4 @@
 #!/usr/bin/python
-
 import threading
 import Queue
 import time
@@ -8,12 +7,34 @@ from nemoApi import nemoApi
 from nemoConfig import nemoConfig
 import algorithmAnalyzer
 
+API = None
+CONFIG = None
+
 # Create worker to process question
 def worker(id, s):
-    algorithmAnalyzer.run(id)
+    global API, CONFIG
+
+    # Set question status to running
+    # API.updateQuestionStatus(id, CONFIG.RUNNING_STATUS)
+
+    # Determine which alogirthm to use
+    instance = algorithmAnalyzer.run(id)
+    print instance
+    # Run algorithm if analyzer returned algorithm
+    if instance is not None:
+        instance.run()
+        # Check if we can upload
+        # Upload alogirthms results and feedback to datamart
+        # instance.uploadData()
+
+        # Set question status to awaiting feedback
+        # API.updateQuestionStatus(id, CONFIG.AWAITING_FEEDBACK_STATUS)
+
+        # Release thread
     s.release()
 
 def main():
+    global API, CONFIG
 
     # Load config file
     CONFIG = nemoConfig('config/nemoConfig.json')

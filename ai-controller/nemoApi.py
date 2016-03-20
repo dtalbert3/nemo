@@ -40,7 +40,7 @@ class nemoApi():
         cursor.execute(
             "SELECT ID " +
             "FROM Question " +
-            # "WHERE StatusID = " + str(status) + " " +
+            "WHERE StatusID = " + str(status) + " " +
             "ORDER BY DateModified DESC " +
             "LIMIT " + str(limit))
         results = cursor.fetchall()
