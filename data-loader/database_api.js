@@ -119,13 +119,29 @@ function updateAIFeedback(params, callback) {
 			};
 			return aiModelModel.upsert(updatedAiModel, { 
 				transaction: t
+			}).then(function() {
+				var qid = aiModel.QuestionID;
+				return questionModel.findById(qid)
+					.then(function(question) {
+						var updatedQuestion = {
+							ID: question.ID,
+							UserID: question.UserID,
+							StatusID: 1,
+							EventID: question.EventID,
+							TypeID: question.TypeID
+						};
+						return questionModel.upsert(updatedQuestion, {
+							transaction: t
+						});
+				});
 			});
 		});
 	}).catch(function(error) {
 		return callback(error, null);
 	});
 }
-				
+			
+/*
 var params = {
 	value: 1,
 	aiModelID: 57
@@ -134,6 +150,7 @@ var params = {
 updateAIFeedback(params, function(x, y) {
 	return x;
 });
+*/
 
 function createQuestion(params, callback) {
 	// Compile a question attributes for upsert
