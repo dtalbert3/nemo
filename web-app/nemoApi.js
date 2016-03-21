@@ -378,7 +378,12 @@ exports.dashboardService = function(socket, hooks) {
     sequelize.transaction(function() {
       var userID = id;
       return questionModel.findAll({
-        include: [questionParameterModel, aiModelModel, {
+<<<<<<< HEAD
+        include: [questionParameterModel, {
+          model: aiModelModel,
+          order: [['DateModified', 'DESC']],
+          limit: 1
+        }, {
           model: questionStatusModel,
           required: true //Inner join
         }, {
@@ -396,6 +401,31 @@ exports.dashboardService = function(socket, hooks) {
         where: {
           UserID: userID
         }
+=======
+        include: [questionParameterModel,
+          {
+            model: aiModelModel,
+            order: [['DateModfied', 'Desc']],
+            limit: 1
+          }, {
+            model: questionStatusModel,
+            required: true //Inner join
+          }, {
+            model: questionTypeModel,
+            required: true //Inner join
+          }, {
+            model: questionEventModel,
+            required: true //Inner join
+          }],
+          offset: offset,
+          limit: limit,
+          order: [
+            [orderColumn, order]
+          ],
+          where: {
+            UserID: userID
+          }
+>>>>>>> 8d813b6a89d62aaa4b0e85af51335bc8590f3ee2
       }).then(function(d) {
         // Return data to callback
         return callback(null, d);
