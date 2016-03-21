@@ -50,9 +50,5 @@
     "lint": "jshint .",
     "validate": "npm ls"
   },
-  "pre-commit": [
-    "lint",
-    "validate",
-    "test"
-  ]
+  "pre-commit": []
 }
