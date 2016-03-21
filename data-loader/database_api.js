@@ -37,6 +37,9 @@ var questionEventModel = require('./models/NEMO/QuestionEvent')(
 var aiModelModel = require('./models/NEMO/AIModel')(
 	Sequelize);
 
+var aiModelParamsModel = require('./models/NEMO/AIModelParams')(
+	Sequelize);
+
 var aiParameterModel = require('./models/NEMO/AIParameter')(
 	Sequelize);
 
@@ -167,11 +170,13 @@ var param = {
 			//upper_bound: 1
 	}]
 };
+/*
 console.log('---------------------------------------------------');
 createQuestion(param, function(x, y) {
 	return x;
 });
 console.log('---------------------------------------------------');
+*/
 
 /* Edit Question:
 	Takes attributes of question and parameters of question in object format
@@ -309,41 +314,63 @@ function deleteQuestion(data, params, callback) {
 				var aiModelDataIDList = aiModelData.map(function(a) {
 					return a.dataValues.ID;
 				});
-				//Destroy the AI models
-				return aiModelModel.destroy({
+				// Find all of the AI Model Parameters
+				return aiModelModel.findAll({
 					where: {
-						ID: {
+						AIModel: {
 							$in: aiModelDataIDList
 						}
 					}
-				}).then(function() {
-					//Finally delete the question itself
-					return questionModel.destroy({
+				}).then(function(aiModelParamsData) {
+					var aiModelParamsList = aiModelParamsData.map(function(b) {
+						return a.dataValues.AIModel;
+					});
+					// Destroy all of the AI model parameters
+					return aiModelParamsModel.destroy({
 						where: {
-							ID: data.ID,
+							AIModel: {
+								$in: aiModelParamsList
+							}
 						}
+					}).then(function() {
+						//Destroy the AI models
+						return aiModelModel.destroy({
+							where: {
+								ID: {
+									$in: aiModelDataIDList
+								}
+							}
+						}).then(function() {
+							//Finally delete the question itself
+							console.log("About to delete question: " + data.ID);
+							return questionModel.destroy({
+								where: {
+									ID: data.ID,
+								}
+							});
+						});
 					});
 				});
+			}).then(function(d) {
+				// Return data to callback
+				return callback(null, d);
+			}).catch(function(error) {
+				// Return error to callback
+				console.log("error")
+				return callback(error, null);
 			});
 		});
-	}).then(function(d) {
-		// Return data to callback
-		return callback(null, d);
-	}).catch(function(error) {
-		// Return error to callback
-		return callback(error, null);
 	});
 }
 
 var data = {
-	ID: 105
+	ID: 116
 };
 
-/*
+console.log("deleting question:");
 deleteQuestion(data, null, function(x, y){
 	return x;
 });
-*/
 
 /* Get Questions by user:
 		Get a list of all the Questions for a particular user
