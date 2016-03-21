@@ -43,4 +43,6 @@ export default function(message = '', style = 'info', timer = 0) {
   if (timer > 0) {
     timeout = setTimeout(dismiss, timer);
   }
+
+  return alert;
 }

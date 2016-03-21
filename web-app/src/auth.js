@@ -3,11 +3,11 @@ import io from 'socket.io-client';
 import jwt from 'jsonwebtoken';
 
 const auth = io.connect(config.apiUrl + '/auth', {
-  'query': 'token=' + localStorage.token
+  'query': 'token=' + localStorage.getItem('token')
 });
 
 const user = io.connect(config.apiUrl + '/user', {
-  'query': 'token=' + localStorage.token
+  'query': 'token=' + localStorage.getItem('token')
 });
 
 export default {
@@ -19,9 +19,9 @@ export default {
       if (!error) {
         console.log(result);
         var payload = jwt.decode(result, {complete: true, force: true}).payload;
-        localStorage.token = result;
-        localStorage.userType = payload.userType;
-        localStorage.userID = payload.ID;
+        localStorage.setItem('token', result);
+        localStorage.setItem('userType', payload.userType);
+        localStorage.setItem('userID', payload.ID);
         callback(true);
       } else {
         console.log(error);
@@ -31,13 +31,10 @@ export default {
   },
 
   getToken() {
-    // possibly remove?
-    return localStorage.token;
+    return localStorage.getItem('token');
   },
 
   logout(callback) {
-    // Delete token locally and on server?
-    console.log('logging out');
     delete localStorage.token;
     delete localStorage.userType;
     if (callback) {

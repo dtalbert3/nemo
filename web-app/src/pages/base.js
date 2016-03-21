@@ -34,7 +34,7 @@ export default React.createClass({
         <Navbar>
           <Navbar.Header>
             <Navbar.Brand>
-              <Link to='/'>Nemo</Link>
+              <Link to='/user'>Nemo</Link>
             </Navbar.Brand>
             <Navbar.Toggle />
           </Navbar.Header>

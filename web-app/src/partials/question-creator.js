@@ -257,6 +257,7 @@ export default React.createClass({
 
   // Once form is mounted update possible parameters and question types/events
   componentDidMount() {
+    Alert('Loading . . . ', 'info');
     qstn.emit('getTypes', (err, data) => {
       if (!err) {
         this.setState({
@@ -276,11 +277,22 @@ export default React.createClass({
         Alert('Error Fetching Question Events', 'danger', 4 * 1000);
       }
     });
+
+    qstn.emit('getSuggestions', (err, data) => {
+      if (!err) {
+        this.setState({
+          suggestions: data
+        });
+      } else {
+        Alert('Error Fetching Question Suggestions', 'danger', 4 * 1000);
+      }
+    });
   },
 
   // Initialize question creator form
   getInitialState() {
     return {
+      suggestions: [],
       questionTypes: [],
       selectedTypeIndex: null,
       questionEvents: [],
@@ -318,7 +330,7 @@ export default React.createClass({
 
           {/* TypeAhead for finding parameters */}
           <TypeAhead
-            suggestions={[]}
+            suggestions={this.state.suggestions}
             key='ID'
             value='concept_cd'
             limit={10}

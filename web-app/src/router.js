@@ -26,26 +26,26 @@ function requireAuth(nextState, replace) {
   }
 }
 
-// function defaultPage(nextState, replace) {
-//   console.log(nextState.location.pathname);
-//   if (nextState.location.pathname === '/') {
-//     if (!Auth.loggedIn()) {
-//       replace({
-//         pathname: '/login',
-//         state: { nextPathname: nextState.location.pathname }
-//       });
-//     } else {
-//       replace({
-//         pathname: '/user',
-//         state: { nextPathname: nextState.location.pathname }
-//       });
-//     }
-//   }
-// }
+function defaultPage(nextState, replace) {
+  console.log(nextState.location.pathname);
+  if (nextState.location.pathname === '/') {
+    if (!Auth.loggedIn()) {
+      replace({
+        pathname: '/login',
+        state: { nextPathname: nextState.location.pathname }
+      });
+    } else {
+      replace({
+        pathname: '/user',
+        state: { nextPathname: nextState.location.pathname }
+      });
+    }
+  }
+}
 
 const routes = (
   <Route>
-    <Route path='/' component={Base}>
+    <Route path='/' component={Base} onEnter={defaultPage} >
       <Route path='/login' component={Login} />
       <Route path='/user' component={DashboardUser} onEnter={requireAuth} />
       {/* <Route path='/global' component={DashboardGlobal} onEnter={requireAuth} /> */}
