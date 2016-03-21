@@ -36,9 +36,9 @@ const Token = React.createClass({
   render() {
     return (
       <h4 className='token'>
-        <Label className="label label-primary" >
+        <Label className='label label-primary' >
           {this.props.token[this.props.value] + ' '}
-          <Glyphicon onClick={this.removeToken} glyph="remove" />
+          <Glyphicon onClick={this.removeToken} glyph='remove' />
         </Label>
       </h4>
     );
@@ -348,7 +348,7 @@ export default React.createClass({
             undefined
           }
 
-          <Button onClick={this.addParameter}>Add</Button>
+          <Button bsStyle='primary' onClick={this.addParameter}>Add</Button>
         </Row>
         <Row>
           {/* Render parameters as tokens */}
@@ -364,8 +364,8 @@ export default React.createClass({
         <Row>
           {/* Create buttons for submitting/clearing question*/}
           <ButtonGroup>
-            <Button onClick={this.submitQuestion}>Submit</Button>
-            <Button onClick={this.clearQuestion}>Clear</Button>
+            <Button bsStyle='success' onClick={this.submitQuestion}>Submit</Button>
+            <Button bsStyle='danger' onClick={this.clearQuestion}>Clear</Button>
           </ButtonGroup>
         </Row>
       </Grid>

@@ -42,9 +42,11 @@ const Tbody = React.createClass({
     });
   },
 
-  onClick() {
+  onClick(close) {
     this.props.onClick();
-    this.closeAll();
+    if (close) {
+      this.closeAll();
+    }
   },
 
   // Render table body
@@ -102,10 +104,10 @@ const InfoWell = React.createClass({
   handleDelete() {
     dash.emit('delete', this.props.data.ID, (err) => {
       if (!err) {
-        Alert('Question Deleted', 'danger', 4 * 1000);
-        this.props.onClick();
+        Alert('Question Deleted', 'success', 4 * 1000);
+        this.props.onClick(true);
       } else {
-        Alert('Error Deleting Questions', 'success', 4 * 1000);
+        Alert('Error Deleting Questions', 'danger', 4 * 1000);
       }
     });
   },
@@ -113,8 +115,24 @@ const InfoWell = React.createClass({
   handleFeedback() {
     var yes = this.refs.yes.checked;
     var no = this.refs.no.checked;
-    alert(no);
-    alert(yes);
+    var id = this.props.data.AIModels[0].ID;
+    if (yes || no) {
+      var params = {};
+      params.aiModelID = id;
+      if (yes) {
+        params.value = 1;
+      } else {
+        params.value = 0;
+      }
+      dash.emit('feedback', params, (err) => {
+        if (!err) {
+          Alert('Feedback Received', 'success', 4 * 1000);
+          this.props.onClick(false);
+        } else {
+          Alert('Error Giving Feedback', 'danger', 4 * 1000);
+        }
+      });
+    }
   },
 
   // Render well

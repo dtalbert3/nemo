@@ -541,7 +541,6 @@ exports.dashboardService = function(socket, hooks) {
   						}
   					}
   				}).then(function(aiModelParamsData) {
-  					console.log(aiModelParamsData);
   					var aiModelParamsList = aiModelParamsData.map(function(b) {
   						return b.dataValues.AIModel;
   					});
@@ -579,5 +578,51 @@ exports.dashboardService = function(socket, hooks) {
   			});
   		});
   	});
+  });
+
+  socket.on('feedback', function(params, callback) {
+    var val = params.value;
+    var id = params.aiModelID;
+    sequelize.transaction(function(t) {
+      return aiModelModel.findById(id)
+      .then(function(aiModel) {
+        var updatedAiModel = {
+          ID: aiModel.ID,
+          QuestionID: aiModel.QuestionID,
+          Value: aiModel.Value,
+          Accuracy: aiModel.Accuracy,
+          AIFeedback: val,
+          PredictionFeedback: aiModel.PredictionFeedback,
+          AI: aiModel.AI,
+          Algorithm: aiModel.Algorithm,
+          Active: aiModel.Active,
+          DateModified: aiModel.DateModified
+        };
+        return aiModelModel.upsert(updatedAiModel, {
+          transaction: t
+        }).then(function() {
+          var qid = aiModel.QuestionID;
+          return questionModel.findById(qid)
+            .then(function(question) {
+              var updatedQuestion = {
+                ID: question.ID,
+                UserID: question.UserID,
+                StatusID: 1,
+                EventID: question.EventID,
+                TypeID: question.TypeID
+              };
+              return questionModel.upsert(updatedQuestion, {
+                transaction: t
+              });
+          });
+        });
+      });
+    })
+    .then(function(data) {
+      return callback(null, 'success');
+    })
+    .catch(function(error) {
+      return callback(error, null);
+    });
   });
 };
