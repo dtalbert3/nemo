@@ -15,22 +15,26 @@ def worker(id, s):
     global API, CONFIG
 
     # Set question status to running
-    # API.updateQuestionStatus(id, CONFIG.RUNNING_STATUS)
+    API.updateQuestionStatus(id, CONFIG.RUNNING_STATUS)
 
     # Determine which alogirthm to use
     instance = algorithmAnalyzer.run(id)
     print instance
     # Run algorithm if analyzer returned algorithm
     if instance is not None:
-        instance.run()
-        # Check if we can upload
-        # Upload alogirthms results and feedback to datamart
-        # instance.uploadData()
 
-        # Set question status to awaiting feedback
-        # API.updateQuestionStatus(id, CONFIG.AWAITING_FEEDBACK_STATUS)
+        # Run the algorithm
+        success = instance.run()
 
-        # Release thread
+        # Check if algorithm was successful
+        # if success:
+            # Upload alogirthms results and feedback to datamart
+            # instance.uploadData()
+
+    # Set question status
+    API.updateQuestionStatus(id, instance.status)
+
+    # Release thread
     s.release()
 
 def main():
