@@ -378,7 +378,12 @@ exports.dashboardService = function(socket, hooks) {
     sequelize.transaction(function() {
       var userID = id;
       return questionModel.findAll({
-        include: [questionParameterModel, aiModelModel, {
+        include: [questionParameterModel,
+        {
+            model: aiModelModel,
+            order: [['DateModfied', 'Desc']],
+            limit: 1
+        }, {
           model: questionStatusModel,
           required: true //Inner join
         }, {

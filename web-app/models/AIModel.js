@@ -38,6 +38,10 @@ module.exports = function(sequelize) {
     Active: {
       type: 'BIT(1)',
       allowNull: true
+    },
+    DateModified: {
+      type: Sequelize.Date,
+      allowNull: true
     }
   }, {
     tableName: 'AIModel',
