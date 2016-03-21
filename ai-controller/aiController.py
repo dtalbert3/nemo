@@ -19,7 +19,7 @@ def worker(id, s):
 
     # Determine which alogirthm to use
     instance = algorithmAnalyzer.run(id)
-    print instance
+
     # Run algorithm if analyzer returned algorithm
     if instance is not None:
 
@@ -27,9 +27,9 @@ def worker(id, s):
         success = instance.run()
 
         # Check if algorithm was successful
-        # if success:
+        if success:
             # Upload alogirthms results and feedback to datamart
-            # instance.uploadData()
+            instance.uploadData()
 
     # Set question status
     API.updateQuestionStatus(id, instance.status)

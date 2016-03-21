@@ -257,7 +257,11 @@ export default React.createClass({
 
   // Once form is mounted update possible parameters and question types/events
   componentDidMount() {
-    Alert('Loading . . . ', 'info');
+    var loadAlert = Alert('Loading Question Creator', 'info');
+
+    var loadedTypes = false;
+    var loadedEvents = false;
+
     qstn.emit('getTypes', (err, data) => {
       if (!err) {
         this.setState({
@@ -266,6 +270,7 @@ export default React.createClass({
       } else {
         Alert('Error Fetching Question Types', 'danger', 4 * 1000);
       }
+      loadedTypes = true;
     });
 
     qstn.emit('getEvents', (err, data) => {
@@ -276,23 +281,20 @@ export default React.createClass({
       } else {
         Alert('Error Fetching Question Events', 'danger', 4 * 1000);
       }
+      loadedEvents = true;
     });
 
-    qstn.emit('getSuggestions', (err, data) => {
-      if (!err) {
-        this.setState({
-          suggestions: data
-        });
-      } else {
-        Alert('Error Fetching Question Suggestions', 'danger', 4 * 1000);
+    var intervalID = window.setInterval(() => {
+      if (loadedTypes && loadedEvents) {
+        document.getElementById('alert').removeChild(loadAlert);
+        clearInterval(intervalID);
       }
-    });
+    }, 1000);
   },
 
   // Initialize question creator form
   getInitialState() {
     return {
-      suggestions: [],
       questionTypes: [],
       selectedTypeIndex: null,
       questionEvents: [],
@@ -330,7 +332,7 @@ export default React.createClass({
 
           {/* TypeAhead for finding parameters */}
           <TypeAhead
-            suggestions={this.state.suggestions}
+            suggestions={[]}
             key='ID'
             value='concept_cd'
             limit={10}

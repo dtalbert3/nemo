@@ -31,12 +31,8 @@ module.exports = function(sequelize) {
       type: Sequelize.DECIMAL,
       allowNull: true
     },
-    AI: {
-      type: 'BLOB',
-      allowNull: true
-    },
-    Active: {
-      type: 'BIT(1)',
+    Algorithm: {
+      type: Sequelize.STRING,
       allowNull: true
     },
     DateModified: {

@@ -55,8 +55,9 @@ var questionTypeModel = require('./models/QuestionType')(sequelize);
 var questionEventModel = require('./models/QuestionEvent')(sequelize);
 var aiModelModel = require('./models/AIModel')(sequelize);
 var aiParameterModel = require('./models/AIParameter')(sequelize);
+var aiModelParamsModel = require('./models/AIModelParams')(sequelize);
 // var parameterTypeModel = require('./models/ParameterType')(sequelize);
-// DELTE ABOVE??!?!??!
+
 var conceptModel = require('./models/concept_dimension')(sequelize);
 
 // Define associations
@@ -378,7 +379,6 @@ exports.dashboardService = function(socket, hooks) {
     sequelize.transaction(function() {
       var userID = id;
       return questionModel.findAll({
-<<<<<<< HEAD
         include: [questionParameterModel, {
           model: aiModelModel,
           order: [['DateModified', 'DESC']],
@@ -401,34 +401,9 @@ exports.dashboardService = function(socket, hooks) {
         where: {
           UserID: userID
         }
-=======
-        include: [questionParameterModel,
-          {
-            model: aiModelModel,
-            order: [['DateModfied', 'Desc']],
-            limit: 1
-          }, {
-            model: questionStatusModel,
-            required: true //Inner join
-          }, {
-            model: questionTypeModel,
-            required: true //Inner join
-          }, {
-            model: questionEventModel,
-            required: true //Inner join
-          }],
-          offset: offset,
-          limit: limit,
-          order: [
-            [orderColumn, order]
-          ],
-          where: {
-            UserID: userID
-          }
->>>>>>> 8d813b6a89d62aaa4b0e85af51335bc8590f3ee2
       }).then(function(d) {
         // Return data to callback
-        return callback(null, d);
+        return callback(null, JSON.stringify(d));
       }).catch(function(error) {
         // Catch and return errors to callback
         return callback(error, null);
@@ -538,54 +513,71 @@ exports.dashboardService = function(socket, hooks) {
 
   		Change from initial requirements, AI Model data is no longer kept
   */
-  socket.on('remove', function(id, params, callback) {
-    hooks.forEach(function(func) {
-      func(socket);
-    });
-    // Initiate transaction, will be committed if things go smoothly or rolled back if there is an issue at any point
-    sequelize.transaction(function() {
-      // Destroy parameters of question then
-      // Destroy parameters of AI models then
-      // Destroy AI models of question then
-      // Destroy the question itself
-
-      return questionParameterModel.destroy({
-        where: {
-          QuestionID: id
-        }
-      }).then(function() {
-        // Get list of AI Model IDs to destroy
-        return aiModelModel.findAll({
-          where: {
-            QuestionID: id
-          }
-        }).then(function(aiModelData) {
-          var aiModelDataIDList = aiModelData.map(function(a) {
-            return a.dataValues.ID;
-          });
-          //Destroy the AI models
-          return aiModelModel.destroy({
-            where: {
-              ID: {
-                $in: aiModelDataIDList
-              }
-            }
-          }).then(function() {
-            //Finally delete the question itself
-            return questionModel.destroy({
-              where: {
-                ID: id
-              }
-            });
-          });
-        });
-      });
-    }).then(function(d) {
-      // Return data to callback
-      return callback(null, d);
-    }).catch(function(error) {
-      // Return error to callback
-      return callback(error, null);
-    });
+  socket.on('delete', function(id, callback) {
+    sequelize.transaction(function(t) {
+  		// Destroy parameters of question then
+  		// Destroy parameters of AI models then
+  		// Destroy AI models of question then
+  		// Destroy the question itself
+  		return questionParameterModel.destroy({
+  			where: {
+  				QuestionID: id
+  			}
+  		}).then(function() {
+  			// Get list of AI Model IDs to destroy
+  			return aiModelModel.findAll({
+  				where: {
+  					QuestionID: id
+  				}
+  			}).then(function(aiModelData) {
+  				var aiModelDataIDList = aiModelData.map(function(a) {
+  					return a.dataValues.ID;
+  				});
+  				// Find all of the AI Model Parameters
+  				return aiModelParamsModel.findAll({
+  					where: {
+  						AIModel: {
+  							$in: aiModelDataIDList
+  						}
+  					}
+  				}).then(function(aiModelParamsData) {
+  					console.log(aiModelParamsData);
+  					var aiModelParamsList = aiModelParamsData.map(function(b) {
+  						return b.dataValues.AIModel;
+  					});
+  					// Destroy all of the AI model parameters
+  					return aiModelParamsModel.destroy({
+  						where: {
+  							AIModel: {
+  								$in: aiModelParamsList
+  							}
+  						}
+  					}).then(function() {
+  						//Destroy the AI models
+  						return aiModelModel.destroy({
+  							where: {
+  								ID: {
+  									$in: aiModelDataIDList
+  								}
+  							}
+  						}).then(function() {
+  							//Finally delete the question itself
+  							return questionModel.destroy({
+  								where: {
+  									ID: id,
+  								}
+  							});
+  						});
+  					});
+  				});
+  			}).then(function(d) {
+  				// Return data to callback
+  				return callback(null, d);
+  			}).catch(function(error) {
+  				// Return error to callback
+  				return callback(error, null);
+  			});
+  		});
+  	});
   });
 };
