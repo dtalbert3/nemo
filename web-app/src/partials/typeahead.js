@@ -1,9 +1,6 @@
 import React from 'react';
 import Bloodhound from 'bloodhound-js';
 import { Input, ListGroup, ListGroupItem } from 'react-bootstrap';
-import config from 'clientconfig';
-import io from 'socket.io-client';
-const qstn = io.connect(config.apiUrl + '/qstn');
 
 // Helper to display list of suggestions for TypeAhead
 const Suggestions = React.createClass({
@@ -41,7 +38,7 @@ export default React.createClass({
 
   // Update input box to reflect clicked suggestion
   handleClick(index) {
-    var token = this.state.suggestions[index];
+    var token = this.props.suggestions[index];
     if (token !== undefined) {
       this.setState({
         suggestions: [],
@@ -55,7 +52,7 @@ export default React.createClass({
   // If enter is pressed input box updates to display first suggestion
   handleKey(e) {
     if (e.key === 'Enter') {
-      var token = this.state.suggestions[0];
+      var token = this.props.suggestions[0];
       if (token !== undefined) {
         this.setState({
           suggestions: [],
@@ -100,17 +97,6 @@ export default React.createClass({
     });
   },
 
-  // Once TypeAhead is mounted fetch parameters to be used for suggestions
-  componentDidMount() {
-    qstn.emit('getSuggestions', (err, data) => {
-      if (!err) {
-        this.state.engine.clear();
-        this.state.engine.add(data);
-        this.search(this.state.input);
-      }
-    });
-  },
-
   // Initialize TypeAhead and search engine
   getInitialState() {
     return {
@@ -137,6 +123,14 @@ export default React.createClass({
     };
   },
 
+  componentWillReceiveProps (nextProps) {
+    this.props = nextProps;
+    console.log('adding stuff');
+    this.state.engine.clear();
+    this.state.engine.add(nextProps.suggestions);
+    // this.search(this.state.input);
+  },
+
   // Render TypeAhead
   render() {
     return (
@@ -151,7 +145,7 @@ export default React.createClass({
         />
         {/* Suggestion listing */}
         <Suggestions
-          suggestions={Array.from(this.state.suggestions, (d) => d[this.props.value])}
+          suggestions={Array.from(this.props.suggestions, (d) => d[this.props.value])}
           handleClick={this.handleClick}
           hidden={this.state.hidden}
         />
