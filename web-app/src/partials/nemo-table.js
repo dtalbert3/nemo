@@ -1,5 +1,5 @@
 import React from 'react';
-import { Collapse, Well, Table, Row, Col, Input, Button } from 'react-bootstrap';
+import { Collapse, Well, Table, Row, Col, Button } from 'react-bootstrap';
 import Alert from './alert';
 
 import config from 'clientconfig';
@@ -85,7 +85,7 @@ const Tbody = React.createClass({
 const InfoWell = React.createClass({
 
   handleDelete() {
-    dash.emit('delete', this.props.data.ID, (err, data) => {
+    dash.emit('delete', this.props.data.ID, (err) => {
       if (err) {
         Alert('Error Deleting Questions', 'success', 4 * 1000);
       } else {
