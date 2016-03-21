@@ -99,6 +99,42 @@ aiModelModel.hasMany(aiParameterModel);
 
 	Needs a check added to detect if this exact question has been created yet, as per requirements
 */
+function updateAIFeedback(params, callback) {
+	var val = params.value;
+	var id = params.aiModelID;
+	Sequelize.transaction(function(t) {
+		return aiModelModel.findById(id)
+		.then(function(aiModel) {
+			var updatedAiModel = {
+				ID: aiModel.ID,
+				QuestionID: aiModel.QuestionID,
+				Value: aiModel.Value,
+				Accuracy: aiModel.Accuracy,
+				AIFeedback: val,
+				PredictionFeedback: aiModel.PredictionFeedback,
+				AI: aiModel.AI,
+				Algorithm: aiModel.Algorithm,
+				Active: aiModel.Active,
+				DateModified: aiModel.DateModified
+			};
+			return aiModelModel.upsert(updatedAiModel, { 
+				transaction: t
+			});
+		});
+	}).catch(function(error) {
+		return callback(error, null);
+	});
+}
+				
+var params = {
+	value: 1,
+	aiModelID: 57
+}
+
+updateAIFeedback(params, function(x, y) {
+	return x;
+});
+
 function createQuestion(params, callback) {
 	// Compile a question attributes for upsert
 	var questionAttributes = {
@@ -365,11 +401,12 @@ function deleteQuestion(data, params, callback) {
 var data = {
 	ID: 116
 };
-
+/*
 console.log("deleting question:");
 deleteQuestion(data, null, function(x, y){
 	return x;
 });
+*/
 
 /* Get Questions by user:
 		Get a list of all the Questions for a particular user
