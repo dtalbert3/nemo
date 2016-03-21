@@ -40,7 +40,7 @@ module.exports = function(sequelize) {
       allowNull: true
     },
     DateModified: {
-      type: Sequelize.Date,
+      type: Sequelize.DATE,
       allowNull: true
     }
   }, {
