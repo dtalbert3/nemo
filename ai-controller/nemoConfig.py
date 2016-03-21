@@ -38,6 +38,7 @@ class nemoConfig():
             self.QUEUED_STATUS = self.DATABASE['QUEUED_STATUS']
             self.RUNNING_STATUS =  self.DATABASE['RUNNING_STATUS']
             self.AWAITING_FEEDBACK_STATUS =  self.DATABASE['AWAITING_FEEDBACK_STATUS']
+            self.NOT_ENOUGH_DATA =  self.DATABASE['NOT_ENOUGH_DATA']
 
             # Validate ALGORITHMS
             self.ALGORITHMS = config['ALGORITHMS']

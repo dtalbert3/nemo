@@ -12,7 +12,8 @@
     "DB": "NEMO_Datamart",
     "QUEUED_STATUS": 1,
     "RUNNING_STATUS": 2,
-    "AWAITING_FEEDBACK_STATUS": 3
+    "AWAITING_FEEDBACK_STATUS": 3,
+    "NOT_ENOUGH_DATA": 4
   },
   "ALGORITHMS": {
     "RandomForest": {

@@ -53,6 +53,7 @@ class WekaWrapper:
 
 		# Check if there is enough correct data to run
 		if (learnerData.num_instances < 1 or testData.num_instances < 1):
+			self.status = self.config.NOT_ENOUGH_DATA
 			return False
 
 		# Fix data up
@@ -83,12 +84,12 @@ class WekaWrapper:
 
 		self.acc = evl.percent_correct
 		self.val = None
-
-		print 'Classifier: ', self.classifier
-		print 'ID: ', self.questionID
-		print 'ACC: ', self.acc
-		# print(evl.summary())
 		
+		# print 'Classifier: ', self.classifier
+		# print 'ID: ', self.questionID
+		# print 'ACC: ', self.acc
+		# print(evl.summary())
+
 		# Temporarily store file to serialize to
 		fileName = str(self.questionID) + self.algorithm + ".model"
 		serialization.write(fileName, self.cls)
@@ -101,8 +102,8 @@ class WekaWrapper:
 		# Remove temporary file
 		os.remove(fileName)
 
-		# jvm.stop()
-		print '\nFINISHED JOB\n'
+		# Set status to awaiting feedback
+		self.status = self.config.AWAITING_FEEDBACK_STATUS
 		return True
 
 # Main method for direct testing
