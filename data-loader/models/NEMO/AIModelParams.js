@@ -1,10 +1,16 @@
 var Sequelize = require('sequelize');
 module.exports = function(sequelize) {
 	return sequelize.define('AIModelParams', {
-		AIModel: {
+		ID: {
 			type: Sequelize.INTEGER(11),
 			allowNull: false,
 			primaryKey: true,
+			autoIncrement: true
+		},
+		AIModel: {
+			type: Sequelize.INTEGER(11),
+			allowNull: false,
+			primaryKey: false,
 			references: {
 				model: 'AIModel',
 				key: 'ID'
