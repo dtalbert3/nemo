@@ -151,6 +151,7 @@ export default React.createClass({
       qstn.emit('create', data, (err) => {
         if (!err) {
           Alert('Question Submitted!', 'success', 4 * 1000);
+          this.props.onClick();
         } else {
           Alert('Error Submitting Question!', 'danger', 4 * 1000);
         }

@@ -3,7 +3,7 @@ import threading
 import Queue
 import time
 
-from nemoLogger import createLogger
+# from nemoLogger import createLogger
 from nemoApi import nemoApi
 from nemoConfig import nemoConfig
 import algorithmAnalyzer
@@ -42,7 +42,7 @@ def main():
     global API, CONFIG
 
     # Creating logger for logging to MAsterLog.log and console
-    logger = createLogger()
+    # logger = createLogger()
 
     # Load config file
     CONFIG = nemoConfig('config/nemoConfig.json')
@@ -67,7 +67,7 @@ def main():
         else:
             while not QUEUE.empty():
                 SEMAPHORE.acquire()
-                t = threading.Thread(target=`worker`, args=(QUEUE.get(), SEMAPHORE))
+                t = threading.Thread(target=worker, args=(QUEUE.get(), SEMAPHORE))
                 t.start()
 
 

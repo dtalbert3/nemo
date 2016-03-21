@@ -8,9 +8,6 @@ def run(id):
     api = nemoApi()
     config = nemoConfig()
 
-    # Set question status running
-    # api.updateQuestionStatus(id, config.RUNNING_STATUS)
-
     # Fetch question info
     info = api.fetchQuestionInfo(id)
 

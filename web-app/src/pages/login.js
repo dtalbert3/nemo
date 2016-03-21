@@ -39,7 +39,7 @@ export default React.createClass({
           <Input ref='email' type='email' label='Email Address' placeholder='Enter email' required={true} />
           <Input ref='password' type='password' label='Password' placeholder='Enter password' required={true} />
           <ButtonInput type='submit' value='Sign In' bsStyle='primary' block/>
-          <Button bsStyle='warning' block onClick={this.createUser}>Create User</Button>
+          <Button bsStyle='warning' block onClick={this.createUser}>Sign Up</Button>
         </form>
       </Col>
     );

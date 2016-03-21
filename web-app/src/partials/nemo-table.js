@@ -2,12 +2,11 @@ import React from 'react';
 import { Collapse, Well, Table, Row, Col, Button } from 'react-bootstrap';
 import Alert from './alert';
 
+import { objectByString } from '../util';
+
 import config from 'clientconfig';
 import io from 'socket.io-client';
 const dash = io.connect(config.apiUrl + '/dash');
-
-import { objectByString } from '../util';
-
 // Helper to create table headers
 const Thead = React.createClass({
 
@@ -31,6 +30,21 @@ const Tbody = React.createClass({
   // Create initial mapping of hidden rows
   getInitialState() {
     return { open: [] };
+  },
+
+  closeAll() {
+    var closed = new Array(this.state.open.length);
+    for (var i = 0; i < closed.length; i++) {
+      closed[i] = false;
+    }
+    this.setState({
+      open: closed
+    });
+  },
+
+  onClick() {
+    this.props.onClick();
+    this.closeAll();
   },
 
   // Render table body
@@ -66,6 +80,7 @@ const Tbody = React.createClass({
                 <InfoWell
                   open={this.state.open[i]}
                   data={this.props.data[i]}
+                  onClick={this.onClick}
                 />
               </td>
             </tr>;
@@ -86,10 +101,11 @@ const InfoWell = React.createClass({
 
   handleDelete() {
     dash.emit('delete', this.props.data.ID, (err) => {
-      if (err) {
-        Alert('Error Deleting Questions', 'success', 4 * 1000);
-      } else {
+      if (!err) {
         Alert('Question Deleted', 'danger', 4 * 1000);
+        this.props.onClick();
+      } else {
+        Alert('Error Deleting Questions', 'success', 4 * 1000);
       }
     });
   },
@@ -194,53 +210,21 @@ export default React.createClass({
 
   // Once page is mounted fetch table data
   componentDidMount() {
-    dash.emit('getUser', localStorage.userID, {}, (err, data) => {
-      var rows = [];
 
-      data = JSON.parse(data);
-      data.forEach((d) => {
-        var row = [];
+  },
 
-        var question = objectByString(d, 'QuestionType.Type') + ' ' +
-          objectByString(d, 'QuestionEvent.Name');
-        var parameters = '';
-        var numParams = Math.min(d['QuestionParameters'].length, 3);
-        for (var i = 0; i < numParams; i++) {
-          parameters += d['QuestionParameters'][i]['concept_cd'];
-          parameters += (i !== numParams - 1)
-            ? ', '
-            : (numParams < d['QuestionParameters'].length) ? ' . . .' : '';
-        }
-        var status = objectByString(d, 'QuestionStatus.Status');
-
-        row.push(question);
-        row.push(parameters);
-        row.push(status);
-
-        rows.push(row);
-      });
-      if (!err) {
-        this.setState({
-          data: data,
-          rows: rows
-        });
-      } else {
-        Alert('Error Fetching Questions', 'danger', 4 * 1000);
-      }
-    });
-
+  onClick() {
+    this.props.onClick();
   },
 
   // Initialize headers and rows to empty
   getInitialState() {
     return {
-      data: [],
       headers: [
         'Question',
         'Parameters',
         'Status'
-      ],
-      rows: []
+      ]
     };
   },
 
@@ -250,8 +234,9 @@ export default React.createClass({
       <Table responsive condensed>
         <Thead headers={this.state.headers} />
         <Tbody
-          rows={this.state.rows}
-          data={this.state.data} />
+          rows={this.props.rows}
+          data={this.props.data}
+          onClick={this.onClick} />
       </Table>
     );
   }
