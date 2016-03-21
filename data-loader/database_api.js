@@ -315,15 +315,16 @@ function deleteQuestion(data, params, callback) {
 					return a.dataValues.ID;
 				});
 				// Find all of the AI Model Parameters
-				return aiModelModel.findAll({
+				return aiModelParamsModel.findAll({
 					where: {
 						AIModel: {
 							$in: aiModelDataIDList
 						}
 					}
 				}).then(function(aiModelParamsData) {
+					console.log(aiModelParamsData);
 					var aiModelParamsList = aiModelParamsData.map(function(b) {
-						return a.dataValues.AIModel;
+						return b.dataValues.AIModel;
 					});
 					// Destroy all of the AI model parameters
 					return aiModelParamsModel.destroy({
@@ -342,7 +343,6 @@ function deleteQuestion(data, params, callback) {
 							}
 						}).then(function() {
 							//Finally delete the question itself
-							console.log("About to delete question: " + data.ID);
 							return questionModel.destroy({
 								where: {
 									ID: data.ID,
@@ -356,7 +356,6 @@ function deleteQuestion(data, params, callback) {
 				return callback(null, d);
 			}).catch(function(error) {
 				// Return error to callback
-				console.log("error")
 				return callback(error, null);
 			});
 		});
