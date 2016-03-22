@@ -61,10 +61,8 @@ def main():
     QUEUE = Queue.Queue()
     # Run indefinitely
     while True:
-        print 'fetching questions'
         RESULTS = API.fetchQuestions(CONFIG.MAX_QUEUE_SIZE, CONFIG.QUEUED_STATUS)
         for ROW in RESULTS:
-            print ROW
             QUEUE.put(ROW['ID'])
         if QUEUE.empty():
             time.sleep(CONFIG.TIMEOUT)

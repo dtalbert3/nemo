@@ -1,7 +1,7 @@
 {
   "CONTROLLER": {
-    "MAX_QUEUE_SIZE": 4,
-    "MAX_NUM_THREADS": 2,
+    "MAX_QUEUE_SIZE": 10,
+    "MAX_NUM_THREADS": 4,
     "TIMEOUT": 300
   },
   "DATABASE": {
@@ -18,31 +18,35 @@
   "ALGORITHMS": {
     "RandomForest": {
       "Active": true,
-      "DefaultCVParams": {
-        "CV_I": "I 1 100 100",
-        "CV_K": "K 1 100 100",
-        "CV_S": "S 1 100 100"
-      },
-      "DefaultOptions": {
-        "CV_O": true,
-        "CV_B": true
+      "Optimizers": {
+        "DefaultCVParams": {
+          "CV_I": {"param":"I", "value":"1 10 10"},
+          "CV_K": {"param":"K", "value": "1 10 10"},
+          "CV_S": {"param":"S", "value": "1 10 10"}
+        },
+        "DefaultOptions": {
+          "CV_O": {"param":"-O", "value":true},
+          "CV_B": {"param":"-B", "value":true}
+        }
       }
     },
     "SMO":{
       "Active": true,
-      "DefaultCVParams": {
-        "CV_C": "C 1 4 4",
-        "CV_V": "V 1 5 5",
-        "CV_W": "W 1 10 10"
-      },
-      "DefaultOptions": {}
+      "Optimizers": {
+        "DefaultCVParams": {
+          "CV_C": {"param":"C", "value":"1 4 4"},
+          "CV_V": {"param":"V", "value":"1 5 5"},
+          "CV_W": {"param":"W", "value":"1 10 10"}
+        }
+      }
     },
     "NaiveBayes": {
       "Active": true,
-      "DefaultCVParams": {},
-      "DefaultOptions": {
-        "CV_K": true,
-        "CV_D": true
+      "Optimizers": {
+        "DefaultOptions": {
+          "CV_K": {"param":"-K", "value":true},
+          "CV_D": {"param":"-D", "value":true}
+        }
       }
     }
   }
