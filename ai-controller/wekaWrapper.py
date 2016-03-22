@@ -8,6 +8,7 @@ from weka.core.database import InstanceQuery
 import weka.core.serialization as serialization
 import weka.core.jvm as jvm
 import javabridge
+from nemoApi import AIParam
 
 import os
 
@@ -19,13 +20,15 @@ jvm.start(class_path=["mysql-connector-java-5.1.38-bin.jar"])
 
 class WekaWrapper:
 
-	def __init__(self, questionID, algorithm, classifier, parameters):
+	def __init__(self, questionID, algorithm, classifier, parameters, modelParams):
 		self.questionID = questionID
 		self.algorithm = algorithm
 		self.classifier = classifier
 		self.parameters = parameters
+		self.modelParams = modelParams
 		self.api = nemoApi()
 		self.config = nemoConfig()
+
 
 	def retrieveData(self, id, dataset):
 		query = self.api.getDataQuery(id, dataset)
@@ -41,10 +44,24 @@ class WekaWrapper:
 	def uploadData(self):
 		# Upload file to database
 		self.api.addModel(self.questionID, '?', self.acc, self.model, self.algorithm, False)
+		info = self.api.fetchQuestionInfo(self.questionID)
+		modelID = info['ID']
+		for mParam in self.modelParams:
+			mParam.AIModel = modelID
+			self.api.addAIModelParam(mParam)
 
 	def run(self):
 		# Attach JVM
 		javabridge.attach()
+
+		# Debug
+
+		print "Classifier"
+		print self.classifier
+		print "Params"
+		print self.parameters
+		print "Model Params"
+		print self.modelParams
 
 		# Get data for testing and learning
 		learnerData = self.retrieveData(self.questionID, "learner")
@@ -84,7 +101,7 @@ class WekaWrapper:
 
 		self.acc = evl.percent_correct
 		self.val = None
-		
+
 		# print 'Classifier: ', self.classifier
 		# print 'ID: ', self.questionID
 		# print 'ACC: ', self.acc

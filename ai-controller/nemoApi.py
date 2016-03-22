@@ -73,6 +73,51 @@ class nemoApi():
         db.close()
         return result
 
+    # Get AIModelParams on specific AIModel
+    def fetchAIModelParams(self, aiModelId):
+        db = MySQLdb.connect(self.host, self.user, self.password, self.database)
+        cursor = db.cursor(cursorclass=MySQLdb.cursors.DictCursor)
+        cursor.execute(
+            "SELECT AIModel, Param, Value, param_use, ID " +
+            "FROM AIModelParams " +
+            "WHERE AIModel = " + str(aiModelId))
+        results =  cursor.fetchall()
+        AIModelParams = []
+        for row in results:
+            aiModelId = row["AIModel"]
+            param = row["Param"]
+            value = row["Value"]
+            param_use = row["param_use"]
+            aiModelParam = AIParam(aiModelId, param, value, param_use)
+            AIModelParams.append(aiModelParam)
+        db.close()
+        return AIModelParams
+
+        # Add ai model
+    def addAIModelParam(self, aiModelParam):
+        db = MySQLdb.connect(self.host, self.user, self.password, self.database)
+        cursor = db.cursor()
+        sql = "INSERT INTO AIModelParams(AIModel, Param, Value, param_use) " + \
+            "VALUES (%s, %s, %s, %s)"
+        cursor.execute(sql, (aiModelParam.AIModel, aiModelParam.Param, aiModelParam.Value, aiModelParam.param_use))
+        db.commit()
+        db.close()
+
+    # Get AIModelParams on specific AIModel
+    def fetchLatestAIModelByAlgorithm(self, questionID, algorithm):
+        db = MySQLdb.connect(self.host, self.user, self.password, self.database)
+        cursor = db.cursor(cursorclass=MySQLdb.cursors.DictCursor)
+        cursor.execute(
+            "SELECT ID " +
+            "FROM AIModel " +
+            "WHERE Algorithm = '" + algorithm + "' " +
+            "AND QuestionID = " + str(questionID) + " " +
+            "ORDER BY DateModified DESC " +
+            "LIMIT 1")
+        result =  cursor.fetchone()
+        db.close()
+        return result
+
     # Construct query for gathering data
     def getDataQuery(self, questionID, dataset):
         # Whitelist of database attributes to select in query
@@ -208,3 +253,11 @@ class Parameter:
         self.tableColumn = tableColumn
         self.min = min
         self.max = max
+
+class AIParam:
+    # 'Common base class for all Parameters'
+    def __init__(self, aiModelId, param, value, param_use):
+        self.AIModel = aiModelId
+        self.Param = param
+        self.Value = value
+        self.param_use = param_use

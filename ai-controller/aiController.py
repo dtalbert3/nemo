@@ -16,7 +16,7 @@ def worker(id, s):
     global API, CONFIG
 
     # Set question status to running
-    API.updateQuestionStatus(id, CONFIG.RUNNING_STATUS)
+    # API.updateQuestionStatus(id, CONFIG.RUNNING_STATUS)
 
     # Determine which alogirthm to use
     instance = algorithmAnalyzer.run(id)
@@ -66,8 +66,11 @@ def main():
             time.sleep(CONFIG.TIMEOUT)
         else:
             while not QUEUE.empty():
+                questionID = QUEUE.get()
+                API.updateQuestionStatus(questionID, CONFIG.RUNNING_STATUS)
                 SEMAPHORE.acquire()
-                t = threading.Thread(target=worker, args=(QUEUE.get(), SEMAPHORE))
+                # t = threading.Thread(target=worker, args=(QUEUE.get(), SEMAPHORE))
+                t = threading.Thread(target=worker, args=(questionID, SEMAPHORE))
                 t.start()
 
 
