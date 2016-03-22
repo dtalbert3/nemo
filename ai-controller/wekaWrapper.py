@@ -41,6 +41,7 @@ class WekaWrapper:
 	def uploadData(self):
 		# Upload file to database
 		self.api.addModel(self.questionID, '?', self.acc, self.model, self.algorithm, False)
+		print 'Uploaded question: ', self.questionID, '\nwith algorithm: ', self.classifier, '\nwith acc: ', self.acc
 
 	def run(self):
 		# Attach JVM
@@ -84,7 +85,7 @@ class WekaWrapper:
 
 		self.acc = evl.percent_correct
 		self.val = None
-		
+
 		# print 'Classifier: ', self.classifier
 		# print 'ID: ', self.questionID
 		# print 'ACC: ', self.acc

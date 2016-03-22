@@ -10,10 +10,11 @@ import algorithmAnalyzer
 
 API = None
 CONFIG = None
+QUEUE = None
 
 # Create worker to process question
 def worker(id, s):
-    global API, CONFIG
+    global API, CONFIG, QUEUE
 
     # Set question status to running
     API.updateQuestionStatus(id, CONFIG.RUNNING_STATUS)
@@ -36,10 +37,11 @@ def worker(id, s):
     API.updateQuestionStatus(id, instance.status)
 
     # Release thread
+    QUEUE.task_done()
     s.release()
 
 def main():
-    global API, CONFIG
+    global API, CONFIG, QUEUE
 
     # Creating logger for logging to MAsterLog.log and console
     # logger = createLogger()
@@ -59,8 +61,10 @@ def main():
     QUEUE = Queue.Queue()
     # Run indefinitely
     while True:
+        print 'fetching questions'
         RESULTS = API.fetchQuestions(CONFIG.MAX_QUEUE_SIZE, CONFIG.QUEUED_STATUS)
         for ROW in RESULTS:
+            print ROW
             QUEUE.put(ROW['ID'])
         if QUEUE.empty():
             time.sleep(CONFIG.TIMEOUT)
@@ -69,6 +73,7 @@ def main():
                 SEMAPHORE.acquire()
                 t = threading.Thread(target=worker, args=(QUEUE.get(), SEMAPHORE))
                 t.start()
+        QUEUE.join()
 
 
 if  __name__ =='__main__':

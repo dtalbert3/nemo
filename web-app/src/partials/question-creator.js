@@ -36,7 +36,7 @@ const Token = React.createClass({
   render() {
     return (
       <h4 className='token'>
-        <Label className='label label-primary' >
+        <Label className='label label-info' >
           {this.props.token[this.props.value] + ' '}
           <Glyphicon onClick={this.removeToken} glyph='remove' />
         </Label>
@@ -104,12 +104,13 @@ const RangeInput = React.createClass({
   // Render input for getting question bounds
   render() {
     return (
-      <div className='rangeInput'> between
+      <div className='rangeInput'>
+        <strong> between </strong>
         <Input type='number' ref='min'
           placeholder='Min'
           value={this.state.min}
           onChange={this.updateBounds} />
-        and
+        <strong> and </strong>
         <Input type='number' ref='max'
           placeholder='Max'
           value={this.state.max}
@@ -329,7 +330,7 @@ export default React.createClass({
             name={'Name'}
             id={2}/>
 
-          <span> for patients with </span>
+          <strong> for patients with </strong>
 
           {/* TypeAhead for finding parameters */}
           <TypeAhead
@@ -360,7 +361,6 @@ export default React.createClass({
               removeToken={this.removeParameter} />;
           })}
         </Row>
-
         <Row>
           {/* Create buttons for submitting/clearing question*/}
           <ButtonGroup>
