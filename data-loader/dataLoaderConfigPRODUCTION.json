@@ -1,6 +1,6 @@
 {
   "nemoConnection": {
-    "dbName": "NEMO_DEV",
+    "dbName": "NEMO_Datamart",
     "userName": "NEMO_WEB",
     "password": "NEMO",
     "sequelizeOptions": {

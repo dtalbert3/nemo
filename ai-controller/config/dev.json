@@ -1,15 +1,15 @@
 {
   "CONTROLLER": {
-    "MAX_QUEUE_SIZE": 10,
+    "MAX_QUEUE_SIZE": 20,
     "MAX_NUM_THREADS": 4,
-    "TIMEOUT": 300
+    "TIMEOUT": 30
   },
   "DATABASE": {
     "HOST": "codyemoffitt.com",
     "PORT": 3306,
     "USER": "NEMO_WEB",
     "PASS": "NEMO",
-    "DB": "NEMO_Datamart",
+    "DB": "NEMO_DEV",
     "QUEUED_STATUS": 1,
     "RUNNING_STATUS": 2,
     "AWAITING_FEEDBACK_STATUS": 3,

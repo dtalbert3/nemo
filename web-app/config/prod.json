@@ -1,5 +1,5 @@
 {
-    "isDev": true,
+    "isDev": false,
     "session": {
         "host": "localhost",
         "port": 6379,
@@ -13,17 +13,17 @@
     },
     "client": {
         "apiUrl": "http://localhost:3030",
-        "debugMode": true
+        "debugMode": false
     },
     "server": {
       "db": {
         "host": "codyemoffitt.com",
-        "name": "NEMO_DEV",
+        "name": "NEMO_Datamart",
         "username": "NEMO_WEB",
         "password": "NEMO",
         "dialect": "mysql",
         "port": 3306,
-        "logging": true
+        "logging": false
       }
     }
 }

@@ -47,7 +47,7 @@ def main():
     # logger = createLogger()
 
     # Load config file
-    CONFIG = nemoConfig('config/nemoConfig.json')
+    CONFIG = nemoConfig('config/dev.json')
     if CONFIG.CONFIG is None:
         print 'Could not load config file on . . .'
         return

@@ -1,0 +1,53 @@
+{
+  "CONTROLLER": {
+    "MAX_QUEUE_SIZE": 20,
+    "MAX_NUM_THREADS": 4,
+    "TIMEOUT": 30
+  },
+  "DATABASE": {
+    "HOST": "codyemoffitt.com",
+    "PORT": 3306,
+    "USER": "NEMO_WEB",
+    "PASS": "NEMO",
+    "DB": "NEMO_Datamart",
+    "QUEUED_STATUS": 1,
+    "RUNNING_STATUS": 2,
+    "AWAITING_FEEDBACK_STATUS": 3,
+    "NOT_ENOUGH_DATA": 4
+  },
+  "ALGORITHMS": {
+    "RandomForest": {
+      "Active": true,
+      "Optimizers": {
+        "DefaultCVParams": {
+          "CV_I": {"param":"I", "value":"1 10 10"},
+          "CV_K": {"param":"K", "value": "1 10 10"},
+          "CV_S": {"param":"S", "value": "1 10 10"}
+        },
+        "DefaultOptions": {
+          "CV_O": {"param":"-O", "value":true},
+          "CV_B": {"param":"-B", "value":true}
+        }
+      }
+    },
+    "SMO":{
+      "Active": true,
+      "Optimizers": {
+        "DefaultCVParams": {
+          "CV_C": {"param":"C", "value":"1 4 4"},
+          "CV_V": {"param":"V", "value":"1 5 5"},
+          "CV_W": {"param":"W", "value":"1 10 10"}
+        }
+      }
+    },
+    "NaiveBayes": {
+      "Active": true,
+      "Optimizers": {
+        "DefaultOptions": {
+          "CV_K": {"param":"-K", "value":true},
+          "CV_D": {"param":"-D", "value":true}
+        }
+      }
+    }
+  }
+}

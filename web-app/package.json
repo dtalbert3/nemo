@@ -125,7 +125,7 @@
   },
   "scripts": {
     "build": "rm -rf client/ && babel --presets es2015,react --plugins syntax-object-rest-spread -d client/ src/",
-    "start": "node server.js",
+    "start": "NODE_ENV=dev node server.js",
     "dev": "NODE_ENV=dev node server",
     "prod": "NODE_ENV=prod node server",
     "lint": "eslint .",
