@@ -40,6 +40,10 @@ module.exports = function(sequelize) {
       type: 'BIT(1)',
       allowNull: true
     }
+		ConfusionMatrix: {
+			type: Sequelize.STRING,
+			allowNull: true
+		}
   }, {
     tableName: 'AIModel',
     freezeTableName: true,
