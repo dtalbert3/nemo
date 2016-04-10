@@ -90,21 +90,18 @@ class WekaWrapper:
 		self.cls = Classifier(classname=self.classifier, options=self.parameters)
 
 		# Run classifier
-		print " ---------------  about to run classifier"
 		self.cls.build_classifier(learner)
 		# for index, inst in enumerate(learnerData):
 			# prediction = self.cls.classify_instance(inst)
 			# distribution = self.cls.distribution_for_instance(inst)
 
 		# Test classifier
-		print " ----------------- about to do evaluation"
 		evl = Evaluation(learner)
 		evl.test_model(self.cls, test)
 
 		self.acc = evl.percent_correct
 		
 
-		print " ------------------ about to write confusion matrix"
 		# Temporarily write the serialized confusion matrix to a file
 		conf_matrix = evl.confusion_matrix
 		fileName = str(self.questionID) + self.algorithm + ".matrix"
