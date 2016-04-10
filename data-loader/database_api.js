@@ -115,7 +115,8 @@ function updateAIFeedback(params, callback) {
 				AI: aiModel.AI,
 				Algorithm: aiModel.Algorithm,
 				Active: aiModel.Active,
-				DateModified: aiModel.DateModified
+				DateModified: aiModel.DateModified,
+				ConfusionMatrix: aiModel.ConfusionMatrix
 			};
 			return aiModelModel.upsert(updatedAiModel, { 
 				transaction: t
@@ -651,7 +652,8 @@ function copyQuestion(params, callback) {
 										AIFeedback: mArray[i].dataValues.AIFeedback,
 										PredictionFeedback: mArray[i].dataValues.PredictionFeedback,
 										AI: mArray[i].dataValues.AI,
-										Active: mArray[i].dataValues.Active
+										Active: mArray[i].dataValues.Active,
+										ConfusionMatrix: mArray[i].dataValues.ConfusionMatrix
 									}, {
 										transaction: t
 									}).then(function(newAiModel) {
