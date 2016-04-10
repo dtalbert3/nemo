@@ -43,7 +43,7 @@ class WekaWrapper:
 
 	def uploadData(self):
 		# Upload file to database
-		self.api.addModel(self.questionID, '?', self.acc, self.model, self.algorithm, False)
+		self.api.addModel(self.questionID, '?', self.acc, self.model, self.algorithm, False, self.matrix)
 		info = self.api.fetchQuestionInfo(self.questionID)
 		modelID = info['ID']
 		for mParam in self.modelParams:
@@ -90,16 +90,32 @@ class WekaWrapper:
 		self.cls = Classifier(classname=self.classifier, options=self.parameters)
 
 		# Run classifier
+		print " ---------------  about to run classifier"
 		self.cls.build_classifier(learner)
 		# for index, inst in enumerate(learnerData):
 			# prediction = self.cls.classify_instance(inst)
 			# distribution = self.cls.distribution_for_instance(inst)
 
 		# Test classifier
+		print " ----------------- about to do evaluation"
 		evl = Evaluation(learner)
 		evl.test_model(self.cls, test)
 
 		self.acc = evl.percent_correct
+		
+
+		print " ------------------ about to write confusion matrix"
+		# Temporarily write the serialized confusion matrix to a file
+		conf_matrix = evl.confusion_matrix
+		fileName = str(self.questionID) + self.algorithm + ".matrix"
+		serialization.write(fileName, str(conf_matrix))
+		# Open the file and read the contents back in
+		self.matrix = None
+		with open(fileName, 'rb') as f:
+			self.matrix = f.read()
+		# Remove the file
+		os.remove(fileName)
+
 		self.val = None
 
 		# print 'Classifier: ', self.classifier
@@ -126,12 +142,14 @@ class WekaWrapper:
 # Main method for direct testing
 def main():
 	# Load config file
-	CONFIG = nemoConfig('config/nemoConfig.json')
+	CONFIG = nemoConfig('config/dev.json')
 
 	# Instantiate api
 	API = nemoApi(CONFIG.HOST, CONFIG.PORT, CONFIG.USER, CONFIG.PASS, CONFIG.DB)
+	
 
-	instance = WekaWrapper(123, 'J48', 'weka.classifiers.trees.J48', ["-C", "0.3"])
+	param = AIParam("238", "C", "1 4 4", "DefaultCVParams")
+	instance = WekaWrapper(208, 'SMO', 'weka.classifiers.functions.SMO', ["-W", "weka.classifiers.functions.SMO", "-P", (param.Param + ' ' + param.Value)], None)
 	instance.run()
 	instance.uploadData()
 
