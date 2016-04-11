@@ -1,6 +1,6 @@
 {
   "nemoConnection": {
-    "dbName": "NEMO_DEV",
+    "dbName": "DATALOADER_TEST_TWO",
     "userName": "NEMO_WEB",
     "password": "NEMO",
     "sequelizeOptions": {
@@ -16,7 +16,7 @@
     }
   },
   "kumcConnection": {
-    "dbName": "KUMC_NEMO",
+    "dbName": "DATALOADER_TEST_ONE",
     "userName": "NEMO_WEB",
     "password": "NEMO",
     "sequelizeOptions": {
@@ -32,11 +32,11 @@
     }
   },
   "tablesToCopy": {
-    "observation_fact": false,
-    "code_lookup": false,
+    "observation_fact": true,
+    "code_lookup": true,
     "concept_dimension": true,
-    "patient_dimension": false,
-    "provider_dimension": false,
+    "patient_dimension": true,
+    "provider_dimension": true,
     "visit_dimension": true
   },
   "dividePatients": false,

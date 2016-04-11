@@ -245,6 +245,8 @@ var visitDeferred = Q.defer();
 var providerDeferred = Q.defer();
 var codelookupDeferred = Q.defer();
 var obsFactDeferred = Q.defer();
+var countDeferred = Q.defer();
+var finalCountDeferred = Q.defer();
 
 var getPatients = wrapFunction(copyTable, this, [patientDeferred, 0, 2048, patient_dimension_kumc, patient_dimension_nemo,'patient_num']);
 var getConcepts = wrapFunction(copyTable, this, [conceptDeferred, 0, 2048, concept_dimension_kumc, concept_dimension_nemo,'concept_path']);
@@ -253,21 +255,88 @@ var getProviders = wrapFunction(copyTable, this, [providerDeferred, 0, 2048, pro
 var getCodeLookup = wrapFunction(copyTable, this, [codelookupDeferred, 0, 2048, code_lookup_kumc, code_lookup_nemo,'table_cd']);
 var getObservationFact = wrapFunction(copyTable, this, [obsFactDeferred, 0, 2048, observation_fact_kumc, observation_fact_nemo,'encounter_num']);
 
-if (dataLoaderOptions.tablesToCopy.patient_dimension) {
+var sourcePatientCount = 0;
+var sourceConceptCount = 0;
+var sourceVisitCount = 0;
+var sourceProviderCount = 0;
+var sourceCodeCount = 0;
+var sourceObservationCount = 0;
+
+var finalSourcePatientCount = 0;
+var finalSourceConceptCount = 0;
+var finalSourceVisitCount = 0;
+var finalSourceProviderCount = 0;
+var finalSourceCodeCount = 0;
+var finalSourceObservationCount = 0;
+
+patient_dimension_nemo.count().then(function(p) {
+  sourcePatientCount = p;
+  concept_dimension_nemo.count().then(function(c) {
+    sourceConceptCount = c;
+    visit_dimension_nemo.count().then(function(v) {
+      sourceVisitCount = v;
+      provider_dimension_nemo.count().then(function(pd) {
+        sourceProviderCount = pd;
+        code_lookup_nemo.count().then(function(cl) {
+          sourceCodeCount = cl;
+          observation_fact_nemo.count().then(function(o) {
+            sourceObservationCount = o;
+            console.log("There are " + sourcePatientCount + " patient_dimension records.");
+            console.log("There are " + sourceConceptCount + " concept_dimension records.");
+            console.log("There are " + sourceVisitCount + " visit_dimension records.");
+            console.log("There are " + sourceProviderCount + " provider_dimension records.");
+            console.log("There are " + sourceCodeCount + " code_lookup records.");
+            console.log("There are " + sourceObservationCount + " observation_fact records.");
+            countDeferred.resolve();
+          });
+        });
+      });
+    });
+  });
+});
+
+
+countDeferred.promise.done(function(){if (dataLoaderOptions.tablesToCopy.patient_dimension) {
   console.log('\nCopying the patient_dimension table.');
-   getPatients();
+  getPatients();
 }
 else{
   patientDeferred.resolve();
-}
-
-
+}});
 patientDeferred.promise.done(function(){if(dataLoaderOptions.tablesToCopy.concept_dimension){console.log('\nCopying the concept_dimension table.'); getConcepts();} else{conceptDeferred.resolve();}});
 conceptDeferred.promise.done(function(){if(dataLoaderOptions.tablesToCopy.visit_dimension){ console.log('\nCopying the visit_dimension table.'); getVisits();} else{visitDeferred.resolve();}});
 visitDeferred.promise.done(function(){if(dataLoaderOptions.tablesToCopy.provider_dimension){console.log('\nCopying the provider_dimension table.'); getProviders();} else{providerDeferred.resolve();}});
 providerDeferred.promise.done(function(){if(dataLoaderOptions.tablesToCopy.code_lookup){console.log('\nCopying the code_lookup table.'); getCodeLookup();} else{codelookupDeferred.resolve();}});
 codelookupDeferred.promise.done(function(){if(dataLoaderOptions.tablesToCopy.observation_fact){console.log('\nCopying the observation_fact table.'); getObservationFact();} else{obsFactDeferred.resolve();}});
-obsFactDeferred.promise.done(function(){console.log('\n\nFinished\n\n'); process.exit();});
+obsFactDeferred.promise.done(function(){
+  console.log('\n\nFinished\n\n');
+  patient_dimension_nemo.count().then(function(p) {
+    finalSourcePatientCount = p;
+    concept_dimension_nemo.count().then(function(c) {
+      finalSourceConceptCount = c;
+      visit_dimension_nemo.count().then(function(v) {
+        finalSourceVisitCount = v;
+        provider_dimension_nemo.count().then(function(pd) {
+          finalSourceProviderCount = pd;
+          code_lookup_nemo.count().then(function(cl) {
+            finalSourceCodeCount = cl;
+            observation_fact_nemo.count().then(function(o) {
+              finalSourceObservationCount = o;
+              console.log("There are " + finalSourcePatientCount + " patient_dimension record(s). " + (finalSourcePatientCount - sourcePatientCount) + " record(s) added.");
+              console.log("There are " + finalSourceConceptCount + " concept_dimension record(s). " + (finalSourceConceptCount - sourceConceptCount) + " record(s) added.");
+              console.log("There are " + finalSourceVisitCount + " visit_dimension record(s). " + (finalSourceVisitCount - sourceVisitCount) + " record(s) added.");
+              console.log("There are " + finalSourceProviderCount + " provider_dimension record(s). " + (finalSourceProviderCount - sourceProviderCount) + " record(s) added.");
+              console.log("There are " + finalSourceCodeCount + " code_lookup record(s). " + (finalSourceCodeCount - sourceCodeCount) + " record(s) added.");
+              console.log("There are " + finalSourceObservationCount + " observation_fact record(s). " + (finalSourceObservationCount - sourceObservationCount) + " record(s) added.");
+              finalCountDeferred.resolve();
+            });
+          });
+        });
+      });
+    });
+  });
+});
+finalCountDeferred.promise.done(function(){  process.exit();})
 
 // if (dataLoaderOptions.dividePatients) {
 //   // dividePatients();
