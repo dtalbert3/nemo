@@ -4,7 +4,7 @@ import domReady from 'domready';
 import setFavicon from 'favicon-setter';
 
 import Root from './containers/Root';
-import { createStore } from 'redux'
+import { createStore } from 'redux';
 import reducers from './redux/rootReducer';
 import makeRoutes from './routes';
 import { browserHistory } from 'react-router';
