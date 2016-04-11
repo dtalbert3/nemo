@@ -20,14 +20,14 @@ export const setQuestionEvents = (data) => {
     type: SET_QUESTION_EVENTS,
     payload: data
   };
-}
+};
 
 export const setQuestionSuggestions = (data) => {
   return {
     type: SET_QUESTIONS_SUGGESTIONS,
     payload: data
   };
-}
+};
 
 export const actions = {
   setQuestionTypes,

@@ -1,8 +1,6 @@
 import React from 'react';
 import { Collapse, Table } from 'react-bootstrap';
 
-import { objectByString } from '../util';
-
 // Helper to create table headers
 const Thead = React.createClass({
   render() {
