@@ -96,8 +96,8 @@ var provider_dimension_kumc = require('./models/KUMC/provider_dimension')(
 var code_lookup_kumc = require('./models/KUMC/code_lookup')(kumcCon);
 
 // Models for sorting into learner or test tables
-// var learnerPatients = require('./models/NEMO/LearnerPatients')(dataMartCon);
-// var testPatients = require('./models/NEMO/TestPatients')(dataMartCon);
+var learnerPatients = require('./models/NEMO/LearnerPatients')(dataMartCon);
+var testPatients = require('./models/NEMO/TestPatients')(dataMartCon);
 
 
 // This function breaks the table into chunks and copies them from the source postgres DB to the target DB
@@ -154,56 +154,61 @@ var copyTable = function(deferred, start, chunk, sourceModel, destModel,
 };
 
 // Function to divide patients into test and learner data
-// var dividePatients = function() {
-//
-//   var deferred = Q.defer();
-//   console.log('\nDividing Patients into Test and Learner tables.');
-//   patient_dimension_nemo.findAll().then(function(patients) {
-//     patients.forEach(function(patient, i) {
-//       // console.log(patient.dataValues.patient_num);
-//       var patientNum = patient.dataValues.patient_num;
-//       //console.log(patientNum);
-//       var call1 = learnerPatients.findOne({
-//         where: {
-//           patient_num: patientNum
-//         }
-//       });
-//       var call2 = testPatients.findOne({
-//         where: {
-//           patient_num: patientNum
-//         }
-//       });
-//       Promise.all([call1, call2]).then(function(results) {
-//         //console.log(results);
-//         var learnerPatientResults = results[0];
-//         var testPatientsResults = results[1];
-//         if (learnerPatientResults === null &&
-//           testPatientsResults ===
-//           null) {
-//           if (i % 2 === 0) {
-//             learnerPatients.upsert({
-//               patient_num: patientNum
-//             });
-//           } else {
-//             testPatients.upsert({
-//               patient_num: patientNum
-//             });
-//           }
-//
-//           if(i >= (patients.length - 1))
-//           {
-//             // console.log("i > ", patients.length-1);
-//             deferred.resolve();
-//           }
-//         }
-//       }, function(err) {
-//         console.log(err);
-//       });
-//     });
-//   });
-//
-//   return deferred.promise;
-// };
+var dividePatients = function(deferred) {
+
+  console.log('\nDividing Patients into Test and Learner tables.');
+  patient_dimension_nemo.findAll().then(function(patients) {
+      if(patients.length < 1)
+      {
+        deferred.resolve();
+      }
+      patients.forEach(function(patient, i) {
+        // console.log(patient.dataValues.patient_num);
+        var patientNum = patient.dataValues.patient_num;
+        //console.log(patientNum);
+        var call1 = learnerPatients.findOne({
+          where: {
+            patient_num: patientNum
+          }
+        });
+        var call2 = testPatients.findOne({
+          where: {
+            patient_num: patientNum
+          }
+        });
+        Promise.all([call1, call2]).then(function(results) {
+          //console.log(results);
+          var learnerPatientResults = results[0];
+          var testPatientsResults = results[1];
+          if (learnerPatientResults === null && testPatientsResults === null) {
+            if (i % 2 === 0) {
+              learnerPatients.upsert({
+                patient_num: patientNum
+              }).then(function(){  if(i >= (patients.length - 1))
+                {
+                  // console.log("i > ", patients.length-1);
+                  deferred.resolve();
+                }});
+            } else {
+              testPatients.upsert({
+                patient_num: patientNum
+              }).then(function(){  if(i >= (patients.length - 1))
+                {
+                  // console.log("i > ", patients.length-1);
+                  deferred.resolve();
+                }});;
+            }
+          }
+
+
+        });
+      });
+    });
+  };
+
+
+
+
 
 
 
@@ -246,6 +251,7 @@ var providerDeferred = Q.defer();
 var codelookupDeferred = Q.defer();
 var obsFactDeferred = Q.defer();
 var countDeferred = Q.defer();
+var divideDeferred = Q.defer();
 var finalCountDeferred = Q.defer();
 
 var getPatients = wrapFunction(copyTable, this, [patientDeferred, 0, 2048, patient_dimension_kumc, patient_dimension_nemo,'patient_num']);
@@ -308,7 +314,8 @@ conceptDeferred.promise.done(function(){if(dataLoaderOptions.tablesToCopy.visit_
 visitDeferred.promise.done(function(){if(dataLoaderOptions.tablesToCopy.provider_dimension){console.log('\nCopying the provider_dimension table.'); getProviders();} else{providerDeferred.resolve();}});
 providerDeferred.promise.done(function(){if(dataLoaderOptions.tablesToCopy.code_lookup){console.log('\nCopying the code_lookup table.'); getCodeLookup();} else{codelookupDeferred.resolve();}});
 codelookupDeferred.promise.done(function(){if(dataLoaderOptions.tablesToCopy.observation_fact){console.log('\nCopying the observation_fact table.'); getObservationFact();} else{obsFactDeferred.resolve();}});
-obsFactDeferred.promise.done(function(){
+obsFactDeferred.promise.done(function(){if(dataLoaderOptions.dividePatients){console.log('\nDividing patients.'); dividePatients(divideDeferred);} else{divideDeferred.resolve();}});
+divideDeferred.promise.done(function(){
   console.log('\n\nFinished\n\n');
   patient_dimension_nemo.count().then(function(p) {
     finalSourcePatientCount = p;
