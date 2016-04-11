@@ -1,9 +1,6 @@
 import React from 'react';
-import Bloodhound from 'bloodhound-js';
 import { Input, ListGroup, ListGroupItem } from 'react-bootstrap';
-import config from 'clientconfig';
-import io from 'socket.io-client';
-const qstn = io.connect(config.apiUrl + '/qstn');
+import Bloodhound from 'bloodhound-js';
 
 // Helper to display list of suggestions for TypeAhead
 const Suggestions = React.createClass({
@@ -34,9 +31,9 @@ const Suggestions = React.createClass({
 // Create TypeAhead which displays listing of suggestions based on given input
 export default React.createClass({
 
-  // Update token for question creator
-  updateToken(token) {
-    this.props.updateToken(token);
+  // Update token
+  handleToken(token) {
+    this.props.handleToken(token);
   },
 
   // Update input box to reflect clicked suggestion
@@ -48,7 +45,7 @@ export default React.createClass({
         input: token[this.props.value],
         hidden: true
       });
-      this.updateToken(token);
+      this.handleToken(token);
     }
   },
 
@@ -62,7 +59,7 @@ export default React.createClass({
           input: token[this.props.value],
           hidden: true
         });
-        this.updateToken(token);
+        this.handleToken(token);
       }
     }
   },
@@ -77,7 +74,7 @@ export default React.createClass({
   },
 
   // Check if input is valid for question creator
-  validationState() {
+  validate() {
     var token = this.state.engine.get(this.state.input);
     if (token[0] !== undefined) {
       return 'success';
@@ -95,26 +92,21 @@ export default React.createClass({
       });
       var token = this.state.engine.get(input)[0];
       (token !== undefined) ?
-        this.updateToken(token) :
-        this.updateToken({});
+        this.handleToken(token) :
+        this.handleToken({});
     });
   },
 
-  // Once TypeAhead is mounted fetch parameters to be used for suggestions
-  componentDidMount() {
-    qstn.emit('getSuggestions', (err, data) => {
-      if (!err) {
-        this.state.engine.clear();
-        this.state.engine.add(data);
-        this.search(this.state.input);
-      }
-    });
+  updateSuggestions() {
+    this.state.engine.clear();
+    this.state.engine.add(this.props.suggestions);
+    this.search(this.state.input);
   },
 
   // Initialize TypeAhead and search engine
   getInitialState() {
     return {
-      suggestions: [],
+      suggestions: this.props.suggestions,
       input: '',
       hidden: true,
       engine: new Bloodhound({
@@ -144,7 +136,7 @@ export default React.createClass({
         {/* TypeAhead input box */}
         <Input type='text' ref='input'
           value={this.state.input}
-          bsStyle={this.validationState()}
+          bsStyle={this.validate()}
           hasFeedback
           onChange={this.handleChange}
           onKeyPress={this.handleKey}

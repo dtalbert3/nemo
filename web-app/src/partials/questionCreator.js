@@ -1,11 +1,8 @@
 import React from 'react';
 import { Input, Grid, Row, SplitButton, ButtonGroup, Button, MenuItem, Label, Glyphicon } from 'react-bootstrap';
-import TypeAhead from './typeahead';
+import TypeAhead from './typeAhead';
 import Alert from './alert';
 import isEqual from 'lodash.isequal';
-import config from 'clientconfig';
-import io from 'socket.io-client';
-const qstn = io.connect(config.apiUrl + '/qstn');
 
 // Whitelist which parameters are bounded
 const BOUNDED_PARAMETERS = [
@@ -143,20 +140,13 @@ export default React.createClass({
       var data = {
         UserID: parseInt(localStorage.userID), // Currently testing with hard-coded UserID
         QuestionStatusID: 1,
-        QuestionTypeID: this.state.questionTypes[this.state.selectedTypeIndex].ID,
-        QuestionEventID: this.state.questionEvents[this.state.selectedEventIndex].ID,
+        QuestionTypeID: this.props.questionTypes[this.state.selectedTypeIndex].ID,
+        QuestionEventID: this.props.questionEvents[this.state.selectedEventIndex].ID,
         QuestionParamsArray: this.state.parameters
       };
 
       // Send question to database
-      qstn.emit('create', data, (err) => {
-        if (!err) {
-          Alert('Question Submitted!', 'success', 4 * 1000);
-          this.props.onClick();
-        } else {
-          Alert('Error Submitting Question!', 'danger', 4 * 1000);
-        }
-      });
+      this.props.handleSubmit(data);
     }
   },
 
@@ -258,53 +248,33 @@ export default React.createClass({
   },
 
   // Once form is mounted update possible parameters and question types/events
-  componentDidMount() {
-    var loadAlert = Alert('Loading Question Creator', 'info');
+  updateTypeAhead() {
+    this.refs.typeAhead.updateSuggestions();
+  },
 
-    var loadedTypes = false;
-    var loadedEvents = false;
-
-    qstn.emit('getTypes', (err, data) => {
-      if (!err) {
-        this.setState({
-          questionTypes: data.map((d) => d)
-        });
-      } else {
-        Alert('Error Fetching Question Types', 'danger', 4 * 1000);
-      }
-      loadedTypes = true;
-    });
-
-    qstn.emit('getEvents', (err, data) => {
-      if (!err) {
-        this.setState({
-          questionEvents: data.map((d) => d)
-        });
-      } else {
-        Alert('Error Fetching Question Events', 'danger', 4 * 1000);
-      }
-      loadedEvents = true;
-    });
-
-    var intervalID = window.setInterval(() => {
-      if (loadedTypes && loadedEvents) {
-        document.getElementById('alert').removeChild(loadAlert);
-        clearInterval(intervalID);
-      }
-    }, 1000);
+  getDefaultProps: function() {
+    return {
+      questionTypes: [],
+      questionEvents: [],
+      suggestions: [],
+      handleSubmit: () => {}
+    };
   },
 
   // Initialize question creator form
   getInitialState() {
     return {
-      questionTypes: [],
       selectedTypeIndex: null,
-      questionEvents: [],
       selectedEventIndex: null,
       bounds: { min: null, max: null },
       parameters: [],
       parameter: {}
     };
+  },
+
+  componentWillUpdate(nextProps, nextState) {
+    console.log(nextProps);
+    this.props = nextProps;
   },
 
   // Render question creator form
@@ -314,7 +284,7 @@ export default React.createClass({
         <Row>
           {/* Question Type Dropdown */}
           <QuestionDropdown
-            items={this.state.questionTypes}
+            items={this.props.questionTypes}
             index={this.state.selectedTypeIndex}
             handleSelect={this.handleSelectedType}
             defaultTitle={'Question Type'}
@@ -323,7 +293,7 @@ export default React.createClass({
 
           {/* Question Event Dropdown */}
           <QuestionDropdown
-            items={this.state.questionEvents}
+            items={this.props.questionEvents}
             index={this.state.selectedEventIndex}
             handleSelect={this.handleSelectedEvent}
             defaultTitle={'Question Event'}
@@ -334,11 +304,12 @@ export default React.createClass({
 
           {/* TypeAhead for finding parameters */}
           <TypeAhead
-            suggestions={[]}
+            ref='typeAhead'
+            suggestions={this.props.suggestions}
             key='ID'
             value='concept_cd'
             limit={10}
-            updateToken={this.updateParameter}
+            handleToken={this.updateParameter}
           />
 
           {/* Create range input if required by parameter  */}
