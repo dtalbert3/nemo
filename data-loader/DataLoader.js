@@ -1,6 +1,5 @@
 var sequelize = require('sequelize');
 var fs = require('fs');
-// var Promise = require('promise');
 var Q = require('q');
 
 // Generic function for wrapping functions
@@ -23,50 +22,50 @@ try {
 }
 
 // Set some queries for later
-// var readmittanceQuery = 'INSERT INTO PatientReadmittance (patient_num) SELECT patient_num FROM patient_dimension WHERE patient_num NOT IN (SELECT patient_num FROM PatientReadmittance);';
-// var readmittanceQuery2 = 'UPDATE PatientReadmittance' +
-// ' SET '+
-// ' readmitted  = 1 ' +
-// ' WHERE patient_num IN ' +
-// '(SELECT patient_num FROM ' +
-// '	( '+
-// '		SELECT ' +
-// '		vIn.patient_num, ' +
-// '		vIn.start_date as InStart, ' +
-// '		vIn.end_date as InEnd, ' +
-// '		vOut.start_date as OutStart, ' +
-// '		vOut.end_date as OutEnd ' +
-// '		FROM NEMO_Datamart.visit_dimension vOut ' +
-// '		INNER JOIN NEMO_Datamart.visit_dimension vIn ON vIn.patient_num = vOut.patient_num AND vIn.encounter_num <> vOut.encounter_num '  +
-// '		WHERE ' +
-// '		vIn.inout_cd = \'I\' ' +
-// '		AND vOut.inout_cd = \'I\' ' +
-// '		AND vIn.start_date BETWEEN vOut.start_date AND DATE_ADD(vOut.start_date,INTERVAL 30 DAY) ' +
-// '		ORDER BY vIn.patient_num, vOut.end_date ASC ' +
-// '	) as readmitted ' +
-// '); ';
-//
-// var readmittanceQuery3 = 'UPDATE PatientReadmittance' +
-// ' SET '+
-// ' readmitted  = 1 ' +
-// ' WHERE patient_num IN ' +
-// '(SELECT patient_num FROM ' +
-// '	( '+
-// '		SELECT ' +
-// '		vIn.patient_num, ' +
-// '		vIn.start_date as InStart, ' +
-// '		vIn.end_date as InEnd, ' +
-// '		vOut.start_date as OutStart, ' +
-// '		vOut.end_date as OutEnd ' +
-// '   FROM NEMO_Datamart.observation_fact vOut ' +
-// '   INNER JOIN NEMO_Datamart.observation_fact vIn ON vIn.patient_num = vOut.patient_num AND vIn.encounter_num <> vOut.encounter_num' +
-// '   WHERE ' +
-// '   vIn.modifier_cd = \'DiagObs:Inpatient\' ' +
-// '   and vOut.modifier_cd = \'DiagObs:Inpatient\' ' +
-// '		AND vIn.start_date BETWEEN vOut.start_date AND DATE_ADD(vOut.start_date,INTERVAL 30 DAY) ' +
-// '		ORDER BY vIn.patient_num, vOut.end_date ASC ' +
-// '	) as readmitted ' +
-// '); ';
+var readmittanceQuery = 'INSERT INTO PatientReadmittance (patient_num) SELECT patient_num FROM patient_dimension WHERE patient_num NOT IN (SELECT patient_num FROM PatientReadmittance);';
+var readmittanceQuery2 = 'UPDATE PatientReadmittance' +
+' SET '+
+' readmitted  = 1 ' +
+' WHERE patient_num IN ' +
+'(SELECT patient_num FROM ' +
+'	( '+
+'		SELECT ' +
+'		vIn.patient_num, ' +
+'		vIn.start_date as InStart, ' +
+'		vIn.end_date as InEnd, ' +
+'		vOut.start_date as OutStart, ' +
+'		vOut.end_date as OutEnd ' +
+'		FROM ' + dataLoaderOptions.nemoConnection.dbName + '.visit_dimension vOut ' +
+'		INNER JOIN ' + dataLoaderOptions.nemoConnection.dbName + '.visit_dimension vIn ON vIn.patient_num = vOut.patient_num AND vIn.encounter_num <> vOut.encounter_num '  +
+'		WHERE ' +
+'		vIn.inout_cd = \'I\' ' +
+'		AND vOut.inout_cd = \'I\' ' +
+'		AND vIn.start_date BETWEEN vOut.start_date AND DATE_ADD(vOut.start_date,INTERVAL 30 DAY) ' +
+'		ORDER BY vIn.patient_num, vOut.end_date ASC ' +
+'	) as readmitted ' +
+'); ';
+
+var readmittanceQuery3 = 'UPDATE PatientReadmittance' +
+' SET '+
+' readmitted  = 1 ' +
+' WHERE patient_num IN ' +
+'(SELECT patient_num FROM ' +
+'	( '+
+'		SELECT ' +
+'		vIn.patient_num, ' +
+'		vIn.start_date as InStart, ' +
+'		vIn.end_date as InEnd, ' +
+'		vOut.start_date as OutStart, ' +
+'		vOut.end_date as OutEnd ' +
+'   FROM ' + dataLoaderOptions.nemoConnection.dbName + '.observation_fact vOut ' +
+'   INNER JOIN ' + dataLoaderOptions.nemoConnection.dbName + '.observation_fact vIn ON vIn.patient_num = vOut.patient_num AND vIn.encounter_num <> vOut.encounter_num' +
+'   WHERE ' +
+'   vIn.modifier_cd = \'DiagObs:Inpatient\' ' +
+'   and vOut.modifier_cd = \'DiagObs:Inpatient\' ' +
+'		AND vIn.start_date BETWEEN vOut.start_date AND DATE_ADD(vOut.start_date,INTERVAL 30 DAY) ' +
+'		ORDER BY vIn.patient_num, vOut.end_date ASC ' +
+'	) as readmitted ' +
+'); ';
 
 // Open the connections
 var kumcCon = new sequelize(dataLoaderOptions.kumcConnection.dbName,
@@ -199,6 +198,13 @@ var dividePatients = function(deferred) {
                 }});;
             }
           }
+          else {
+            if(i >= (patients.length - 1))
+              {
+                // console.log("i > ", patients.length-1);
+                deferred.resolve();
+              }
+          }
 
 
         });
@@ -207,40 +213,16 @@ var dividePatients = function(deferred) {
   };
 
 
-
-
-
-
-
-
-// var copyObservationsForPatients = function() {
-//
-//     console.log("\nCopying the observation_fact table.");
-//     patient_dimension_nemo.findAll().then(function(patients) {
-//       var patientNums = patients.map(function(a) {
-//         return a.dataValues.patient_num;
-//       });
-//
-//       return copyTable(0, 2048, observation_fact_kumc, observation_fact_nemo,
-//         'encounter_num', {
-//           patient_num: {
-//             $in: patientNums
-//           }
-//         });
-//
-//     });
-// };
-
-// var findReadmittanceForPatients = function(){
-//   // console.log("\nCreating readmittance data for patients.");
-//   var deferred1 = Q.defer();
-//   var deferred2 = Q.defer();
-//   var deferred3 = Q.defer();
-//   dataMartCon.query(readmittanceQuery, { type: sequelize.QueryTypes.UPDATE }).then(deferred1.resolve());
-//   dataMartCon.query(readmittanceQuery2, { type: sequelize.QueryTypes.UPDATE }).then(deferred2.resolve());
-//   dataMartCon.query(readmittanceQuery3, { type: sequelize.QueryTypes.UPDATE }).then(deferred3.resolve());
-//   return [deferred1, deferred2, deferred3].reduce(Q.when, Q());
-// };
+var findReadmittanceForPatients = function(deferred){
+  // console.log("\nCreating readmittance data for patients.");
+  var deferred1 = Q.defer();
+  var deferred2 = Q.defer();
+  var deferred3 = Q.defer();
+  dataMartCon.query(readmittanceQuery, { type: sequelize.QueryTypes.UPDATE }).then(deferred1.resolve());
+  dataMartCon.query(readmittanceQuery2, { type: sequelize.QueryTypes.UPDATE }).then(deferred2.resolve());
+  dataMartCon.query(readmittanceQuery3, { type: sequelize.QueryTypes.UPDATE }).then(deferred3.resolve());
+  deferred1.promise.done(deferred2.promise.done(deferred3.promise.done(deferred.resolve())));
+};
 
 // Copy all the I2B2 tables
 
@@ -252,14 +234,17 @@ var codelookupDeferred = Q.defer();
 var obsFactDeferred = Q.defer();
 var countDeferred = Q.defer();
 var divideDeferred = Q.defer();
+var readmittanceDeferred = Q.defer();
 var finalCountDeferred = Q.defer();
 
-var getPatients = wrapFunction(copyTable, this, [patientDeferred, 0, 2048, patient_dimension_kumc, patient_dimension_nemo,'patient_num']);
+var patientNums = [];
+
+var getPatients = wrapFunction(copyTable, this, [patientDeferred, 0, 2048, patient_dimension_kumc, patient_dimension_nemo,'patient_num', dataLoaderOptions.patientWhereClause]);
 var getConcepts = wrapFunction(copyTable, this, [conceptDeferred, 0, 2048, concept_dimension_kumc, concept_dimension_nemo,'concept_path']);
 var getVisits = wrapFunction(copyTable, this, [visitDeferred, 0, 2048, visit_dimension_kumc, visit_dimension_nemo,'encounter_num']);
 var getProviders = wrapFunction(copyTable, this, [providerDeferred, 0, 2048, provider_dimension_kumc, provider_dimension_nemo,'provider_id']);
 var getCodeLookup = wrapFunction(copyTable, this, [codelookupDeferred, 0, 2048, code_lookup_kumc, code_lookup_nemo,'table_cd']);
-var getObservationFact = wrapFunction(copyTable, this, [obsFactDeferred, 0, 2048, observation_fact_kumc, observation_fact_nemo,'encounter_num']);
+
 
 var sourcePatientCount = 0;
 var sourceConceptCount = 0;
@@ -274,6 +259,8 @@ var finalSourceVisitCount = 0;
 var finalSourceProviderCount = 0;
 var finalSourceCodeCount = 0;
 var finalSourceObservationCount = 0;
+
+
 
 patient_dimension_nemo.count().then(function(p) {
   sourcePatientCount = p;
@@ -313,9 +300,31 @@ patientDeferred.promise.done(function(){if(dataLoaderOptions.tablesToCopy.concep
 conceptDeferred.promise.done(function(){if(dataLoaderOptions.tablesToCopy.visit_dimension){ console.log('\nCopying the visit_dimension table.'); getVisits();} else{visitDeferred.resolve();}});
 visitDeferred.promise.done(function(){if(dataLoaderOptions.tablesToCopy.provider_dimension){console.log('\nCopying the provider_dimension table.'); getProviders();} else{providerDeferred.resolve();}});
 providerDeferred.promise.done(function(){if(dataLoaderOptions.tablesToCopy.code_lookup){console.log('\nCopying the code_lookup table.'); getCodeLookup();} else{codelookupDeferred.resolve();}});
-codelookupDeferred.promise.done(function(){if(dataLoaderOptions.tablesToCopy.observation_fact){console.log('\nCopying the observation_fact table.'); getObservationFact();} else{obsFactDeferred.resolve();}});
+codelookupDeferred.promise.done(
+  function(){
+    if(dataLoaderOptions.tablesToCopy.observation_fact)
+    {
+      console.log('\nCopying the observation_fact table.');
+      patient_dimension_nemo.findAll().then(function(patients) {
+         patientNums = patients.map(function(a) {
+         return a.dataValues.patient_num;
+       })})
+      .then(function(){
+        var getObservationFact = wrapFunction(copyTable, this, [obsFactDeferred, 0, 2048, observation_fact_kumc, observation_fact_nemo,'encounter_num',
+                {
+                  patient_num: {
+                    $in: patientNums
+                  }
+                }]);
+          getObservationFact();}
+        );
+
+
+    }
+  else{obsFactDeferred.resolve();}});
 obsFactDeferred.promise.done(function(){if(dataLoaderOptions.dividePatients){console.log('\nDividing patients.'); dividePatients(divideDeferred);} else{divideDeferred.resolve();}});
-divideDeferred.promise.done(function(){
+divideDeferred.promise.done(function(){console.log("Finding readmittance for patients"); if(dataLoaderOptions.findReadmittance){findReadmittanceForPatients(readmittanceDeferred);} else{readmittanceDeferred.resolve();}})
+readmittanceDeferred.promise.done(function(){
   console.log('\n\nFinished\n\n');
   patient_dimension_nemo.count().then(function(p) {
     finalSourcePatientCount = p;
@@ -344,10 +353,3 @@ divideDeferred.promise.done(function(){
   });
 });
 finalCountDeferred.promise.done(function(){  process.exit();})
-
-// if (dataLoaderOptions.dividePatients) {
-//   // dividePatients();
-// }
-// if (dataLoaderOptions.findReadmittance) {
-//   // findReadmittanceForPatients();
-// }

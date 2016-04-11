@@ -34,7 +34,6 @@
     "helmet": "~1.0",
     "http": "0.0.0",
     "jsonwebtoken": "^5.7.0",
-    "left-pad": "git://github.com/azer/left-pad.git#bff80e3ef0db0bfaba7698606c4f623433d14355",
     "lodash.isequal": "^4.1.0",
     "moonboots-express": "~3.0",
     "mysql": "~2.10.2",

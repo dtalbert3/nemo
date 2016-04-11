@@ -40,7 +40,7 @@ const UserDashboard = React.createClass({
     var loadedSuggestions = false;
 
     // Fetch user questions
-    api.fetchUserData()
+    api.fetchUserData();
 
     // Set periodic refresh of questions
     if (refresh === null) {
@@ -76,7 +76,7 @@ const UserDashboard = React.createClass({
       questions: [],
       questionTypes: [],
       questionEvents: [],
-      suggestions: [],
+      suggestions: []
     };
   },
 
@@ -111,7 +111,7 @@ const UserDashboard = React.createClass({
   }
 });
 
-const mapStateToProps = (state, props) => ({
+const mapStateToProps = (state) => ({
   questions: state.nemoQuestions.userQuestions,
   questionTypes: state.questionCreator.questionTypes,
   questionEvents: state.questionCreator.questionEvents,
@@ -144,8 +144,8 @@ const MinimalRow = (data) => {
     <td key={1} >{question}</td>,
     <td key={2} >{parameters}</td>,
     <td key={3} >{status}</td>
-  ])
-}
+  ]);
+};
 
 // Helper to create well with extra information on submitted questions
 const HiddenRow = React.createClass({

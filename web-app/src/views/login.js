@@ -1,5 +1,7 @@
 import React from 'react';
-import { Col, Input, ButtonInput, Button } from 'react-bootstrap';
+import { Row, Col, Input, ButtonInput, Button } from 'react-bootstrap';
+import { Link } from 'react-router';
+import Alert from '../partials/alert';
 import Auth from '../auth';
 
 export default React.createClass({
@@ -20,28 +22,33 @@ export default React.createClass({
       if (valid) {
         this.context.router.replace('/user');
       } else {
-        // Set error state for form
-        // Create alert!
+        Alert('Invalid email/password', 'danger', 4 * 1000);
       }
     });
   },
 
-  createUser() {
-    Auth.createUser(this.refs.email.getValue(),
-      this.refs.password.getValue());
-  },
-
   render() {
     return (
-      <Col sm={4} smOffset={4} md={4} mdOffset={4}>
-        <form className='form-signin' onSubmit={this.handleSubmit} autoComplete='on'>
-          <h2 className='form-signin-heading'>Please sign in</h2>
-          <Input ref='email' type='email' label='Email Address' placeholder='Enter email' required={true} />
-          <Input ref='password' type='password' label='Password' placeholder='Enter password' required={true} />
-          <ButtonInput type='submit' value='Sign In' bsStyle='primary' block/>
-          <Button bsStyle='warning' block onClick={this.createUser}>Sign Up</Button>
-        </form>
-      </Col>
+      <Row>
+        <Col sm={4} smOffset={4} md={4} mdOffset={4}>
+          <form onSubmit={this.handleSubmit} autoComplete='on'>
+            <h2 >Please Login</h2>
+            <Input ref='email' type='email' label='Email Address' placeholder='Enter email' required={true} />
+            <Input ref='password' type='password' label='Password' placeholder='Enter password' required={true} />
+            <ButtonInput type='submit' value='Login' bsStyle='primary' block/>
+          </form>
+          <Row>
+            <Col sm={6} md={6}>
+              <Link to='/forgotPassword'> forgot password? </Link>
+            </Col>
+            <Col sm={6} md={6}>
+              <span>
+              <Link to='/signup' style={{float: 'right'}}> signup </Link>
+              </span>
+            </Col>
+          </Row>
+        </Col>
+      </Row>
     );
   }
 });

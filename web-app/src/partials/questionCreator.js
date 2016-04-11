@@ -272,11 +272,6 @@ export default React.createClass({
     };
   },
 
-  componentWillUpdate(nextProps, nextState) {
-    console.log(nextProps);
-    this.props = nextProps;
-  },
-
   // Render question creator form
   render() {
     return (
