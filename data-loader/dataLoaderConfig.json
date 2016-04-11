@@ -45,5 +45,8 @@
     "dayOfMonth": 11,
     "hour": 8,
     "minute": 39
+  },
+  "patientWhereClause": {
+    "language_cd": "english"
   }
 }

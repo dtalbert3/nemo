@@ -239,7 +239,7 @@ var finalCountDeferred = Q.defer();
 
 var patientNums = [];
 
-var getPatients = wrapFunction(copyTable, this, [patientDeferred, 0, 2048, patient_dimension_kumc, patient_dimension_nemo,'patient_num']);
+var getPatients = wrapFunction(copyTable, this, [patientDeferred, 0, 2048, patient_dimension_kumc, patient_dimension_nemo,'patient_num', dataLoaderOptions.patientWhereClause]);
 var getConcepts = wrapFunction(copyTable, this, [conceptDeferred, 0, 2048, concept_dimension_kumc, concept_dimension_nemo,'concept_path']);
 var getVisits = wrapFunction(copyTable, this, [visitDeferred, 0, 2048, visit_dimension_kumc, visit_dimension_nemo,'encounter_num']);
 var getProviders = wrapFunction(copyTable, this, [providerDeferred, 0, 2048, provider_dimension_kumc, provider_dimension_nemo,'provider_id']);
