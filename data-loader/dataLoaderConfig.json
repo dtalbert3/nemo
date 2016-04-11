@@ -32,14 +32,14 @@
     }
   },
   "tablesToCopy": {
-    "observation_fact": true,
-    "code_lookup": true,
-    "concept_dimension": true,
+    "observation_fact": false,
+    "code_lookup": false,
+    "concept_dimension": false,
     "patient_dimension": true,
-    "provider_dimension": true,
-    "visit_dimension": true
+    "provider_dimension": false,
+    "visit_dimension": false
   },
-  "dividePatients": false,
+  "dividePatients": true,
   "findReadmittance": false,
   "schedule": {
     "dayOfMonth": 11,
