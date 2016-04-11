@@ -23,7 +23,27 @@ module.exports = function(sequelize) {
     Hash: {
       type: Sequelize.STRING,
       allowNull: false
-    }
+    },
+    First: {
+      type: Sequelize.STRING,
+      allowNull: false
+    },
+    Last: {
+      type: Sequelize.STRING,
+      allowNull: false
+    },
+    Affiliation: {
+      type: Sequelize.STRING,
+      allowNull: false
+    },
+    Confirmed: {
+      type: Sequelize.BOOLEAN,
+      allowNull: false
+    },
+    ConfirmationHash: {
+      type: Sequelize.STRING,
+      allowNull: false
+    },
   }, {
     tableName: 'User',
     freezeTableName: true,

@@ -128,20 +128,30 @@ exports.userService = function(socket, hooks) {
     hooks.forEach(function(func) {
       func(socket);
     });
+    data.first = "Cody";
+    data.last = "Moffitt";
+    data.affiliation = "MTSU";
+    
     bcrypt.genSalt(10, function(err, salt) {
       bcrypt.hash(data.password, salt, function(err, hash) {
         // SWITCH TO FIND OR CREATE!!
+        bcrypt.hash(data.email, salt, function(err2, hash2) {
         userModel.upsert({
           UserTypeID: 1,
           Email: data.email,
-          Hash: hash
+          Hash: hash,
+          First: data.first,
+          Last:  data.last,
+          Affiliation: data.affiliation,
+          Confirmed: 0,
+          ConfirmationHash: hash2
         })
         .then(function(data) {
           // Return error codes as needed here
           return callback(null, data);
         }, function(error) {
           return callback(error, null);
-        });
+        }); });
       });
     });
   });
