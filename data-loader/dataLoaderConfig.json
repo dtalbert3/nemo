@@ -40,5 +40,10 @@
     "visit_dimension": true
   },
   "dividePatients": false,
-  "findReadmittance": false
+  "findReadmittance": false,
+  "schedule": {
+    "dayOfMonth": 11,
+    "hour": 8,
+    "minute": 39
+  }
 }
