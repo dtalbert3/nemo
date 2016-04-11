@@ -32,7 +32,7 @@
     }
   },
   "tablesToCopy": {
-    "observation_fact": false,
+    "observation_fact": true,
     "code_lookup": false,
     "concept_dimension": false,
     "patient_dimension": true,
@@ -40,7 +40,7 @@
     "visit_dimension": false
   },
   "dividePatients": true,
-  "findReadmittance": false,
+  "findReadmittance": true,
   "schedule": {
     "dayOfMonth": 11,
     "hour": 8,
