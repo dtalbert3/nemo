@@ -35,6 +35,10 @@ module.exports = function(sequelize) {
       type: Sequelize.STRING,
       allowNull: true
     },
+		ConfusionMatrix: {
+			type: Sequelize.STRING,
+			allowNull: true
+		},
     DateModified: {
       type: Sequelize.DATE,
       allowNull: true

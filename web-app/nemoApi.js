@@ -606,7 +606,8 @@ exports.dashboardService = function(socket, hooks) {
           AI: aiModel.AI,
           Algorithm: aiModel.Algorithm,
           Active: aiModel.Active,
-          DateModified: aiModel.DateModified
+          DateModified: aiModel.DateModified,
+					ConfusionMatrix: aiModel.ConfusionMatrix
         };
         return aiModelModel.upsert(updatedAiModel, {
           transaction: t
