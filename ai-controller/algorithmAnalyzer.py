@@ -102,6 +102,8 @@ def run(id):
             instance = WekaWrapper(id, algorithm, 'weka.classifiers.bayes.NaiveBayes', parameters, modelParamsToSave)
         elif algorithm == "J48": # TODO: J48 THREADS WILL CRASH
             instance = WekaWrapper(id, algorithm, 'weka.classifiers.trees.J48', parameters, modelParamsToSave)
+        elif algorithm == "Perceptron": # TODO: J48 THREADS WILL CRASH
+            instance = WekaWrapper(id, algorithm, 'weka.classifiers.functions.MultilayerPerceptron', parameters, modelParamsToSave)
     elif optimizer == 'DefaultCVParams':
         if algorithm == "SMO":
             parameters = parameters + ["-W", "weka.classifiers.functions.SMO"]
@@ -114,6 +116,9 @@ def run(id):
             instance = WekaWrapper(id, algorithm, 'weka.classifiers.meta.CVParameterSelection', parameters, modelParamsToSave)
         elif algorithm == "J48": # TODO: J48 THREADS WILL CRASH
             parameters = parameters + ["-W", "weka.classifiers.trees.J48"]
+            instance = WekaWrapper(id, algorithm, 'weka.classifiers.meta.CVParameterSelection', parameters, modelParamsToSave)
+        elif algorithm == "Perceptron": # TODO: J48 THREADS WILL CRASH
+            parameters = parameters + ["-W", "weka.classifiers.functions.MultilayerPerceptron"]
             instance = WekaWrapper(id, algorithm, 'weka.classifiers.meta.CVParameterSelection', parameters, modelParamsToSave)
 
     return instance

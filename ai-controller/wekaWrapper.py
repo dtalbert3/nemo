@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-from weka.classifiers import Classifier, Evaluation
+from weka.classifiers import Classifier, Evaluation, Instance
 from weka.core.classes import Random
 from weka.datagenerators import DataGenerator
 from weka.core.database import InstanceQuery
@@ -79,11 +79,11 @@ class WekaWrapper:
 		test = masterData.copy_instances(masterData, 0, 0)
 		i = 0
 		while i < learnerData.num_instances:
-		    learner.add_instance(learnerData.get_instance(i))
+		    learner.add_instance(Instance.create_instance(learnerData.get_instance(i).values))
 		    i = i + 1
 		i = 0
 		while i < testData.num_instances:
-		    test.add_instance(testData.get_instance(i))
+		    test.add_instance(Instance.create_instance(testData.get_instance(i).values))
 		    i = i + 1
 
 		# Instantiate classifier
@@ -100,7 +100,7 @@ class WekaWrapper:
 		evl.test_model(self.cls, test)
 
 		self.acc = evl.percent_correct
-		
+
 
 		# Temporarily write the serialized confusion matrix to a file
 		conf_matrix = evl.confusion_matrix
@@ -143,7 +143,7 @@ def main():
 
 	# Instantiate api
 	API = nemoApi(CONFIG.HOST, CONFIG.PORT, CONFIG.USER, CONFIG.PASS, CONFIG.DB)
-	
+
 
 	param = AIParam("238", "C", "1 4 4", "DefaultCVParams")
 	instance = WekaWrapper(208, 'SMO', 'weka.classifiers.functions.SMO', ["-W", "weka.classifiers.functions.SMO", "-P", (param.Param + ' ' + param.Value)], None)

@@ -48,6 +48,30 @@
           "CV_D": {"param":"-D", "value":true}
         }
       }
+    },
+    "J48": {
+      "Active": true,
+      "Optimizers": {
+        "DefaultOptions": {
+          "CV_B": {"param":"-B", "value":true},
+          "CV_U": {"param":"-U", "value":true},
+          "CV_R": {"param":"-R", "value":true},
+          "CV_S": {"param":"-S", "value":true},
+          "CV_A": {"param":"-A", "value":true},
+          "CV_J": {"param":"-J", "value":true}
+        }
+      }
+    },
+    "Perceptron": {
+      "Active": true,
+      "Optimizers": {
+        "DefaultOptions": {
+          "CV_B": {"param":"-B", "value":true},
+          "CV_C": {"param":"-C", "value":true},
+          "CV_I": {"param":"-I", "value":true},
+          "CV_D": {"param":"-D", "value":true}
+        }
+      }
     }
   }
 }
