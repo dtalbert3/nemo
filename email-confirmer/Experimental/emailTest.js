@@ -10,7 +10,7 @@ var transporter = nodemailer.createTransport('smtps://nemo.confirmation%40gmail.
 // setup e-mail data with unicode symbols
 var mailOptions = {
     from: '"No Reply ￼" <nemo.confirmation@gmail.com>', // sender address
-		to: 'cemoffitt42@students.tntech.edu', // list of receivers
+		to: 'oopayne42@students.tntech.edu', // list of receivers
 		subject: 'NEMO confirmation', // Subject line
 		text: 'Your account has been created bra', // plaintext body
 		html: '<b>Hello world ￼</b>' // html body

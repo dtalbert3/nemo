@@ -135,7 +135,7 @@ exports.userService = function(socket, hooks) {
     bcrypt.genSalt(10, function(err, salt) {
       bcrypt.hash(data.password, salt, function(err, hash) {
         // SWITCH TO FIND OR CREATE!!
-        bcrypt.hash(data.email, salt, function(err2, hash2) {
+        bcrypt.hash(data.email, salt, function(err2, confHash) {
         userModel.upsert({
           UserTypeID: 1,
           Email: data.email,
@@ -144,18 +144,27 @@ exports.userService = function(socket, hooks) {
           Last:  data.last,
           Affiliation: data.affiliation,
           Confirmed: 0,
-          ConfirmationHash: hash2
+          ConfirmationHash: confHash
         })
-        .then(function(data) {
+				.then(function(submitData) {
           // Return error codes as needed here
-          return callback(null, data);
+					var emailData = {
+						confirmationHash: confHash,
+						receiverEmail: data.email,
+						name: data.first
+					};
+					console.log ( emailData.receiverEmail);
+					sendEmailConfirmation(emailData, function(x,y){
+						return x;
+					});
+					//console.log ("called it")
+					return callback(null, submitData)
         }, function(error) {
           return callback(error, null);
-        }); });
+        }); 
+				});
       });
     });
-  });
-
 };
 
 exports.questionService = function(socket, hooks) {
