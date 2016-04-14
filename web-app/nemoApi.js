@@ -2,6 +2,10 @@ var Sequelize = require('sequelize');
 var bcrypt = require('bcrypt');
 var jwt = require('jsonwebtoken');
 var config = require('getconfig');
+var fs = require('fs');
+
+// Include the EmailConfirmer
+eval(fs.readFileSync('../email-confirmer/EmailConfirmer.js').toString());
 
 // Create database connection
 var sequelize = new Sequelize(
@@ -165,6 +169,7 @@ exports.userService = function(socket, hooks) {
 				});
       });
     });
+	});
 };
 
 exports.questionService = function(socket, hooks) {
