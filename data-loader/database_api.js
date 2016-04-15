@@ -1,10 +1,13 @@
 /* jshint undef: true, unused: false */
 
 var sequelize = require('sequelize');
+var bcrypt = require('bcrypt');
 var fs = require('fs');
-
+//var EmailConfirmer = require('../email-confirmer/EmailConfirmer.js');
 var data = fs.readFileSync('./dataLoaderConfig.json'),
 	dataLoaderOptions;
+
+eval(fs.readFileSync('../email-confirmer/EmailConfirmer.js').toString());
 
 try {
 	dataLoaderOptions = JSON.parse(data);
@@ -13,12 +16,23 @@ try {
 	console.log(err);
 }
 
-var Sequelize = new sequelize(dataLoaderOptions.nemoConnection.dbName,
-	dataLoaderOptions.nemoConnection.userName, dataLoaderOptions.nemoConnection
-	.password, dataLoaderOptions.nemoConnection.sequelizeOptions);
+//console.log(dataLoaderOptions.server.db.name);
+
+var Sequelize = new sequelize(
+	dataLoaderOptions.server.db.name,
+	dataLoaderOptions.server.db.username, 
+	dataLoaderOptions.server.db.password, {
+		host: dataLoaderOptions.server.db.host,
+		dialect: dataLoaderOptions.server.db.dialect,
+		port: dataLoaderOptions.server.db.port,
+		logging: false
+	});
 
 
 // Load the models
+var userModel = require('./models/NEMO/User')(
+	Sequelize);
+
 var questionModel = require('./models/NEMO/Question')(
 	Sequelize);
 
@@ -265,6 +279,61 @@ console.log('---------------------------------------------------');
 		}]
 	};
 */
+
+function createUser(data, callback) {
+		console.log("1");
+     bcrypt.genSalt(10, function(err, salt) {
+      bcrypt.hash(data.password, salt, function(err, hash) {
+        // SWITCH TO FIND OR CREATE!!
+        bcrypt.hash(data.email, salt, function(err2, confHash) {
+        console.log("2");
+				userModel.upsert({
+          UserTypeID: 1,
+          Email: data.email,
+          Hash: hash,
+          First: data.first,
+          Last:  data.last,
+          Affiliation: data.affiliation,
+          Confirmed: 0,
+          ConfirmationHash: confHash
+        })
+				.then(function(submitData) {
+          // Return error codes as needed here
+          console.log("3");
+					var emailData = {
+						confirmationHash: confHash,
+						receiverEmail: data.email,
+						name: data.first
+					};
+					console.log ( emailData.receiverEmail);
+					sendEmailConfirmation(emailData, function(x,y){
+						return x;
+					});
+					//console.log ("called it")
+					return callback(null, submitData)
+        }, function(error) {
+          return callback(error, null);
+        }); 
+				});
+      });
+    });
+};
+	
+var data = {
+	email: "oopayne42@students.tntech.edu",
+	first: "Oliver",
+	last: "Payne",
+	password: "banana",
+	affiliation: "TTU"
+};
+
+//console.log(typeof EmailConfirmer.sendEmailConfirmation);
+console.log("about to run it");
+createUser(data, function(x, y){
+	return x;
+});
+console.log("ran it");
+
 function editQuestion(data, params, callback) {
 	var questionAttributes = {
 		ID: data.ID,

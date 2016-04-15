@@ -1,4 +1,3 @@
-/* jshint indent: 2 */
 var Sequelize = require('sequelize');
 
 module.exports = function(sequelize) {
@@ -17,18 +16,34 @@ module.exports = function(sequelize) {
         key: 'ID'
       }
     },
-    Name: {
+    Email: {
       type: Sequelize.STRING,
-      allowNull: true
+      allowNull: false
     },
     Hash: {
       type: Sequelize.STRING,
-      allowNull: true
+      allowNull: false
     },
-    Salt: {
+    First: {
       type: Sequelize.STRING,
-      allowNull: true
-    }
+      allowNull: false
+    },
+    Last: {
+      type: Sequelize.STRING,
+      allowNull: false
+    },
+    Affiliation: {
+      type: Sequelize.STRING,
+      allowNull: false
+    },
+    Confirmed: {
+      type: Sequelize.BOOLEAN,
+      allowNull: false
+    },
+    ConfirmationHash: {
+      type: Sequelize.STRING,
+      allowNull: false
+    },
   }, {
     tableName: 'User',
     freezeTableName: true,

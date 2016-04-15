@@ -25,5 +25,10 @@
         "port": 3306,
         "logging": true
       }
-    }
+    },
+		"nemoConfirmationEmail":{
+			"userName": "nemo.confirmation",
+			"password": "nemoconfirm"
+		}
+
 }
