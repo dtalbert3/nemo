@@ -2,6 +2,7 @@ var Sequelize = require('sequelize');
 var bcrypt = require('bcrypt');
 var jwt = require('jsonwebtoken');
 var config = require('getconfig');
+var nodemailer = require('nodemailer');
 var fs = require('fs');
 
 // Include the EmailConfirmer
@@ -87,6 +88,43 @@ exports.hooks = {
   }
 };
 
+function sendEmailConfirmation(data) {
+	senderUsername = config.nemoConfirmationEmail.userName; 
+	senderPassword = config.nemoConfirmationEmail.password;
+	console.log("Sender: " + senderUsername);
+	console.log("pass: " + senderPassword);
+	var transporter = nodemailer.createTransport('smtps://' 
+		+ senderUsername
+		+ '%40gmail.com:' 
+		+ senderPassword
+		+ '@smtp.gmail.com');
+
+	var mailOptions = {
+			from: '"No Reply" <' + senderUsername + '@gmail.com>',
+			to: data.receiverEmail,
+			subject: 'NEMO confirmation',
+			// Message body of the automated email
+			text: data.name + ', \nWelcome to NEMO! An account has been'
+						+ ' created for you and must now be activated. Please '
+						+ 'click on the link below to verify your email and complete the signup process:'
+						+ '\n \n' + 'http://' + config.server.db.host + '/' + data.confirmationHash
+			
+			// HTML message to be delivered to the user
+			/*html: '<!DOCTYPE html><body><b> ' + data.name + ', </b> <br>'
+						+ '<b> Welcome to NEMO! An account has been created for you and must now be activated.'
+						+ ' Please click on the link below to complete the signup process.</b> <br> <br>'
+						+	'<a href="' + hostUrl + '/' + data.confirmationHash + '">Activate your account Here</a> </body></html>' */
+	};
+	// send mail with defined transport object
+	transporter.sendMail(mailOptions, function(error, info){
+		if(error){
+			console.log("There was an error when sending the confirmation email");
+			console.log(error);
+		}
+		console.log('Message sent: ' + info.response);
+	});
+};
+
 exports.authService = function(socket, hooks) {
   hooks = (typeof hooks !== 'undefined') ? hooks : [];
 
@@ -158,9 +196,7 @@ exports.userService = function(socket, hooks) {
 						name: data.first
 					};
 					console.log ( emailData.receiverEmail);
-					sendEmailConfirmation(emailData, function(x,y){
-						return x;
-					});
+					sendEmailConfirmation(emailData);
 					//console.log ("called it")
 					return callback(null, submitData)
         }, function(error) {
