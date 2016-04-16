@@ -24,12 +24,12 @@ class nemoApi():
             self.url = "jdbc:mysql://" + self.host + ":" + str(self.port) + "/" + self.database
 
     # Add ai model
-    def addModel(self, id, value, accuracy, blob, algorithm, active, matrix):
+    def addModel(self, id, value, accuracy, blob, algorithm, active, matrix, optimizer):
         db = MySQLdb.connect(self.host, self.user, self.password, self.database)
         cursor = db.cursor()
-        sql = "INSERT INTO AIModel(QuestionID, Value, Accuracy, AI, Algorithm, Active, ConfusionMatrix) " + \
-            "VALUES (%s, %s, %s, %s, %s, %s, %s)"
-        cursor.execute(sql, (id, value, accuracy, blob, algorithm, active, matrix))
+        sql = "INSERT INTO AIModel(QuestionID, Value, Accuracy, AI, Algorithm, Active, ConfusionMatrix, Optimizer) " + \
+            "VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
+        cursor.execute(sql, (id, value, accuracy, blob, algorithm, active, matrix, optimizer))
         db.commit()
         db.close()
 

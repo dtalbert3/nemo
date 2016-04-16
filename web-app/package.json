@@ -37,6 +37,7 @@
     "lodash.isequal": "^4.1.0",
     "moonboots-express": "~3.0",
     "mysql": "~2.10.2",
+    "nodemailer": "^2.3.2",
     "react": "~0.14.7",
     "react-bootstrap": "^0.28.3",
     "react-dom": "~0.14.7",
@@ -134,7 +135,5 @@
     "validate": "npm ls",
     "postinstall": "apidoc -i ./ -f \".*Api\\.js\"  -o public/apidoc"
   },
-  "pre-commit": [
-    
-  ]
+  "pre-commit": []
 }

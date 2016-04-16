@@ -20,7 +20,7 @@ jvm.start(class_path=["mysql-connector-java-5.1.38-bin.jar"])
 
 class WekaWrapper:
 
-	def __init__(self, questionID, algorithm, classifier, parameters, modelParams):
+	def __init__(self, questionID, algorithm, classifier, parameters, modelParams, optimizer):
 		self.questionID = questionID
 		self.algorithm = algorithm
 		self.classifier = classifier
@@ -28,6 +28,7 @@ class WekaWrapper:
 		self.modelParams = modelParams
 		self.api = nemoApi()
 		self.config = nemoConfig()
+		self.optimizer = optimizer
 
 
 	def retrieveData(self, id, dataset):
@@ -43,7 +44,7 @@ class WekaWrapper:
 
 	def uploadData(self):
 		# Upload file to database
-		self.api.addModel(self.questionID, '?', self.acc, self.model, self.algorithm, False, self.matrix)
+		self.api.addModel(self.questionID, '?', self.acc, self.model, self.algorithm, False, self.matrix, self.optimizer)
 		info = self.api.fetchQuestionInfo(self.questionID)
 		modelID = info['ID']
 		for mParam in self.modelParams:

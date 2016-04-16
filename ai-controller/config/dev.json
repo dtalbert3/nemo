@@ -1,7 +1,7 @@
 {
   "CONTROLLER": {
     "MAX_QUEUE_SIZE": 20,
-    "MAX_NUM_THREADS": 4,
+    "MAX_NUM_THREADS": 1,
     "TIMEOUT": 30
   },
   "DATABASE": {
@@ -27,7 +27,8 @@
         "DefaultOptions": {
           "CV_O": {"param":"-O", "value":true},
           "CV_B": {"param":"-B", "value":true}
-        }
+        },
+        "DefaultFeatureSelection": {}
       }
     },
     "SMO":{
@@ -37,7 +38,8 @@
           "CV_C": {"param":"C", "value":"1 4 4"},
           "CV_V": {"param":"V", "value":"1 5 5"},
           "CV_W": {"param":"W", "value":"1 10 10"}
-        }
+        },
+        "DefaultFeatureSelection": {}
       }
     },
     "NaiveBayes": {
@@ -46,7 +48,8 @@
         "DefaultOptions": {
           "CV_K": {"param":"-K", "value":true},
           "CV_D": {"param":"-D", "value":true}
-        }
+        },
+        "DefaultFeatureSelection": {}
       }
     },
     "J48": {
@@ -59,7 +62,8 @@
           "CV_S": {"param":"-S", "value":true},
           "CV_A": {"param":"-A", "value":true},
           "CV_J": {"param":"-J", "value":true}
-        }
+        },
+        "DefaultFeatureSelection": {}
       }
     },
     "Perceptron": {
@@ -70,7 +74,8 @@
           "CV_C": {"param":"-C", "value":true},
           "CV_I": {"param":"-I", "value":true},
           "CV_D": {"param":"-D", "value":true}
-        }
+        },
+        "DefaultFeatureSelection": {}
       }
     }
   }

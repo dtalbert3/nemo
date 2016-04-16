@@ -2,6 +2,7 @@
 import threading
 import Queue
 import time
+import sys
 
 # from nemoLogger import createLogger
 from nemoApi import nemoApi
@@ -26,12 +27,18 @@ def worker(id, s):
     if instance is not None:
 
         # Run the algorithm
-        success = instance.run()
+        try:
+            success = instance.run()
 
-        # Check if algorithm was successful
-        if success:
-            # Upload alogirthms results and feedback to datamart
-            instance.uploadData()
+            # Check if algorithm was successful
+            if success:
+                # Upload alogirthms results and feedback to datamart
+                instance.uploadData()
+        except:
+            e = sys.exc_info()[0]
+            API.updateQuestionStatus(id, CONFIG.QUEUED_STATUS)
+            print e
+            # Need to log exception
 
     # Set question status
     API.updateQuestionStatus(id, instance.status)
