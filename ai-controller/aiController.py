@@ -3,6 +3,7 @@ import threading
 import Queue
 import time
 import sys
+import zerorpc
 
 # from nemoLogger import createLogger
 from nemoApi import nemoApi
@@ -13,6 +14,11 @@ API = None
 CONFIG = None
 QUEUE = None
 
+class HelloRPC(object):
+    def hello(self, name):
+        return "Hello, %s" % name
+        
+        
 # Create worker to process question
 def worker(id, s):
     global API, CONFIG, QUEUE
@@ -58,6 +64,11 @@ def main():
     if CONFIG.CONFIG is None:
         print 'Could not load config file on . . .'
         return
+        
+    # Start zerorpc server for remote control
+    s = zerorpc.Server(HelloRPC())
+    s.bind("tcp://0.0.0.0:4242")
+    s.run()
 
     # Set semaphore
     SEMAPHORE = threading.BoundedSemaphore(CONFIG.MAX_NUM_THREADS)
