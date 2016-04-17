@@ -8,14 +8,15 @@ from weka.core.database import InstanceQuery
 import weka.core.serialization as serialization
 import weka.core.jvm as jvm
 import javabridge
-from nemoApi import AIParam
 
+import json
 import os
 
-from nemoApi import nemoApi
+from nemoApi import nemoApi, AIParam
 from nemoConfig import nemoConfig
 
-# Start JVM on import
+# Start JVM on file load
+# Required that only ONE jvm exist for all threads
 jvm.start(class_path=["mysql-connector-java-5.1.38-bin.jar"])
 
 class WekaWrapper:
@@ -100,21 +101,17 @@ class WekaWrapper:
 		evl = Evaluation(learner)
 		evl.test_model(self.cls, test)
 
+		# Store information about matrix
 		self.acc = evl.percent_correct
-
-
-		# Temporarily write the serialized confusion matrix to a file
-		conf_matrix = evl.confusion_matrix
-		fileName = str(self.questionID) + self.algorithm + ".matrix"
-		serialization.write(fileName, str(conf_matrix))
-		# Open the file and read the contents back in
-		self.matrix = None
-		with open(fileName, 'rb') as f:
-			self.matrix = f.read()
-		# Remove the file
-		os.remove(fileName)
-
 		self.val = None
+
+		# Convert numpy array into simple array
+		confusionMatrix = []
+		confusionMatrix.append([evl.confusion_matrix[0][0], evl.confusion_matrix[0][1]])
+		confusionMatrix.append([evl.confusion_matrix[1][0], evl.confusion_matrix[1][1]])
+
+		# Convert matrix into json format
+		self.matrix = json.dumps(confusionMatrix)
 
 		# print 'Classifier: ', self.classifier
 		# print 'ID: ', self.questionID

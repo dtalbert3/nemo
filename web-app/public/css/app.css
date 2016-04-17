@@ -29,6 +29,7 @@ body {
   position: relative;
 }
 .typeahead .suggestions {
+  z-index: 999;
   width: 100%;
 }
 .typeahead .form-group {

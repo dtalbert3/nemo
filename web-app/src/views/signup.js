@@ -1,5 +1,5 @@
 import React from 'react';
-import { Row, Col, Input, ButtonInput, Button } from 'react-bootstrap';
+// import { Row, Col, Input, ButtonInput, Button } from 'react-bootstrap';
 
 export default React.createClass({
   componentDidMount() {
@@ -12,8 +12,8 @@ export default React.createClass({
 
   handleSubmit(event) {
     event.preventDefault();
-    Auth.createUser(this.refs.email.getValue(),
-      this.refs.password.getValue());
+    // Auth.createUser(this.refs.email.getValue(),
+      // this.refs.password.getValue());
     // On success set alert than confirmation email was sent
   },
 

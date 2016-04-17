@@ -1,5 +1,5 @@
 import React from 'react';
-import { Row, Col, Input, ButtonInput, Button } from 'react-bootstrap';
+import { Row, Col, Input, ButtonInput } from 'react-bootstrap';
 import { Link } from 'react-router';
 import Alert from '../partials/alert';
 import Auth from '../auth';
