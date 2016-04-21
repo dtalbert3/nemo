@@ -1,7 +1,10 @@
 import React from 'react';
 import { Row, Col, Input, ButtonInput, Tooltip, OverlayTrigger } from 'react-bootstrap';
 
+import Alert from '../partials/alert';
 import validator from 'validator';
+
+import api from '../api';
 
 export default React.createClass({
   componentDidMount() {
@@ -14,9 +17,38 @@ export default React.createClass({
 
   handleSubmit(event) {
     event.preventDefault();
-    // Auth.createUser(this.refs.email.getValue(),
-      // this.refs.password.getValue());
-    // On success set alert than confirmation email was sent
+
+    if (!this.validateEmail()) {
+      Alert('Enter a valid email', 'danger', 4 * 1000);
+      return;
+    }
+
+    if (!this.validatePassword()) {
+      Alert('Enter a valid password', 'danger', 4 * 1000);
+      return;
+    }
+
+    if (!this.validateConfirmPassword()) {
+      Alert('Passwords do not match', 'danger', 4 * 1000);
+      return;
+    }
+
+    var userData = {
+      firstName: this.refs.firstName.getValue(),
+      lastName: this.refs.lastName.getValue(),
+      affiliation: this.refs.affiliation.getValue(),
+      email: this.state.email,
+      password: this.state.password,
+      confirmPassword: this.state.confirmPassword
+    };
+
+    api.signup(userData)
+      .then((msg) => {
+        Alert(msg, 'success', 4 * 1000);
+      })
+      .catch((err) => {
+        Alert(err, 'danger', 4 * 1000);
+      });
   },
 
   handleChange() {
@@ -83,8 +115,7 @@ export default React.createClass({
               label='Last Name' placeholder='Enter password'
               required={true} />
             <Input ref='affiliation' type='text'
-              label='Affiliation' placeholder='Enter affiliation'
-              required={true} />
+              label='Affiliation' placeholder='Enter affiliation' />
             <OverlayTrigger overlay={emailTooltip} trigger='focus'>
               <Input ref='email' type='email' hasFeedback
                 label='Email Address' value={this.state.email} onChange={this.handleChange}

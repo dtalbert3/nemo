@@ -21,6 +21,7 @@ export default function(message = '', style = 'info', timer = 0) {
   const AlertPopup = (message, style) => {
     var absolute = {
       position: 'absolute',
+      zIndex: 999,
       top: 8,
       left: 0,
       right: 0

@@ -18,6 +18,7 @@ export default React.createClass({
 
     var email = this.refs.email.getValue();
     var password = this.refs.password.getValue();
+
     Auth.login(email, password, (valid) => {
       if (valid) {
         this.context.router.replace('/user');

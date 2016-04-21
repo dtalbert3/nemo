@@ -12,10 +12,24 @@ class NemoApi {
     this.userQuestions = [];
     this.dash = io.connect(config.apiUrl + '/dash');
     this.qstn = io.connect(config.apiUrl + '/qstn');
+    this.user = io.connect(config.apiUrl + '/user');
   }
 
   setStore(store) {
     this.store = store;
+  }
+
+  signup(userData) {
+    var promise = new Promise((resolve, reject) => {
+      this.user.emit('signup', userData, (err, msg) => {
+        if (!err) {
+          resolve(msg);
+        } else {
+          reject(err);
+        }
+      });
+    });
+    return promise;
   }
 
   fetchUserData() {
