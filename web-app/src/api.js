@@ -139,5 +139,6 @@ class NemoApi {
   }
 }
 
+// Export a singleton instance of our client side api
 let _NemoApi = new NemoApi();
 export default _NemoApi;
