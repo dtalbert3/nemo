@@ -32,6 +32,22 @@ class NemoApi {
     return promise;
   }
 
+  fetchGlobalData() {
+    var promise = new Promise((resolve, reject) => {
+      this.dash.emit('getGlobal', {}, (err, data) => {
+        if (!err) {
+          data = JSON.parse(data);
+          this.store.dispatch(questions.setGlobalQuestions(data));
+          resolve();
+        } else {
+          Alert('Error Fetching Questions', 'danger', 4 * 1000);
+          reject();
+        }
+      });
+    });
+    return promise;
+  }
+
   fetchUserData() {
     var promise = new Promise((resolve, reject) => {
       this.dash.emit('getUser', localStorage.userID, {}, (err, data) => {

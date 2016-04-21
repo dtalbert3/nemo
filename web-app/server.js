@@ -42,7 +42,6 @@ io.of('/auth').on('connection', function(socket) {
 io
   .of('/user')
   .on('connection', function(socket) {
-    // nemoApi.hooks.auth(socket);
     nemoApi.userService(socket);
   });
 
@@ -53,7 +52,6 @@ io
   //   handshake: true
   // }))
   .on('connection', function(socket) {
-    // nemoApi.hooks.auth(socket);
     nemoApi.questionService(socket);
   });
 
@@ -64,7 +62,6 @@ io
   //   handshake: true
   // }))
   .on('connection', function(socket) {
-    // nemoApi.hooks.auth(socket);
     nemoApi.dashboardService(socket);
   });
 

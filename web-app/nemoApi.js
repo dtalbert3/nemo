@@ -71,15 +71,7 @@ questionModel.belongsTo(questionEventModel, {
   foreignKey: 'EventID'
 });
 
-// List of usable hooks
-exports.hooks = {
-  auth(socket) {
-    console.log('authed');
-    return socket;
-  }
-};
-
-// Helpeer to send email confirmation for users
+// Helper to send email confirmation for users
 function sendEmailConfirmation(data) {
 	senderUsername = config.nemoConfirmationEmail.userName;
 	senderPassword = config.nemoConfirmationEmail.password;
@@ -129,7 +121,7 @@ exports.authService = function(socket, hooks) {
     var result = null;
     userModel.findOne({
       where: {
-        email: params.email
+        email: params.email.toLowerCase()
       }
     }).then(function(data) {
       // If user exists validate password
@@ -142,7 +134,7 @@ exports.authService = function(socket, hooks) {
           };
           error = null;
           result = jwt.sign(user, config.session.secret, {
-            expiresIn: 60 * 1000
+            expiresIn: 24 * 60 * 60 * 1000
           });
         }
       }
@@ -163,15 +155,16 @@ exports.userService = function(socket, hooks) {
       func(socket);
     });
 
-    // Validate email
-    // Validate password
+    // Validate email!
+    // Validate password!
+    // Make sure user email doesn't already exist!
     bcrypt.genSalt(10, function(err, salt) {
       bcrypt.hash(data.password, salt, function(err, hash) {
         bcrypt.hash(data.email, salt, function(err2, confHash) {
           // var typeId =
           userModel.upsert({
             UserTypeID: 1,
-            Email: data.email,
+            Email: data.email.toLowerCase(),
             Hash: hash,
             First: data.firstName,
             Last:  data.lastName,
@@ -386,7 +379,7 @@ exports.dashboardService = function(socket, hooks) {
         ]
       }).then(function(d) {
         // Return data to callback
-        return callback(null, d);
+        return callback(null, JSON.stringify(d));
       }).catch(function(error) {
         // Catch and return errors to callback
         return callback(error, null);
