@@ -1,6 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { Well, Button, Grid, Col, Row } from 'react-bootstrap';
+import { Table, Well, Button, Grid, Col, Row } from 'react-bootstrap';
 import QuestionCreator from '../partials/questionCreator.js';
 import CollapsibleTable from '../partials/collapsibleTable.js';
 import Alert from '../partials/alert';
@@ -120,6 +120,9 @@ const mapStateToProps = (state) => ({
 
 export default connect((mapStateToProps), {})(UserDashboard);
 
+// Below are the generators for the html used by collapisble table
+
+// Creates the headders used by table
 const Headers = () => {
   return ([
     <td key={1} >Question</td>,
@@ -128,6 +131,7 @@ const Headers = () => {
   ]);
 };
 
+// Creates the minimal visible row used by table
 const MinimalRow = (data) => {
   var question = objectByString(data, 'QuestionType.Type') + ' ' +
     objectByString(data, 'QuestionEvent.Name');
@@ -147,7 +151,7 @@ const MinimalRow = (data) => {
   ]);
 };
 
-// Helper to create well with extra information on submitted questions
+// Creates the hidden row used by the table filled with functionality for nemo
 const HiddenRow = React.createClass({
 
   handleDelete() {
@@ -199,11 +203,37 @@ const HiddenRow = React.createClass({
     var status = objectByString(data, 'QuestionStatus.Status');
     var classifier = '';
     var accuracy = '';
+    var matrix = '';
     var hasFeedback = data.StatusID === 3;
     if (data.AIModels.length > 0) {
       var aiModel = data.AIModels[0];
       classifier = aiModel.Algorithm;
       accuracy = aiModel.Accuracy;
+
+      var confusionMatrix = JSON.parse(aiModel.ConfusionMatrix);
+      matrix = (
+        <Table condensed>
+          <thead>
+            <tr>
+              <th></th>
+              <th>+</th>
+              <th>-</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>+</td>
+              <td>{confusionMatrix[0][0]}</td>
+              <td>{confusionMatrix[0][1]}</td>
+            </tr>
+            <tr>
+              <td>-</td>
+              <td>{confusionMatrix[1][0]}</td>
+              <td>{confusionMatrix[1][1]}</td>
+            </tr>
+          </tbody>
+        </Table>
+      );
     }
 
     return (
@@ -225,6 +255,8 @@ const HiddenRow = React.createClass({
               <dd>{classifier}</dd>
               <dt>Accuracy: </dt>
               <dd>{accuracy}</dd>
+              <dt>Confusion Matrix: </dt>
+              <dd>{matrix}</dd>
             </dl>
           </Col>
         </Row>

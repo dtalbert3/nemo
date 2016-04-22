@@ -6,10 +6,6 @@ const auth = io.connect(config.apiUrl + '/auth', {
   'query': 'token=' + localStorage.getItem('token')
 });
 
-const user = io.connect(config.apiUrl + '/user', {
-  'query': 'token=' + localStorage.getItem('token')
-});
-
 export default {
   login(email, password, callback) {
     auth.emit('local', {
@@ -17,7 +13,6 @@ export default {
       password: password
     }, (error, result) => {
       if (!error) {
-        console.log(result);
         var payload = jwt.decode(result, {complete: true, force: true}).payload;
         localStorage.setItem('token', result);
         localStorage.setItem('userType', payload.userType);
@@ -50,20 +45,4 @@ export default {
   },
 
   onChange() {},
-
-  createUser(email, password) {
-
-    var userInfo = {
-      email: email,
-      password: password
-    };
-
-    user.emit('signup', userInfo, (err, data) => {
-      if (!err) {
-        console.log(data);
-      } else {
-        console.log(err);
-      }
-    });
-  }
 };

@@ -30,15 +30,6 @@ sequelize
       ' database: ', err);
   });
 
-// List of service calls offered by featherjs
-// find: function(params, callback) {},
-// get: function(id, params, callback) {},
-// create: function(data, params, callback) {},
-// update: function(id, data, params, callback) {},
-// patch: function(id, data, params, callback) {},
-// remove: function(id, params, callback) {},
-// setup: function(app, path) {}
-
 // apiDoc usage more info at http://apidocjs.com/
 /**
  * @api {get} /user/:id Request User information
@@ -62,7 +53,6 @@ var aiModelModel = require('./models/AIModel')(sequelize);
 var aiParameterModel = require('./models/AIParameter')(sequelize);
 var aiModelParamsModel = require('./models/AIModelParams')(sequelize);
 // var parameterTypeModel = require('./models/ParameterType')(sequelize);
-
 var conceptModel = require('./models/concept_dimension')(sequelize);
 
 // Define associations
@@ -81,21 +71,15 @@ questionModel.belongsTo(questionEventModel, {
   foreignKey: 'EventID'
 });
 
-exports.hooks = {
-  auth(socket) {
-    console.log('authed');
-    return socket;
-  }
-};
-
+// Helper to send email confirmation for users
 function sendEmailConfirmation(data) {
-	senderUsername = config.nemoConfirmationEmail.userName; 
+	senderUsername = config.nemoConfirmationEmail.userName;
 	senderPassword = config.nemoConfirmationEmail.password;
 	console.log("Sender: " + senderUsername);
 	console.log("pass: " + senderPassword);
-	var transporter = nodemailer.createTransport('smtps://' 
+	var transporter = nodemailer.createTransport('smtps://'
 		+ senderUsername
-		+ '%40gmail.com:' 
+		+ '%40gmail.com:'
 		+ senderPassword
 		+ '@smtp.gmail.com');
 
@@ -107,8 +91,8 @@ function sendEmailConfirmation(data) {
 			text: data.name + ', \nWelcome to NEMO! An account has been'
 						+ ' created for you and must now be activated. Please '
 						+ 'click on the link below to verify your email and complete the signup process:'
-						+ '\n \n' + 'http://' + config.server.db.host + '/' + data.confirmationHash
-			
+						+ '\n \n' + 'http://' + config.client.apiUrl + '/' + data.confirmationHash
+
 			// HTML message to be delivered to the user
 			/*html: '<!DOCTYPE html><body><b> ' + data.name + ', </b> <br>'
 						+ '<b> Welcome to NEMO! An account has been created for you and must now be activated.'
@@ -137,7 +121,7 @@ exports.authService = function(socket, hooks) {
     var result = null;
     userModel.findOne({
       where: {
-        email: params.email
+        email: params.email.toLowerCase()
       }
     }).then(function(data) {
       // If user exists validate password
@@ -150,7 +134,7 @@ exports.authService = function(socket, hooks) {
           };
           error = null;
           result = jwt.sign(user, config.session.secret, {
-            expiresIn: 60 * 1000
+            expiresIn: 24 * 60 * 60 * 1000
           });
         }
       }
@@ -170,38 +154,36 @@ exports.userService = function(socket, hooks) {
     hooks.forEach(function(func) {
       func(socket);
     });
-    data.first = "Cody";
-    data.last = "Moffitt";
-    data.affiliation = "MTSU";
-    
+
+    // Validate email!
+    // Validate password!
+    // Make sure user email doesn't already exist!
     bcrypt.genSalt(10, function(err, salt) {
       bcrypt.hash(data.password, salt, function(err, hash) {
-        // SWITCH TO FIND OR CREATE!!
         bcrypt.hash(data.email, salt, function(err2, confHash) {
-        userModel.upsert({
-          UserTypeID: 1,
-          Email: data.email,
-          Hash: hash,
-          First: data.first,
-          Last:  data.last,
-          Affiliation: data.affiliation,
-          Confirmed: 0,
-          ConfirmationHash: confHash
-        })
-				.then(function(submitData) {
-          // Return error codes as needed here
-					var emailData = {
-						confirmationHash: confHash,
-						receiverEmail: data.email,
-						name: data.first
-					};
-					console.log ( emailData.receiverEmail);
-					sendEmailConfirmation(emailData);
-					//console.log ("called it")
-					return callback(null, submitData)
-        }, function(error) {
-          return callback(error, null);
-        }); 
+          // var typeId =
+          userModel.upsert({
+            UserTypeID: 1,
+            Email: data.email.toLowerCase(),
+            Hash: hash,
+            First: data.firstName,
+            Last:  data.lastName,
+            Affiliation: data.affiliation,
+            Confirmed: 0,
+            ConfirmationHash: confHash
+          })
+  				.then(function(submitData) {
+            // Return error codes as needed here
+  					var emailData = {
+  						confirmationHash: confHash,
+  						receiverEmail: data.email,
+  						name: data.firstName
+  					};
+  					sendEmailConfirmation(emailData);
+  					return callback(null, 'Account created, please check your email.');
+          }, function(error) {
+            return callback('Error creating account', null);
+          });
 				});
       });
     });
@@ -397,7 +379,7 @@ exports.dashboardService = function(socket, hooks) {
         ]
       }).then(function(d) {
         // Return data to callback
-        return callback(null, d);
+        return callback(null, JSON.stringify(d));
       }).catch(function(error) {
         // Catch and return errors to callback
         return callback(error, null);

@@ -1,0 +1,13 @@
+sudo apt-get install default-jdk
+sudo apt-get install python-dev
+sudo apt-get install python-pip
+sudo apt-get install python-numpy
+sudo apt-get install libmysqlclient-dev
+sudo apt-get install libzmq-dev
+sudo apt-get install libevent
+sudo pip install javabridge
+sudo pip install python-weka-wrapper
+sudo pip install MySQL-python
+sudo pip install pyzmq
+sudo pip install zerorpc
+exit

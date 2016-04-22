@@ -1,7 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import { Well, Button, Grid, Col, Row } from 'react-bootstrap';
-import QuestionCreator from '../partials/questionCreator.js';
 import CollapsibleTable from '../partials/collapsibleTable.js';
 import Alert from '../partials/alert';
 
@@ -14,14 +13,14 @@ var refresh = null;
 // User Dashboard page uses partials question-creator and nemo-table
 const GlobalDashboard = React.createClass({
 
-  updateUserQuestions() {
-    api.fetchUserData();
+  updateGlobalQuestions() {
+    api.fetchGlobalData();
   },
 
   handleSubmitQuestion(question) {
     api.addQuestion(question)
       .then(() => {
-        this.updateUserQuestions();
+        this.updateGlobalQuestions();
       });
   },
 
@@ -31,52 +30,20 @@ const GlobalDashboard = React.createClass({
 
   // Once page is mounted attach page title
   componentDidMount() {
-    document.title = 'Nemo User Dashboard';
-
-    var loadAlert = Alert('Loading Question Creator', 'info');
-
-    var loadedTypes = false;
-    var loadedEvents = false;
-    var loadedSuggestions = false;
+    document.title = 'Nemo Global Dashboard';
 
     // Fetch user questions
-    api.fetchUserData();
+    api.fetchGlobalData();
 
     // Set periodic refresh of questions
     if (refresh === null) {
-      refresh = window.setInterval(this.updateUserQuestions, config.UserDashRefreshRate);
+      refresh = window.setInterval(this.updateGlobalQuestions, config.UserDashRefreshRate);
     }
-
-    // Fetch properites for question creator
-    api.getTypes()
-      .then(() => {
-        loadedTypes = true;
-      });
-    api.getEvents()
-      .then(() => {
-        loadedEvents = true;
-      });
-    api.getSuggestions()
-      .then(() => {
-        loadedSuggestions = true;
-        this.refs.QuestionCreator.updateTypeAhead();
-      });
-
-    // Tell user when question creator has been loaded
-    var intervalID = window.setInterval(() => {
-      if (loadedTypes && loadedEvents && loadedSuggestions) {
-        document.getElementById('alert').removeChild(loadAlert);
-        clearInterval(intervalID);
-      }
-    }, 1000);
   },
 
   getDefaultProps: function() {
     return {
       questions: [],
-      questionTypes: [],
-      questionEvents: [],
-      suggestions: []
     };
   },
 
@@ -90,16 +57,7 @@ const GlobalDashboard = React.createClass({
   render() {
     return (
       <Grid>
-        <h2>Create a question</h2>
-        <QuestionCreator
-          ref='QuestionCreator'
-          onClick={this.updateUserQuestions}
-          questionTypes={this.props.questionTypes}
-          questionEvents={this.props.questionEvents}
-          suggestions={this.props.suggestions}
-          handleSubmit={this.handleSubmitQuestion} />
-
-        <h2>Your Questions</h2>
+        <h2>Global Questions</h2>
         <CollapsibleTable
           data={this.props.questions}
           numCols={3}
@@ -112,10 +70,7 @@ const GlobalDashboard = React.createClass({
 });
 
 const mapStateToProps = (state) => ({
-  questions: state.nemoQuestions.userQuestions,
-  questionTypes: state.questionCreator.questionTypes,
-  questionEvents: state.questionCreator.questionEvents,
-  suggestions: state.questionCreator.suggestions
+  questions: state.nemoQuestions.globalQuestions,
 });
 
 export default connect((mapStateToProps), {})(GlobalDashboard);
@@ -150,27 +105,10 @@ const MinimalRow = (data) => {
 // Helper to create well with extra information on submitted questions
 const HiddenRow = React.createClass({
 
-  handleDelete() {
-    api.deleteQuestion(this.props.data.ID)
-      .then(() => {
-        api.fetchUserData();
-      });
-  },
-
-  handleFeedback() {
-    var yes = this.refs.yes.checked;
-    var no = this.refs.no.checked;
-    var id = this.props.data.AIModels[0].ID;
-    if (yes || no) {
-      var params = {};
-      params.aiModelID = id;
-      if (yes) {
-        params.value = 1;
-      } else {
-        params.value = 0;
-      }
-      api.giveFeedback(params);
-    }
+  handleCopy() {
+    // Insert question into local storage
+    // Load user dashboard
+    // Load up question creator
   },
 
   // Render well
@@ -229,29 +167,9 @@ const HiddenRow = React.createClass({
           </Col>
         </Row>
         <Row>
-          <Col sm={12} md={12}>
-            {(hasFeedback) ?
-              <form>
-                Are you satisfied with the accuracy?
-                <span>{'  Yes'}</span>
-                <input ref='yes' type='radio' name='accFeedback' value={1} />
-                <span>{'  No'}</span>
-                <input ref='no' type='radio' name='accFeedback' value={0} />
-              </form>
-              : undefined}
-          </Col>
-        </Row>
-        <Row>
-          <Col sm={6} md={6}>
-            {(hasFeedback) ?
-              <Button className='pull-left' bsSize="xsmall" bsStyle="primary" onClick={this.handleFeedback}>
-                Submit Feedback
-              </Button>
-            : undefined}
-          </Col>
-          <Col sm={6} md={6}>
-            <Button className='pull-right' bsSize="xsmall" bsStyle="danger" onClick={this.handleDelete}>
-              Delete
+          <Col sm={6} md={6} smOffset={6} mdOffset={6}>
+            <Button className='pull-right' bsSize="xsmall" bsStyle="danger" onClick={this.handleCopy}>
+              Copy Question
             </Button>
           </Col>
         </Row>

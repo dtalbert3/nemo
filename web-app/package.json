@@ -51,7 +51,7 @@
     "socket.io-client": "~1.4.5",
     "socketio-jwt": "^4.3.4",
     "stylizer": "~2.1",
-    "validator": "~4.5"
+    "validator": "^4.5.2"
   },
   "peerDependencies": {},
   "devDependencies": {

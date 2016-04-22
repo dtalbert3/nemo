@@ -5,11 +5,9 @@ import Base from './layouts/BaseLayout';
 
 import Login from './views/login';
 import Signup from './views/signup';
-
 import DashboardUser from './views/dashboardUser';
-// import DashboardGlobal from './views/dashboardGlobal';
-
-// import About from './views/about';
+import DashboardGlobal from './views/dashboardGlobal';
+import About from './views/about';
 import FourOhFour from './views/404';
 
 import Auth from './auth';
@@ -46,8 +44,8 @@ export default () => (
       <Route path='/signup' component={Signup} />
       {/* <Route path='/forgotPassword' component={}> */}
       <Route path='/user' component={DashboardUser} onEnter={requireAuth} />
-      {/* <Route path='/global' component={DashboardGlobal} onEnter={requireAuth} /> */}
-      {/* <Route path='/about' component={About} /> */}
+      <Route path='/global' component={DashboardGlobal} onEnter={requireAuth} />
+      <Route path='/about' component={About} />
     </Route>
     <Route path='/*' component={FourOhFour} />
   </Router>

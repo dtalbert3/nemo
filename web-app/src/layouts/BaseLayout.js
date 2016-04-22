@@ -43,6 +43,7 @@ export default React.createClass({
               <NavLink path='/login' label='Login' hidden={!Auth.loggedIn() ? '' : ' hidden'} />
               <NavLink path='/user' label='User' hidden={Auth.loggedIn() ? '' : ' hidden'} />
               <NavLink path='/global' label='Global' hidden={Auth.loggedIn() ? '' : ' hidden'} />
+              <NavLink path='/about' label='About' />
             </Nav>
           </Navbar.Collapse>
           <div id='alert'/>

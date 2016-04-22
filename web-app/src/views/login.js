@@ -1,5 +1,5 @@
 import React from 'react';
-import { Row, Col, Input, ButtonInput, Button } from 'react-bootstrap';
+import { Row, Col, Input, ButtonInput } from 'react-bootstrap';
 import { Link } from 'react-router';
 import Alert from '../partials/alert';
 import Auth from '../auth';
@@ -18,6 +18,7 @@ export default React.createClass({
 
     var email = this.refs.email.getValue();
     var password = this.refs.password.getValue();
+
     Auth.login(email, password, (valid) => {
       if (valid) {
         this.context.router.replace('/user');

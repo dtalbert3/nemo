@@ -12,10 +12,40 @@ class NemoApi {
     this.userQuestions = [];
     this.dash = io.connect(config.apiUrl + '/dash');
     this.qstn = io.connect(config.apiUrl + '/qstn');
+    this.user = io.connect(config.apiUrl + '/user');
   }
 
   setStore(store) {
     this.store = store;
+  }
+
+  signup(userData) {
+    var promise = new Promise((resolve, reject) => {
+      this.user.emit('signup', userData, (err, msg) => {
+        if (!err) {
+          resolve(msg);
+        } else {
+          reject(err);
+        }
+      });
+    });
+    return promise;
+  }
+
+  fetchGlobalData() {
+    var promise = new Promise((resolve, reject) => {
+      this.dash.emit('getGlobal', {}, (err, data) => {
+        if (!err) {
+          data = JSON.parse(data);
+          this.store.dispatch(questions.setGlobalQuestions(data));
+          resolve();
+        } else {
+          Alert('Error Fetching Questions', 'danger', 4 * 1000);
+          reject();
+        }
+      });
+    });
+    return promise;
   }
 
   fetchUserData() {
@@ -139,5 +169,6 @@ class NemoApi {
   }
 }
 
+// Export a singleton instance of our client side api
 let _NemoApi = new NemoApi();
 export default _NemoApi;
