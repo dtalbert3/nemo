@@ -7,7 +7,7 @@ var fs = require('fs');
 var data = fs.readFileSync('./dataLoaderConfig.json'),
 	dataLoaderOptions;
 
-eval(fs.readFileSync('../email-confirmer/EmailConfirmer.js').toString());
+//eval(fs.readFileSync('../email-confirmer/EmailConfirmer.js').toString());
 
 try {
 	dataLoaderOptions = JSON.parse(data);
@@ -306,9 +306,9 @@ function createUser(data, callback) {
 						name: data.first
 					};
 					console.log ( emailData.receiverEmail);
-					sendEmailConfirmation(emailData, function(x,y){
-						return x;
-					});
+					//sendEmailConfirmation(emailData, function(x,y){
+					//	return x;
+					//});
 					//console.log ("called it")
 					return callback(null, submitData)
         }, function(error) {
@@ -328,11 +328,11 @@ var data = {
 };
 
 //console.log(typeof EmailConfirmer.sendEmailConfirmation);
-console.log("about to run it");
-createUser(data, function(x, y){
-	return x;
-});
-console.log("ran it");
+//console.log("about to run it");
+//createUser(data, function(x, y){
+//	return x;
+//});
+//console.log("ran it");
 
 function editQuestion(data, params, callback) {
 	var questionAttributes = {
@@ -712,6 +712,8 @@ function copyQuestion(params, callback) {
 								QuestionID: id
 							}
 						}).then(function(oldAiModels) {
+							//console.log("models found:");
+							//console.log(oldAiModels);
 							var recurseAiModel = function(mArray, i) {
 								if (mArray[i]) {
 									return aiModelModel.create({
@@ -726,28 +728,36 @@ function copyQuestion(params, callback) {
 									}, {
 										transaction: t
 									}).then(function(newAiModel) {
-										var aiModelID = newAiModel.dataValues.ID;
-										return aiParameterModel.findAll({
+										//console.log("created new AI Model:");
+										//console.log(newAiModel.dataValues.ID);
+										return aiModelParamsModel.findAll({
 											where: {
-												AIModelID: mArray[i].dataValues.ID
+												AIModel:  mArray[i].dataValues.ID
 											}
-										}).then(function(oldAiParameters) {
-											var recurseAiParameter = function(pArray, i) {
-												if (pArray[i]) {
-													return aiParameterModel.create({
-														AIModelID: aiModelID,
-														TypeID: pArray[i].dataValues.TypeID,
-														tval_char: pArray[i].dataValues.tval_char,
-														nval_num: pArray[i].dataValues.nval_num
+										}).then(function(oldAiModelParams) {
+											//console.log("model params found:");
+											//console.log(oldAiModelParams);
+											var recurseAiModelParams = function(mpArray, i) {
+												if (mpArray[i]) {
+													return aiModelParamsModel.create({
+														AIModel: newAiModel.dataValues.ID,
+														Param: mpArray[i].dataValues.Param,
+														Value: mpArray[i].dataValues.Value,
+														param_use: mpArray[i].dataValues.param_use,
 													}, {
 														transaction: t
-													}).then(recurseAiParameter(pArray, (i + 1)));
+													}).then(recurseAiModelParams(mpArray, (i + 1)));
 												}
 											};
-											return recurseAiParameter(oldAiParameters, 0).then(
-												function() {
+											if (oldAiModelParams.length > 0) {
+												return recurseAiModelParams(oldAiModelParams, 0
+
+												).then(function() {
 													return recurseAiModel(mArray, (i + 1));
 												});
+											} else {
+												return recurseAiModel(mArray, (i + 1)); 
+											}
 										});
 									});
 								}
@@ -762,12 +772,14 @@ function copyQuestion(params, callback) {
 		});
 	});
 }
-// copyQuestion({
-// 	ID: 49,
-// 	UserID: 1,
-// 	useAiModels: true
-// }, null);
-
+/*
+console.log("copying QUestion"); 
+ copyQuestion({
+ 	ID: 251,
+ 	UserID: 13,
+ 	useAiModels: true
+ }, null);
+*/
 // conceptModel.findAll({
 // 		attributes: ['concept_cd'],
 // 		where: {
