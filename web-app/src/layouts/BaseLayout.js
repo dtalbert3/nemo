@@ -1,34 +1,35 @@
-import React from 'react';
-import { Nav, Navbar, Grid } from 'react-bootstrap';
-import { Link } from 'react-router';
-import Auth from '../auth';
+import React, { PropTypes } from 'react'
+import { Nav, Navbar, Grid } from 'react-bootstrap'
+import { Link } from 'react-router'
+import Auth from '../auth'
 
 // Helper to create navigation links in page header
-const NavLink = React.createClass({
-
-  // Get context of app's router
-  contextTypes: {
-    router: React.PropTypes.object
-  },
-
-  // Render navigation link
-  render() {
+class NavLink extends React.Component {
+  render () {
     var active = this.context.router.isActive(this.props.path) ?
-      'active' : '';
+      'active' : ''
     // May need to fix some 'whitespace'
     return (
       <li role='presentation' className={active + this.props.hidden}>
         <Link to={this.props.path}> {this.props.label} </Link>
       </li>
-    );
+    )
   }
-});
+}
+
+NavLink.contextTypes = {
+  router: React.PropTypes.object
+}
+
+NavLink.propTypes = {
+  label: PropTypes.string,
+  path: PropTypes.string,
+  hidden: PropTypes.string
+}
 
 // Render app with navbar/alert and container fluid for sub components
-export default React.createClass({
-
-  // Render app skeleton
-  render() {
+class BaseLayout extends React.Component {
+  render () {
     return (
       <div id='base'>
         <Navbar>
@@ -52,6 +53,12 @@ export default React.createClass({
           {this.props.children}
         </Grid>
       </div>
-    );
+    )
   }
-});
+}
+
+BaseLayout.propTypes = {
+  children: PropTypes.object
+}
+
+export default BaseLayout

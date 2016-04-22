@@ -1,36 +1,47 @@
-import React from 'react';
-import { Row, Col, Input, ButtonInput, Tooltip, OverlayTrigger } from 'react-bootstrap';
+import React from 'react'
+import { Row, Col, Input, ButtonInput, Tooltip, OverlayTrigger } from 'react-bootstrap'
 
-import Alert from '../partials/alert';
-import validator from 'validator';
+import Alert from '../partials/alert'
+import validator from 'validator'
 
-import api from '../api';
+import api from '../api'
 
-export default React.createClass({
-  componentDidMount() {
-    document.title = 'Nemo Signup';
-  },
+class Signup extends React.Component {
+  constructor (props, context) {
+    super(props)
 
-  contextTypes: {
-    router: React.PropTypes.object.isRequired
-  },
+    context.router
 
-  handleSubmit(event) {
-    event.preventDefault();
+    this.state = {
+      email: '',
+      password: '',
+      confirmPassword: ''
+    }
+
+    this.handleSubmit = this.handleSubmit.bind(this)
+    this.handleChange = this.handleChange.bind(this)
+    this.validatePassword = this.validatePassword.bind(this)
+    this.validateConfirmPassword = this.validateConfirmPassword.bind(this)
+    this.validateEmail = this.validateEmail.bind(this)
+    this.inputStatus = this.inputStatus.bind(this)
+  }
+
+  handleSubmit (event) {
+    event.preventDefault()
 
     if (!this.validateEmail()) {
-      Alert('Enter a valid email', 'danger', 4 * 1000);
-      return;
+      Alert('Enter a valid email', 'danger', 4 * 1000)
+      return
     }
 
     if (!this.validatePassword()) {
-      Alert('Enter a valid password', 'danger', 4 * 1000);
-      return;
+      Alert('Enter a valid password', 'danger', 4 * 1000)
+      return
     }
 
     if (!this.validateConfirmPassword()) {
-      Alert('Passwords do not match', 'danger', 4 * 1000);
-      return;
+      Alert('Passwords do not match', 'danger', 4 * 1000)
+      return
     }
 
     var userData = {
@@ -40,69 +51,65 @@ export default React.createClass({
       email: this.state.email,
       password: this.state.password,
       confirmPassword: this.state.confirmPassword
-    };
+    }
 
     api.signup(userData)
       .then((msg) => {
-        Alert(msg, 'success', 4 * 1000);
+        Alert(msg, 'success', 4 * 1000)
       })
       .catch((err) => {
-        Alert(err, 'danger', 4 * 1000);
-      });
-  },
+        Alert(err, 'danger', 4 * 1000)
+      })
+  }
 
-  handleChange() {
+  handleChange () {
     this.setState({
       email: this.refs.email.getValue(),
       password: this.refs.password.getValue(),
       confirmPassword: this.refs.confirmPassword.getValue()
-    });
-  },
+    })
+  }
 
-  validatePassword() {
-    var password = this.state.password;
-    var valid = false;
+  validatePassword () {
+    var password = this.state.password
+    var valid = false
     if (validator.matches(password, /\d/) &&
       validator.matches(password, /[a-z]/) &&
       validator.matches(password, /[A-Z]/) &&
       password.length >= 6) {
-      valid = true;
+      valid = true
     }
-    return valid;
-  },
+    return valid
+  }
 
-  validateConfirmPassword() {
-    return this.validatePassword() && (this.state.password === this.state.confirmPassword);
-  },
+  validateConfirmPassword () {
+    return this.validatePassword() && (this.state.password === this.state.confirmPassword)
+  }
 
-  validateEmail() {
-    return validator.isEmail(this.state.email);
-  },
+  validateEmail () {
+    return validator.isEmail(this.state.email)
+  }
 
-  inputStatus(valid) {
+  inputStatus (valid) {
     if (valid) {
-      return 'success';
+      return 'success'
     } else {
-      return 'error';
+      return 'error'
     }
-  },
+  }
 
-  getInitialState() {
-    return {
-      email: '',
-      password: '',
-      confirmPassword: ''
-    }
-  },
+  componentDidMount () {
+    document.title = 'Nemo Signup'
+  }
 
-  render() {
+  render () {
     const emailTooltip = (
-      <Tooltip> .edu emails will recieve higher privileges!</Tooltip>
-    );
+      <Tooltip id='emailTip'> .edu emails will recieve higher privileges!</Tooltip>
+    )
 
     const passwordTooltip = (
-      <Tooltip>Password must contain one number, one uppercase letter, one lowercase letter, and be at least 6 characters!</Tooltip>
-    );
+      <Tooltip id='passwordTip'>Password must contain one number, one uppercase letter, one lowercase letter, and be at least 6 characters!</Tooltip>
+    )
 
     return (
       <Row>
@@ -133,6 +140,12 @@ export default React.createClass({
           </form>
         </Col>
       </Row>
-    );
+    )
   }
-});
+}
+
+Signup.contextTypes = {
+  router: React.PropTypes.object.isRequired
+}
+
+export default Signup

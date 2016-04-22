@@ -1,90 +1,81 @@
-import React from 'react';
-import { connect } from 'react-redux';
-import { Table, Well, Button, Grid, Col, Row } from 'react-bootstrap';
-import QuestionCreator from '../partials/questionCreator.js';
-import CollapsibleTable from '../partials/collapsibleTable.js';
-import Alert from '../partials/alert';
+import React, { PropTypes } from 'react'
+import { connect } from 'react-redux'
+import { Table, Well, ButtonGroup, Button, Grid, Col, Row } from 'react-bootstrap'
+import QuestionCreator from '../partials/questionCreator.js'
+import CollapsibleTable from '../partials/collapsibleTable.js'
+import Alert from '../partials/alert'
 
-import api from '../api';
-import config from '../config';
-import { objectByString } from '../util';
+import api from '../api'
+import config from '../config'
+import { objectByString } from '../util'
 
-var refresh = null;
+var refresh = null
 
 // User Dashboard page uses partials question-creator and nemo-table
-const UserDashboard = React.createClass({
+class UserDashboard extends React.Component {
+  constructor (props) {
+    super(props)
 
-  updateUserQuestions() {
-    api.fetchUserData();
-  },
+    this.updateUserQuestions = this.updateUserQuestions.bind(this)
+    this.handleSubmitQuestion = this.handleSubmitQuestion.bind(this)
+  }
 
-  handleSubmitQuestion(question) {
+  updateUserQuestions () {
+    api.fetchUserData()
+  }
+
+  handleSubmitQuestion (question) {
     api.addQuestion(question)
       .then(() => {
-        this.updateUserQuestions();
-      });
-  },
+        this.updateUserQuestions()
+      })
+  }
 
-  componentWillUnmount() {
-    clearInterval(refresh);
-  },
+  componentWillUnmount () {
+    clearInterval(refresh)
+  }
 
   // Once page is mounted attach page title
-  componentDidMount() {
-    document.title = 'Nemo User Dashboard';
+  componentDidMount () {
+    document.title = 'Nemo User Dashboard'
 
-    var loadAlert = Alert('Loading Question Creator', 'info');
+    var loadAlert = Alert('Loading Question Creator', 'info')
 
-    var loadedTypes = false;
-    var loadedEvents = false;
-    var loadedSuggestions = false;
+    var loadedTypes = false
+    var loadedEvents = false
+    var loadedSuggestions = false
 
     // Fetch user questions
-    api.fetchUserData();
+    api.fetchUserData()
 
     // Set periodic refresh of questions
     if (refresh === null) {
-      refresh = window.setInterval(this.updateUserQuestions, config.UserDashRefreshRate);
+      refresh = window.setInterval(this.updateUserQuestions, config.UserDashRefreshRate)
     }
 
     // Fetch properites for question creator
     api.getTypes()
       .then(() => {
-        loadedTypes = true;
-      });
+        loadedTypes = true
+      })
     api.getEvents()
       .then(() => {
-        loadedEvents = true;
-      });
+        loadedEvents = true
+      })
     api.getSuggestions()
       .then(() => {
-        loadedSuggestions = true;
-        this.refs.QuestionCreator.updateTypeAhead();
-      });
+        loadedSuggestions = true
+        this.refs.QuestionCreator.updateTypeAhead()
+      })
 
     // Tell user when question creator has been loaded
     var intervalID = window.setInterval(() => {
       if (loadedTypes && loadedEvents && loadedSuggestions) {
-        document.getElementById('alert').removeChild(loadAlert);
-        clearInterval(intervalID);
+        document.getElementById('alert').removeChild(loadAlert)
+        clearInterval(intervalID)
       }
-    }, 1000);
-  },
-
-  getDefaultProps: function() {
-    return {
-      questions: [],
-      questionTypes: [],
-      questionEvents: [],
-      suggestions: []
-    };
-  },
-
-  getInitialState() {
-    return {
-      refresh: null
-    };
-  },
+    }, 1000)
+  }
 
   // Render user dashboard page
   render() {
@@ -107,110 +98,134 @@ const UserDashboard = React.createClass({
           minimalRow={MinimalRow}
           hiddenRow={HiddenRow} />
       </Grid>
-    );
+    )
   }
-});
+}
+
+UserDashboard.propTypes = {
+  questions: PropTypes.array,
+  questionTypes: PropTypes.array,
+  questionEvents: PropTypes.array,
+  suggestions: PropTypes.array
+}
+
+UserDashboard.defaultProps = {
+  questions: [],
+  questionTypes: [],
+  questionEvents: [],
+  suggestions: []
+}
 
 const mapStateToProps = (state) => ({
   questions: state.nemoQuestions.userQuestions,
   questionTypes: state.questionCreator.questionTypes,
   questionEvents: state.questionCreator.questionEvents,
   suggestions: state.questionCreator.suggestions
-});
+})
 
-export default connect((mapStateToProps), {})(UserDashboard);
+export default connect((mapStateToProps), {})(UserDashboard)
 
 // Below are the generators for the html used by collapisble table
-
 // Creates the headders used by table
 const Headers = () => {
   return ([
     <td key={1} >Question</td>,
     <td key={2} >Parameters</td>,
     <td key={3} >Status</td>
-  ]);
-};
+  ])
+}
 
 // Creates the minimal visible row used by table
 const MinimalRow = (data) => {
   var question = objectByString(data, 'QuestionType.Type') + ' ' +
-    objectByString(data, 'QuestionEvent.Name');
-  var parameters = '';
-  var numParams = Math.min(data['QuestionParameters'].length, 3);
+    objectByString(data, 'QuestionEvent.Name')
+  var parameters = ''
+  var numParams = Math.min(data['QuestionParameters'].length, 3)
   for (var i = 0; i < numParams; i++) {
-    parameters += data['QuestionParameters'][i]['concept_cd'];
+    parameters += data['QuestionParameters'][i]['concept_cd']
     parameters += (i !== numParams - 1)
       ? ', '
-      : (numParams < data['QuestionParameters'].length) ? ' . . .' : '';
+      : (numParams < data['QuestionParameters'].length) ? ' . . .' : ''
   }
-  var status = objectByString(data, 'QuestionStatus.Status');
+  var status = objectByString(data, 'QuestionStatus.Status')
   return ([
     <td key={1} >{question}</td>,
     <td key={2} >{parameters}</td>,
     <td key={3} >{status}</td>
-  ]);
-};
+  ])
+}
 
 // Creates the hidden row used by the table filled with functionality for nemo
-const HiddenRow = React.createClass({
+class HiddenRow extends React.Component {
+  constructor (props) {
+    super(props)
 
-  handleDelete() {
+    this.handleEdit = this.handleEdit.bind(this)
+    this.handleDelete = this.handleDelete.bind(this)
+    this.handleFeedback = this.handleFeedback.bind(this)
+  }
+
+  handleEdit () {
+
+  }
+
+  handleDelete () {
     api.deleteQuestion(this.props.data.ID)
       .then(() => {
-        api.fetchUserData();
-      });
-  },
+        api.fetchUserData()
+      })
+  }
 
-  handleFeedback() {
-    var yes = this.refs.yes.checked;
-    var no = this.refs.no.checked;
-    var id = this.props.data.AIModels[0].ID;
+  handleFeedback () {
+    var yes = this.refs.yes.checked
+    var no = this.refs.no.checked
+    var id = this.props.data.AIModels[0].ID
     if (yes || no) {
-      var params = {};
-      params.aiModelID = id;
+      var params = {}
+      params.aiModelID = id
       if (yes) {
-        params.value = 1;
+        params.value = 1
       } else {
-        params.value = 0;
+        params.value = 0
       }
-      api.giveFeedback(params);
+      api.giveFeedback(params)
     }
-  },
+  }
 
   // Render well
-  render() {
-    var { data, ...props } = this.props;
+  render () {
+    var data = this.props.data
 
     // Get Question realted info
     var question = objectByString(data, 'QuestionType.Type') + ' ' +
-      objectByString(data, 'QuestionEvent.Name');
-    var paramsLong = '';
-    var paramsShort = '';
-    var numParams = data['QuestionParameters'].length;
+      objectByString(data, 'QuestionEvent.Name')
+    var paramsLong = ''
+    var paramsShort = ''
+    var numParams = data['QuestionParameters'].length
     for (var i = 0; i < numParams; i++) {
-      paramsLong += data['QuestionParameters'][i]['concept_cd'];
-      paramsLong += (i !== numParams - 1) ? ', ' : '';
+      paramsLong += data['QuestionParameters'][i]['concept_cd']
+      paramsLong += (i !== numParams - 1) ? ', ' : ''
       if (i < 3) {
-        paramsShort += data['QuestionParameters'][i]['concept_cd'];
-        paramsShort += (i !== 2 && i !== numParams - 1) ? ', ' : '';
+        paramsShort += data['QuestionParameters'][i]['concept_cd']
+        paramsShort += (i !== 2 && i !== numParams - 1) ? ', ' : ''
         if (i === 2 && numParams > 3) {
-          paramsShort += ' . . .';
+          paramsShort += ' . . .'
         }
       }
     }
 
     // Get AI related info
-    var status = objectByString(data, 'QuestionStatus.Status');
-    var classifier = '';
-    var accuracy = '';
-    var matrix = '';
-    var hasFeedback = data.StatusID === 3;
+    var status = objectByString(data, 'QuestionStatus.Status')
+    var classifier = ''
+    var accuracy = ''
+    var matrix = ''
+    var hasFeedback = data.StatusID === 3
     if (data.AIModels.length > 0) {
-      var aiModel = data.AIModels[0];
-      classifier = aiModel.Algorithm;
-      accuracy = aiModel.Accuracy;
+      var aiModel = data.AIModels[0]
+      classifier = aiModel.Algorithm
+      accuracy = aiModel.Accuracy
 
-      var confusionMatrix = JSON.parse(aiModel.ConfusionMatrix);
+      var confusionMatrix = JSON.parse(aiModel.ConfusionMatrix)
       matrix = (
         <Table condensed>
           <thead>
@@ -233,7 +248,7 @@ const HiddenRow = React.createClass({
             </tr>
           </tbody>
         </Table>
-      );
+      )
     }
 
     return (
@@ -282,12 +297,21 @@ const HiddenRow = React.createClass({
             : undefined}
           </Col>
           <Col sm={6} md={6}>
-            <Button className='pull-right' bsSize="xsmall" bsStyle="danger" onClick={this.handleDelete}>
-              Delete
-            </Button>
+            <ButtonGroup className='pull-right'>
+              <Button bsSize="xsmall" bsStyle="warning" onClick={this.handleEdit}>
+                Edit
+              </Button>
+              <Button bsSize="xsmall" bsStyle="danger" onClick={this.handleDelete}>
+                Delete
+              </Button>
+            </ButtonGroup>
           </Col>
         </Row>
       </Well>
-    );
+    )
   }
-});
+}
+
+HiddenRow.propTypes = {
+  data: PropTypes.any
+}

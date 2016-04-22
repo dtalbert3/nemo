@@ -1,36 +1,41 @@
-import React from 'react';
-import { Input, Grid, Row, SplitButton, ButtonGroup, Button, MenuItem, Label, Glyphicon } from 'react-bootstrap';
-import TypeAhead from './typeAhead';
-import Alert from './alert';
-import isEqual from 'lodash.isequal';
+import React, { PropTypes } from 'react'
+import { Input, Grid, Row, SplitButton, ButtonGroup, Button, MenuItem, Label, Glyphicon } from 'react-bootstrap'
+import TypeAhead from './typeAhead'
+import Alert from './alert'
+import isEqual from 'lodash.isequal'
 
 // Whitelist which parameters are bounded
 const BOUNDED_PARAMETERS = [
   'LOINC'
-];
+]
 
 const isBounded = (parameter) => {
   if (Object.keys(parameter).length === 0) {
-    return false;
+    return false
   }
 
-  var bounded = true;
+  var bounded = true
   BOUNDED_PARAMETERS.forEach((p) => {
-    bounded = bounded && parameter.concept_cd.startsWith(p);
-  });
-  return bounded;
-};
+    bounded = bounded && parameter.concept_cd.startsWith(p)
+  })
+  return bounded
+}
 
 // Creates token to display information about added parameters
-const Token = React.createClass({
+class Token extends React.Component {
+  constructor (props) {
+    super(props)
+
+    this.removeToken = this.removeToken.bind(this)
+  }
 
   // Handle removal of token when clicked
-  removeToken() {
-    this.props.removeToken(this.props.token);
-  },
+  removeToken () {
+    this.props.removeToken(this.props.token)
+  }
 
   // Render token
-  render() {
+  render () {
     return (
       <h4 className='token'>
         <Label className='label label-info' >
@@ -38,27 +43,39 @@ const Token = React.createClass({
           <Glyphicon onClick={this.removeToken} glyph='remove' />
         </Label>
       </h4>
-    );
+    )
   }
-});
+}
+
+Token.propTypes = {
+  removeToken: PropTypes.func,
+  token: PropTypes.object,
+  value: PropTypes.string
+}
 
 // Helper to render dropdowns for Question Type/Event
-const QuestionDropdown = React.createClass({
+class QuestionDropdown extends React.Component {
+  constructor (props) {
+    super(props)
+
+    this.handleSelect = this.handleSelect.bind(this)
+    this.getTitle = this.getTitle.bind(this)
+  }
 
   // Handle dropdown selection to update Question Type/Event
-  handleSelect(undefined, type) {
-    this.props.handleSelect(type);
-  },
+  handleSelect (undefined, type) {
+    this.props.handleSelect(type)
+  }
 
   // Set display tile to selected Question Type/Event
-  getTitle() {
-    return (this.props.index !== null) ?
-      this.props.items[this.props.index][this.props.name] :
-      this.props.defaultTitle;
-  },
+  getTitle () {
+    return (this.props.selectedIndex !== null) ?
+      this.props.items[this.props.selectedIndex][this.props.objectParam] :
+      this.props.defaultTitle
+  }
 
   // Render dropdown menu
-  render() {
+  render () {
     return (
       <SplitButton
         title={this.getTitle()}
@@ -66,40 +83,50 @@ const QuestionDropdown = React.createClass({
         onSelect={this.handleSelect}>
 
         {this.props.items.map((d, i) => {
-          return <MenuItem key={i} eventKey={i}> {d[this.props.name]} </MenuItem>;
+          return <MenuItem key={i} eventKey={i}> {d[this.props.objectParam]} </MenuItem>
         })}
 
       </SplitButton>
-    );
+    )
   }
-});
+}
+
+QuestionDropdown.propTypes = {
+  items: PropTypes.array,
+  selectedIndex: PropTypes.number,
+  objectParam: PropTypes.string,
+  defaultTitle: PropTypes.string,
+  id: PropTypes.number
+}
 
 // Create range input for questions that require upper/lower bounds
-const RangeInput = React.createClass({
+class RangeInput extends React.createClass {
+  constructor (props) {
+    super(props)
+
+    this.state = {
+      min: '',
+      max: ''
+    }
+
+    this.updateBounds = this.updateBounds.bind(this)
+  }
 
   // Update parent component with bounds
-  updateBounds() {
-    var min = this.refs.min.getValue();
-    var max = this.refs.max.getValue();
-    min = (min !== '') ? parseInt(min) : null;
-    max = (max !== '') ? parseInt(max) : null;
+  updateBounds () {
+    var min = this.refs.min.getValue()
+    var max = this.refs.max.getValue()
+    min = (min !== '') ? parseInt(min) : null
+    max = (max !== '') ? parseInt(max) : null
     this.setState({
       min: min,
       max: max
-    });
-    this.props.updateBounds({ min: min, max: max });
-  },
-
-  // Initialize bounds
-  getInitialState() {
-    return {
-      min: '',
-      max: ''
-    };
-  },
+    })
+    this.props.updateBounds({ min: min, max: max })
+  }
 
   // Render input for getting question bounds
-  render() {
+  render () {
     return (
       <div className='rangeInput'>
         <strong> between </strong>
@@ -113,27 +140,52 @@ const RangeInput = React.createClass({
           value={this.state.max}
           onChange={this.updateBounds} />
       </div>
-    );
+    )
   }
-});
+}
+
+RangeInput.propTypes = {
+  updateBounds: PropTypes.func
+}
 
 // Creates a form that allows users to form a question for the data mart
-export default React.createClass({
+class QuestionCreator extends React.Component {
+  constructor (props) {
+    super(props)
+
+    this.state = {
+      selectedTypeIndex: null,
+      selectedEventIndex: null,
+      bounds: { min: null, max: null },
+      parameters: [],
+      parameter: {}
+    }
+
+    this.submitQuestion = this.submitQuestion.bind(this)
+    this.clearQuestion = this.clearQuestion.bind(this)
+    this.addParameter = this.addParameter.bind(this)
+    this.updateParameter = this.updateParameter.bind(this)
+    this.removeParameter = this.removeParameter.bind(this)
+    this.handleSelectedType = this.handleSelectedType.bind(this)
+    this.handleSelectedEvent = this.handleSelectedEvent.bind(this)
+    this.updateBounds = this.updateBounds.bind(this)
+    this.updateTypeAhead = this.updateTypeAhead.bind(this)
+  }
 
   // Submit question formed by user
-  submitQuestion() {
+  submitQuestion () {
 
     // Validate to ensure all parameters have been bound
     // Alert pops up if invalid input was given
     if (this.state.parameters.length < 1) {
-      Alert('No Parameters Added', 'danger', 4 * 1000);
-      return;
+      Alert('No Parameters Added', 'danger', 4 * 1000)
+      return
     } else if (this.state.selectedTypeIndex === null) {
-      Alert('Missing Question Type', 'danger', 4 * 1000);
-      return;
+      Alert('Missing Question Type', 'danger', 4 * 1000)
+      return
     } else if (this.state.selectedEventIndex === null) {
-      Alert('Missing Question Event', 'danger', 4 * 1000);
-      return;
+      Alert('Missing Question Event', 'danger', 4 * 1000)
+      return
     } else {
 
       // If valid bind type/event/parameters to data
@@ -143,157 +195,137 @@ export default React.createClass({
         QuestionTypeID: this.props.questionTypes[this.state.selectedTypeIndex].ID,
         QuestionEventID: this.props.questionEvents[this.state.selectedEventIndex].ID,
         QuestionParamsArray: this.state.parameters
-      };
+      }
 
       // Send question to database
-      this.props.handleSubmit(data);
+      this.props.handleSubmit(data)
     }
-  },
+  }
 
   // Clear all form fields and tokens
-  clearQuestion() {
+  clearQuestion () {
     this.setState({
       selectedTypeIndex: null,
       selectedEventIndex: null,
       bounds: { min: null, max: null },
       parameters: [],
       parameter: {}
-    });
-  },
+    })
+  }
 
   // Add parameter created via typeahead and range (if required)
-  addParameter() {
+  addParameter () {
     // Create parameter to break reference
-    var parameter = Object.assign({}, this.state.parameter);
+    var parameter = Object.assign({}, this.state.parameter)
 
     // Find if duplicate of parameter exist
     // BUG IN FINDING OUT IF DUPLICATE EXIST
     var duplicate = this.state.parameters.find((d) => {
-      isEqual(d, parameter);
-    });
+      isEqual(d, parameter)
+    })
 
     // Validate parameter
     if (isBounded(parameter)) {
-      var bounds = Object.assign({}, this.state.bounds);
+      var bounds = Object.assign({}, this.state.bounds)
       if (bounds.min === null || bounds.max === null) {
-        Alert('Missing Range', 'danger', 4 * 1000);
-        return;
+        Alert('Missing Range', 'danger', 4 * 1000)
+        return
       } else if (bounds.min > bounds.max) {
-        Alert('Invalid Parameter Range', 'danger', 4 * 1000);
-        return;
+        Alert('Invalid Parameter Range', 'danger', 4 * 1000)
+        return
       }
     } else if (Object.keys(parameter).length < 1) {
-      Alert('Invalid Parameter', 'danger', 4 * 1000);
-      return;
+      Alert('Invalid Parameter', 'danger', 4 * 1000)
+      return
     } else if (duplicate !== undefined) {
-      Alert('Parameter Already Exist', 'danger', 4 * 1000);
-      return;
+      Alert('Parameter Already Exist', 'danger', 4 * 1000)
+      return
     } else if (this.state.parameters.length > 0) {
       // Check if one already exist
-      // console.log(duplicate.bound1.min, parameter.bounded1.min);
+      // console.log(duplicate.bound1.min, parameter.bounded1.min)
     }
 
     // Rebind parameter
-    parameter.tval_char = null;
-    parameter.nval_num = null;
-    parameter.concept_path = null;
-    parameter.concept_cd = parameter.concept_cd;
-    parameter.valtype_cd = 'N';
-    parameter.TableName = null;
-    parameter.TableColumn = null;
-    parameter.min = this.state.bounds.min;
-    parameter.max = this.state.bounds.max;
+    parameter.tval_char = null
+    parameter.nval_num = null
+    parameter.concept_path = null
+    parameter.concept_cd = parameter.concept_cd
+    parameter.valtype_cd = 'N'
+    parameter.TableName = null
+    parameter.TableColumn = null
+    parameter.min = this.state.bounds.min
+    parameter.max = this.state.bounds.max
 
     // Update state of parameters listing
     this.setState({
       parameters: this.state.parameters.concat(parameter)
-    });
-  },
+    })
+  }
 
   // Handle updating of parameter from TypeAhead
-  updateParameter(parameter) {
+  updateParameter (parameter) {
     this.setState({
       parameter: parameter
-    });
-  },
+    })
+  }
 
   // Handle removal of parameter once Token clicked
-  removeParameter(parameter) {
+  removeParameter (parameter) {
     this.setState({
       parameters: this.state.parameters.filter((d) => {
-        return (d !== parameter) ? true : false;
+        return (d !== parameter) ? true : false
       })
-    });
-  },
+    })
+  }
 
   // Handle updating of selected question type
-  handleSelectedType(index) {
+  handleSelectedType (index) {
     this.setState({
       selectedTypeIndex: index
-    });
-  },
+    })
+  }
 
   // Handle updating of selected question event
-  handleSelectedEvent(index) {
+  handleSelectedEvent (index) {
     this.setState({
       selectedEventIndex: index
-    });
-  },
+    })
+  }
 
   // Handle updating of question bounds
-  updateBounds(bounds) {
+  updateBounds (bounds) {
     this.setState({
       bounds: bounds
-    });
-  },
+    })
+  }
 
   // Once form is mounted update possible parameters and question types/events
-  updateTypeAhead() {
-    this.refs.typeAhead.updateSuggestions();
-  },
-
-  getDefaultProps: function() {
-    return {
-      questionTypes: [],
-      questionEvents: [],
-      suggestions: [],
-      handleSubmit: () => {}
-    };
-  },
-
-  // Initialize question creator form
-  getInitialState() {
-    return {
-      selectedTypeIndex: null,
-      selectedEventIndex: null,
-      bounds: { min: null, max: null },
-      parameters: [],
-      parameter: {}
-    };
-  },
+  updateTypeAhead () {
+    this.refs.typeAhead.updateSuggestions()
+  }
 
   // Render question creator form
-  render() {
+  render () {
     return (
       <Grid>
         <Row>
           {/* Question Type Dropdown */}
           <QuestionDropdown
             items={this.props.questionTypes}
-            index={this.state.selectedTypeIndex}
+            selectedIndex={this.state.selectedTypeIndex}
             handleSelect={this.handleSelectedType}
             defaultTitle={'Question Type'}
-            name={'Type'}
-            id={1}/>
+            objectParam={'Type'}
+            id={1} />
 
           {/* Question Event Dropdown */}
           <QuestionDropdown
             items={this.props.questionEvents}
-            index={this.state.selectedEventIndex}
+            selectedIndex={this.state.selectedEventIndex}
             handleSelect={this.handleSelectedEvent}
             defaultTitle={'Question Event'}
-            name={'Name'}
-            id={2}/>
+            objectParam={'Name'}
+            id={2} />
 
           <strong> for patients with </strong>
 
@@ -324,7 +356,7 @@ export default React.createClass({
               key={i}
               value={'concept_cd'}
               token={parameter}
-              removeToken={this.removeParameter} />;
+              removeToken={this.removeParameter} />
           })}
         </Row>
         <Row>
@@ -335,6 +367,22 @@ export default React.createClass({
           </ButtonGroup>
         </Row>
       </Grid>
-    );
+    )
   }
-});
+}
+
+QuestionCreator.propTypes = {
+  questionTypes: PropTypes.array,
+  questionEvents: PropTypes.array,
+  suggestions: PropTypes.array,
+  handleSubmit: PropTypes.func
+}
+
+QuestionCreator.defaultProps = {
+  questionTypes: [],
+  questionEvents: [],
+  suggestions: [],
+  handleSubmit: () => {}
+}
+
+export default QuestionCreator

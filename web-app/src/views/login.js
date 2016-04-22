@@ -1,34 +1,38 @@
-import React from 'react';
-import { Row, Col, Input, ButtonInput } from 'react-bootstrap';
-import { Link } from 'react-router';
-import Alert from '../partials/alert';
-import Auth from '../auth';
+import React, { PropTypes } from 'react'
+import { Row, Col, Input, ButtonInput } from 'react-bootstrap'
+import { Link } from 'react-router'
+import Alert from '../partials/alert'
+import Auth from '../auth'
 
-export default React.createClass({
-  componentDidMount() {
-    document.title = 'Nemo Login';
-  },
+class Login extends React.Component {
+  constructor (props, context) {
+    super(props)
 
-  contextTypes: {
-    router: React.PropTypes.object.isRequired
-  },
+    context.router
 
-  handleSubmit(event) {
-    event.preventDefault();
+    this.handleSubmit = this.handleSubmit.bind(this)
+  }
 
-    var email = this.refs.email.getValue();
-    var password = this.refs.password.getValue();
+  handleSubmit (event) {
+    event.preventDefault()
+
+    var email = this.refs.email.getValue()
+    var password = this.refs.password.getValue()
 
     Auth.login(email, password, (valid) => {
       if (valid) {
-        this.context.router.replace('/user');
+        this.context.router.replace('/user')
       } else {
-        Alert('Invalid email/password', 'danger', 4 * 1000);
+        Alert('Invalid email/password', 'danger', 4 * 1000)
       }
-    });
-  },
+    })
+  }
 
-  render() {
+  componentDidMount () {
+    document.title = 'Nemo Login'
+  }
+
+  render () {
     return (
       <Row>
         <Col sm={4} smOffset={4} md={4} mdOffset={4}>
@@ -50,6 +54,12 @@ export default React.createClass({
           </Row>
         </Col>
       </Row>
-    );
+    )
   }
-});
+}
+
+Login.contextTypes = {
+  router: PropTypes.object.isRequired
+}
+
+export default Login

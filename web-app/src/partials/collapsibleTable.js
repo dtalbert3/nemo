@@ -1,46 +1,56 @@
-import React from 'react';
-import { Collapse, Table } from 'react-bootstrap';
+import React, { PropTypes } from 'react'
+import { Collapse, Table } from 'react-bootstrap'
 
 // Helper to create table headers
-const Thead = React.createClass({
-  render() {
+class Thead extends React.Component {
+  render () {
     return (
       <thead>
         <tr>
           {this.props.headers()}
         </tr>
       </thead>
-    );
+    )
   }
-});
+}
+
+Thead.propTypes = {
+  headers: PropTypes.func
+}
 
 // Helper to create table rows
-const Tbody = React.createClass({
+class Tbody extends React.Component {
+  constructor (props) {
+    super(props)
 
-  // Create initial mapping of hidden rows
-  getInitialState() {
-    return { open: [] };
-  },
-
-  closeAll() {
-    var closed = new Array(this.state.open.length);
-    for (var i = 0; i < closed.length; i++) {
-      closed[i] = false;
+    this.state = {
+      open: []
     }
+
+    this.closeAll = this.closeAll.bind(this)
+  }
+
+  closeAll () {
+    var closed = new Array(this.state.open.length)
+
+    for (var i = 0; i < closed.length; i++) {
+      closed[i] = false
+    }
+
     this.setState({
       open: closed
-    });
-  },
+    })
+  }
 
   // Render table body
-  render() {
+  render () {
     return (
       <tbody>
         {/* Map each 'row' to a minimal and hidden row */}
         {this.props.data.map((datum, i) => {
 
           if (this.state.open[i] === undefined) {
-            this.state.open[i] = false;
+            this.state.open[i] = false
           }
 
           {/* Helper to create minimal row */}
@@ -49,12 +59,12 @@ const Tbody = React.createClass({
               key={i}
               className='custom-hover'
               onClick={() => {
-                var state = this.state.open;
-                state[i] = !this.state.open[i];
-                this.setState({ open: state });
+                var state = this.state.open
+                state[i] = !this.state.open[i]
+                this.setState({ open: state })
               }}>
               {this.props.minimalRow(datum)}
-            </tr>;
+            </tr>
 
           {/* Helper to create hidden row */}
           const hiddenRow =
@@ -65,22 +75,28 @@ const Tbody = React.createClass({
                     data={datum} />
                 </Collapse>
               </td>
-            </tr>;
+            </tr>
 
           {/* Render rows */}
           return ([
             minimalRow,
             hiddenRow
-          ]);
+          ])
         })}
       </tbody>
-    );
+    )
   }
-});
+}
 
-// Create table to display questions within the nemo data mart
-export default React.createClass({
-  render() {
+Tbody.propTypes = {
+  data: PropTypes.array,
+  numCols: PropTypes.number,
+  minimalRow: PropTypes.func,
+  hiddenRow: PropTypes.func
+}
+
+class CollapsibleTable extends React.Component {
+  render () {
     return (
       <Table responsive condensed>
         <Thead headers={this.props.headers} />
@@ -90,6 +106,24 @@ export default React.createClass({
           minimalRow={this.props.minimalRow}
           hiddenRow={this.props.hiddenRow} />
       </Table>
-    );
+    )
   }
-});
+}
+
+CollapsibleTable.propTypes = {
+  data: PropTypes.array,
+  numCols: PropTypes.number,
+  headers: PropTypes.func,
+  minimalRow: PropTypes.func,
+  hiddenRow: PropTypes.func
+}
+
+CollapsibleTable.defaultProps = {
+  data: [],
+  numCols: 0,
+  headers: () => {},
+  minimalRow: () => {},
+  hiddenRow: undefined
+}
+
+export default CollapsibleTable

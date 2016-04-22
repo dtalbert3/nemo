@@ -1,60 +1,54 @@
-import React from 'react';
-import { connect } from 'react-redux';
-import { Well, Button, Grid, Col, Row } from 'react-bootstrap';
-import CollapsibleTable from '../partials/collapsibleTable.js';
-import Alert from '../partials/alert';
+import React, { PropTypes } from 'react'
+import { connect } from 'react-redux'
+import { Well, Button, Grid, Col, Row } from 'react-bootstrap'
+import CollapsibleTable from '../partials/collapsibleTable.js'
+import Alert from '../partials/alert'
 
-import api from '../api';
-import config from '../config';
-import { objectByString } from '../util';
+import api from '../api'
+import config from '../config'
+import { objectByString } from '../util'
 
-var refresh = null;
+var refresh = null
 
 // User Dashboard page uses partials question-creator and nemo-table
-const GlobalDashboard = React.createClass({
+class GlobalDashboard extends React.Component {
+  constructor (props) {
+    super(props)
 
-  updateGlobalQuestions() {
-    api.fetchGlobalData();
-  },
+    this.updateGlobalQuestions = this.updateGlobalQuestions.bind(this)
+    this.handleSubmitQuestion = this.handleSubmitQuestion.bind(this)
+  }
 
-  handleSubmitQuestion(question) {
+  updateGlobalQuestions () {
+    api.fetchGlobalData()
+  }
+
+  handleSubmitQuestion (question) {
     api.addQuestion(question)
       .then(() => {
-        this.updateGlobalQuestions();
-      });
-  },
+        this.updateGlobalQuestions()
+      })
+  }
 
-  componentWillUnmount() {
-    clearInterval(refresh);
-  },
+  componentWillUnmount () {
+    clearInterval(refresh)
+  }
 
   // Once page is mounted attach page title
-  componentDidMount() {
-    document.title = 'Nemo Global Dashboard';
+  componentDidMount () {
+    document.title = 'Nemo Global Dashboard'
 
     // Fetch user questions
-    api.fetchGlobalData();
+    api.fetchGlobalData()
 
     // Set periodic refresh of questions
     if (refresh === null) {
-      refresh = window.setInterval(this.updateGlobalQuestions, config.UserDashRefreshRate);
+      refresh = window.setInterval(this.updateGlobalQuestions, config.UserDashRefreshRate)
     }
-  },
-
-  getDefaultProps: function() {
-    return {
-      questions: [],
-    };
-  },
-
-  getInitialState() {
-    return {
-      refresh: null
-    };
-  },
+  }
 
   // Render user dashboard page
-  render() {
+  render () {
     return (
       <Grid>
         <h2>Global Questions</h2>
@@ -65,83 +59,96 @@ const GlobalDashboard = React.createClass({
           minimalRow={MinimalRow}
           hiddenRow={HiddenRow} />
       </Grid>
-    );
+    )
   }
-});
+}
+
+GlobalDashboard.propTypes = {
+  questions: PropTypes.array
+}
+
+GlobalDashboard.defaultProps = {
+  questions: []
+}
 
 const mapStateToProps = (state) => ({
   questions: state.nemoQuestions.globalQuestions,
-});
+})
 
-export default connect((mapStateToProps), {})(GlobalDashboard);
+export default connect((mapStateToProps), {})(GlobalDashboard)
 
 const Headers = () => {
   return ([
     <td key={1} >Question</td>,
     <td key={2} >Parameters</td>,
     <td key={3} >Status</td>
-  ]);
-};
+  ])
+}
 
 const MinimalRow = (data) => {
   var question = objectByString(data, 'QuestionType.Type') + ' ' +
-    objectByString(data, 'QuestionEvent.Name');
-  var parameters = '';
-  var numParams = Math.min(data['QuestionParameters'].length, 3);
+    objectByString(data, 'QuestionEvent.Name')
+  var parameters = ''
+  var numParams = Math.min(data['QuestionParameters'].length, 3)
   for (var i = 0; i < numParams; i++) {
-    parameters += data['QuestionParameters'][i]['concept_cd'];
+    parameters += data['QuestionParameters'][i]['concept_cd']
     parameters += (i !== numParams - 1)
       ? ', '
-      : (numParams < data['QuestionParameters'].length) ? ' . . .' : '';
+      : (numParams < data['QuestionParameters'].length) ? ' . . .' : ''
   }
-  var status = objectByString(data, 'QuestionStatus.Status');
+  var status = objectByString(data, 'QuestionStatus.Status')
   return ([
     <td key={1} >{question}</td>,
     <td key={2} >{parameters}</td>,
     <td key={3} >{status}</td>
-  ]);
-};
+  ])
+}
 
 // Helper to create well with extra information on submitted questions
-const HiddenRow = React.createClass({
+class HiddenRow extends React.Component {
+  constructor (props) {
+    super(props)
 
-  handleCopy() {
+    this.handleCopy = this.handleCopy.bind(this)
+  }
+  
+  handleCopy () {
     // Insert question into local storage
     // Load user dashboard
     // Load up question creator
-  },
+  }
 
   // Render well
-  render() {
-    var { data, ...props } = this.props;
+  render () {
+    var data = this.props.data
 
     // Get Question realted info
     var question = objectByString(data, 'QuestionType.Type') + ' ' +
-      objectByString(data, 'QuestionEvent.Name');
-    var paramsLong = '';
-    var paramsShort = '';
-    var numParams = data['QuestionParameters'].length;
+      objectByString(data, 'QuestionEvent.Name')
+    var paramsLong = ''
+    var paramsShort = ''
+    var numParams = data['QuestionParameters'].length
     for (var i = 0; i < numParams; i++) {
-      paramsLong += data['QuestionParameters'][i]['concept_cd'];
-      paramsLong += (i !== numParams - 1) ? ', ' : '';
+      paramsLong += data['QuestionParameters'][i]['concept_cd']
+      paramsLong += (i !== numParams - 1) ? ', ' : ''
       if (i < 3) {
-        paramsShort += data['QuestionParameters'][i]['concept_cd'];
-        paramsShort += (i !== 2 && i !== numParams - 1) ? ', ' : '';
+        paramsShort += data['QuestionParameters'][i]['concept_cd']
+        paramsShort += (i !== 2 && i !== numParams - 1) ? ', ' : ''
         if (i === 2 && numParams > 3) {
-          paramsShort += ' . . .';
+          paramsShort += ' . . .'
         }
       }
     }
 
     // Get AI related info
-    var status = objectByString(data, 'QuestionStatus.Status');
-    var classifier = '';
-    var accuracy = '';
-    var hasFeedback = data.StatusID === 3;
+    var status = objectByString(data, 'QuestionStatus.Status')
+    var classifier = ''
+    var accuracy = ''
+    var hasFeedback = data.StatusID === 3
     if (data.AIModels.length > 0) {
-      var aiModel = data.AIModels[0];
-      classifier = aiModel.Algorithm;
-      accuracy = aiModel.Accuracy;
+      var aiModel = data.AIModels[0]
+      classifier = aiModel.Algorithm
+      accuracy = aiModel.Accuracy
     }
 
     return (
@@ -168,12 +175,16 @@ const HiddenRow = React.createClass({
         </Row>
         <Row>
           <Col sm={6} md={6} smOffset={6} mdOffset={6}>
-            <Button className='pull-right' bsSize="xsmall" bsStyle="danger" onClick={this.handleCopy}>
+            <Button className='pull-right' bsSize="xsmall" bsStyle="primary" onClick={this.handleCopy}>
               Copy Question
             </Button>
           </Col>
         </Row>
       </Well>
-    );
+    )
   }
-});
+}
+
+HiddenRow.propTypes = {
+  data: PropTypes.any
+}
