@@ -33,6 +33,11 @@ domReady(() => {
   // Set store for api
   api.setStore(store)
 
+  // Go ahead and fetch these as they don't require any auth or have to be fetched again
+  api.getTypes()
+  api.getEvents()
+  api.getSuggestions()
+
   // Render app
   ReactDOM.render(
     <Root store={store} routes={routes} history={browserHistory}/>, app)

@@ -1,3 +1,5 @@
+import Bloodhound from 'bloodhound-js'
+
 // ------------------------------------
 // Constants
 // ------------------------------------
@@ -40,30 +42,32 @@ export const actions = {
 // ------------------------------------
 const ACTION_HANDLERS = {
   [SET_QUESTION_TYPES]: (state, action) => {
-    sessionStorage.setItem('questionTypes', action.payload)
     return {
       questionTypes: action.payload,
       questionEvents: state.questionEvents,
       demographics: state.demographics,
-      suggestions: state.questionEvents
+      suggestions: state.questionEvents,
+      searchEngine: state.searchEngine
     }
   },
   [SET_QUESTION_EVENTS]: (state, action) => {
-    sessionStorage.setItem('questionEvents', action.payload)
     return {
       questionTypes: state.questionTypes,
       questionEvents: action.payload,
       demographics: state.demographics,
-      suggestions: state.suggestions
+      suggestions: state.suggestions,
+      searchEngine: state.searchEngine
     }
   },
   [SET_QUESTIONS_SUGGESTIONS]: (state, action) => {
-    sessionStorage.setItem('suggestions', action.payload)
+    state.searchEngine.clear()
+    state.searchEngine.add(action.payload)
     return {
       questionTypes: state.questionTypes,
       questionEvents: state.questionEvents,
       demographics: state.demographics,
-      suggestions: action.payload
+      suggestions: action.payload,
+      searchEngine: state.searchEngine
     }
   }
 }
@@ -75,7 +79,24 @@ const initialState = {
   questionTypes: [],
   questionEvents: [],
   suggestions: [],
-  demographics: [{Name:'Sex', items: [{Name:'M'}, {Name: 'F'}]}, {Name:'Race', items: [{Name:'Black'}, {Name:'White'}]}, {Name:'Age'}]
+  demographics: [{Name:'Sex', items: [{Name:'M'}, {Name: 'F'}]}, {Name:'Race', items: [{Name:'Black'}, {Name:'White'}]}, {Name:'Age'}],
+  searchEngine: new Bloodhound({
+    local: [],
+    identify: (d) => d['concept_cd'],
+    queryTokenizer: (data) => {
+      return Bloodhound.tokenizers.whitespace(data)
+    },
+    datumTokenizer: (d) => {
+      var tokens = []
+      var stringSize = d['concept_cd'].length
+      for (var size = 1; size <= stringSize; size++) {
+        for (var i = 0; i + size <= stringSize; i++) {
+          tokens.push(d['concept_cd'].substr(i, size))
+        }
+      }
+      return tokens
+    }
+  })
 }
 
 export default function nemoQuestionsReducer (state = initialState, action) {

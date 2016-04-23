@@ -128,12 +128,9 @@ class NemoApi {
   getSuggestions () {
     var promise = new Promise((resolve, reject) => {
       if (sessionStorage.getItem('suggestions') === null) {
-        var startTime = new Date()
         this.qstn.emit('getSuggestions', (err, data) => {
           if (!err) {
             this.store.dispatch(questionCreator.setQuestionSuggestions(data))
-            var endTime = new Date()
-            console.log((endTime - startTime) / 1000, 'seconds')
             resolve('Fetched Parameter Suggestions')
           } else {
             reject('Error Fetching Parameter Suggestions')
@@ -162,4 +159,5 @@ class NemoApi {
 
 // Export a singleton instance of our client side api
 let _NemoApi = new NemoApi()
+
 export default _NemoApi
