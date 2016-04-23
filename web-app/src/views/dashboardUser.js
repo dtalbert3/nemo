@@ -46,12 +46,6 @@ class UserDashboard extends React.Component {
   componentDidMount () {
     document.title = 'Nemo User Dashboard'
 
-    var loadAlert = Alert('Loading Question Creator', 'info')
-
-    var loadedTypes = false
-    var loadedEvents = false
-    var loadedSuggestions = false
-
     // Fetch user questions
     api.fetchUserData()
       .catch((err) => {
@@ -62,38 +56,6 @@ class UserDashboard extends React.Component {
     if (refresh === null) {
       refresh = window.setInterval(this.updateUserQuestions, config.UserDashRefreshRate)
     }
-
-    // Fetch properites for question creator
-    api.getTypes()
-      .then(() => {
-        loadedTypes = true
-      })
-      .catch((err) => {
-        Alert(err, 'danger', 4 * 1000)
-      })
-    api.getEvents()
-      .then(() => {
-        loadedEvents = true
-      })
-      .catch((err) => {
-        Alert(err, 'danger', 4 * 1000)
-      })
-    api.getSuggestions()
-      .then(() => {
-        loadedSuggestions = true
-        this.refs.QuestionCreator.updateTypeAhead()
-      })
-      .catch((err) => {
-        Alert(err, 'danger', 4 * 1000)
-      })
-
-    // Tell user when question creator has been loaded
-    var intervalID = window.setInterval(() => {
-      if (loadedTypes && loadedEvents && loadedSuggestions) {
-        document.getElementById('alert').removeChild(loadAlert)
-        clearInterval(intervalID)
-      }
-    }, 1000)
   }
 
   // Render user dashboard page
@@ -107,6 +69,7 @@ class UserDashboard extends React.Component {
           questionTypes={this.props.questionTypes}
           questionEvents={this.props.questionEvents}
           suggestions={this.props.suggestions}
+          searchEngine={this.props.searchEngine}
           handleSubmit={this.handleSubmitQuestion} />
 
         <h2>Your Questions</h2>
@@ -125,21 +88,24 @@ UserDashboard.propTypes = {
   questions: PropTypes.array,
   questionTypes: PropTypes.array,
   questionEvents: PropTypes.array,
-  suggestions: PropTypes.array
+  suggestions: PropTypes.array,
+  searchEngine: PropTypes.any
 }
 
 UserDashboard.defaultProps = {
   questions: [],
   questionTypes: [],
   questionEvents: [],
-  suggestions: []
+  suggestions: [],
+  searchEngine: {}
 }
 
 const mapStateToProps = (state) => ({
   questions: state.nemoQuestions.userQuestions,
   questionTypes: state.questionCreator.questionTypes,
   questionEvents: state.questionCreator.questionEvents,
-  suggestions: state.questionCreator.suggestions
+  suggestions: state.questionCreator.suggestions,
+  searchEngine: state.questionCreator.searchEngine
 })
 
 export default connect((mapStateToProps), {})(UserDashboard)
