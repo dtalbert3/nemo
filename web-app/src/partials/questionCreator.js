@@ -153,16 +153,16 @@ class QuestionCreator extends React.Component {
       selectedEventIndex: index
     })
   }
-  
+
   // Handle updating of selected question event
   handleSelectedDemographic (index) {
     this.setState({
       selectedDemographicIndex: index,
       selectedDemographicValueIndex: null
     })
-    
+
   }
-  
+
   // Handle updating of selected question event
   handleSelectedDemographicValue (index) {
     this.setState({
@@ -220,8 +220,8 @@ class QuestionCreator extends React.Component {
               updateBounds={this.updateBounds} /> :
             undefined
           }
-          
-          
+
+
 
           <Button bsStyle='primary' onClick={this.addParameter}>Add</Button>
         </Row>
@@ -239,30 +239,28 @@ class QuestionCreator extends React.Component {
             id={2} />
           </Col>
           <Col xs={2} md={2}>
-          {this.props.demographics[this.state.selectedDemographicIndex] !== null && this.state.selectedDemographicIndex !== null ?
-            (this.props.demographics[this.state.selectedDemographicIndex].Name !== 'Age' ?
-            <QuestionDropdown
-            items={this.props.demographics[this.state.selectedDemographicIndex] === null || this.state.selectedDemographicIndex === null ?
-              [] :  this.props.demographics[this.state.selectedDemographicIndex].items }
-            selectedIndex={this.state.selectedDemographicValueIndex}
-            handleSelect={this.handleSelectedDemographicValue}
-            defaultTitle={'Value'}
-            objectParam={'Name'}
-            id={2} />
-            
-            :
-            
-            <RangeInput
-              bounds={this.state.bounds}
-              updateBounds={this.updateBounds}/>)
-            : <span/>
+          { this.props.demographics[this.state.selectedDemographicIndex] !== null &&
+            this.state.selectedDemographicIndex !== null ?
+              (this.props.demographics[this.state.selectedDemographicIndex].Name !== 'Age' ?
+                <QuestionDropdown
+                items={this.props.demographics[this.state.selectedDemographicIndex] === null || this.state.selectedDemographicIndex === null ?
+                  [] :  this.props.demographics[this.state.selectedDemographicIndex].items }
+                selectedIndex={this.state.selectedDemographicValueIndex}
+                handleSelect={this.handleSelectedDemographicValue}
+                defaultTitle={'Value'}
+                objectParam={'Name'}
+                id={2} /> :
+                <RangeInput
+                  bounds={this.state.bounds}
+                  updateBounds={this.updateBounds}/>) :
+              (<span/>)
           }
           </Col>
           <Col xs={2} md={2}>
             <Button bsStyle='primary' onClick={this.addParameter}>Add</Button>
           </Col>
         </Row>
-        
+
         <Row>
           {/* Render parameters as tokens */}
           {this.state.parameters.map((parameter, i) => {

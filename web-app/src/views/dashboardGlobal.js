@@ -2,7 +2,6 @@ import React, { PropTypes } from 'react'
 import { connect } from 'react-redux'
 import { Well, Button, Grid, Col, Row } from 'react-bootstrap'
 import CollapsibleTable from '../partials/collapsibleTable.js'
-import Alert from '../partials/alert'
 
 import api from '../api'
 import config from '../config'
@@ -64,7 +63,7 @@ GlobalDashboard.defaultProps = {
 }
 
 const mapStateToProps = (state) => ({
-  questions: state.nemoQuestions.globalQuestions,
+  questions: state.nemoQuestions.globalQuestions
 })
 
 export default connect((mapStateToProps), {})(GlobalDashboard)
@@ -136,7 +135,6 @@ class HiddenRow extends React.Component {
     var status = objectByString(data, 'QuestionStatus.Status')
     var classifier = ''
     var accuracy = ''
-    var hasFeedback = data.StatusID === 3
     if (data.AIModels.length > 0) {
       var aiModel = data.AIModels[0]
       classifier = aiModel.Algorithm
@@ -167,7 +165,7 @@ class HiddenRow extends React.Component {
         </Row>
         <Row>
           <Col sm={6} md={6} smOffset={6} mdOffset={6}>
-            <Button className='pull-right' bsSize="xsmall" bsStyle="primary" onClick={this.handleCopy}>
+            <Button className='pull-right' bsSize='xsmall' bsStyle='primary' onClick={this.handleCopy}>
               Copy Question
             </Button>
           </Col>

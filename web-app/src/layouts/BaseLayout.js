@@ -6,8 +6,8 @@ import Auth from '../auth'
 // Helper to create navigation links in page header
 class NavLink extends React.Component {
   render () {
-    var active = this.context.router.isActive(this.props.path) ?
-      'active' : ''
+    var active = this.context.router.isActive(this.props.path)
+      ? 'active' : ''
     // May need to fix some 'whitespace'
     return (
       <li role='presentation' className={active + this.props.hidden}>

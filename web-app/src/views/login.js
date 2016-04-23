@@ -38,8 +38,8 @@ class Login extends React.Component {
         <Col sm={4} smOffset={4} md={4} mdOffset={4}>
           <form onSubmit={this.handleSubmit} autoComplete='on'>
             <h2 >Please Login</h2>
-            <Input ref='email' type='email' label='Email Address' placeholder='Enter email' required={true} />
-            <Input ref='password' type='password' label='Password' placeholder='Enter password' required={true} />
+            <Input ref='email' type='email' label='Email Address' placeholder='Enter email' required />
+            <Input ref='password' type='password' label='Password' placeholder='Enter password' required />
             <ButtonInput type='submit' value='Login' bsStyle='primary' block/>
           </form>
           <Row>
@@ -48,7 +48,7 @@ class Login extends React.Component {
             </Col>
             <Col sm={6} md={6}>
               <span>
-              <Link to='/signup' style={{float: 'right'}}> signup </Link>
+                <Link to='/signup' style={{float: 'right'}}> signup </Link>
               </span>
             </Col>
           </Row>

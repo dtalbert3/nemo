@@ -1,6 +1,6 @@
-import React, { PropTypes } from 'react';
-import { Provider } from 'react-redux';
-import { Router } from 'react-router';
+import React, { PropTypes } from 'react'
+import { Provider } from 'react-redux'
+import { Router } from 'react-router'
 
 class Root extends React.Component {
   render () {
@@ -10,7 +10,7 @@ class Root extends React.Component {
           {this.props.routes}
         </Router>
       </Provider>
-    );
+    )
   }
 }
 

@@ -12,13 +12,13 @@ import { Input, ListGroup, ListGroupItem } from 'react-bootstrap'
 
 // Create TypeAhead which displays listing of suggestions based on given input
 class TypeAhead extends React.Component {
-  constructor(props) {
+  constructor (props) {
     super(props)
 
     this.state = {
       suggestions: [],
       input: '',
-      hidden: true,
+      hidden: true
     }
 
     this.handleToken = this.handleToken.bind(this)
@@ -92,7 +92,7 @@ class TypeAhead extends React.Component {
     this.props.engine.search(input, (suggestions) => {
       this.setState({
         suggestions: suggestions.slice(0, this.props.limit),
-        hidden: (suggestions.length === 0) ? true : false
+        hidden: (suggestions.length === 0)
       })
       var token = this.props.engine.get(input)[0]
       token !== undefined ?

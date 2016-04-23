@@ -1,20 +1,42 @@
-var helmet = require('helmet')
-var Moonboots = require('moonboots-express')
-var config = require('getconfig')
-var stylizer = require('stylizer')
-var serveStatic = require('serve-static')
-var bodyParser = require('body-parser')
-var cookieParser = require('cookie-parser')
+
+const helmet = require('helmet')
+const config = require('getconfig')
+const bodyParser = require('body-parser')
+const cookieParser = require('cookie-parser')
+const serveStatic = require('serve-static')
+const path = require('path')
+
+const webpack = require('webpack')
+const webpackMiddleware = require('webpack-dev-middleware')
+const webpackHotMiddleware = require('webpack-hot-middleware')
+const webpackConfig = require('./webpack.config.js')
 
 // Setup our express app
-var app = require('express')()
-var server = require('http').createServer(app)
-var io = require('socket.io')(server)
-// var socketioJwt = require('socketio-jwt')
+const app = require('express')()
+const server = require('http').createServer(app)
+const io = require('socket.io')(server)
+// const socketioJwt = require('socketio-jwt')
+
+const compiler = webpack(webpackConfig)
+const middleware = webpackMiddleware(compiler, {
+  publicPath: webpackConfig.output.publicPath,
+  contentBase: 'src',
+  stats: {
+    colors: true,
+    progress: true,
+    hash: false,
+    timings: true,
+    chunks: false,
+    chunkModules: false,
+    modules: false
+  }
+})
 
 app
+  .use(middleware)
+  .use(webpackHotMiddleware(compiler))
   .use(helmet())
-  .use(serveStatic(__dirname + '/public'))
+  .use(serveStatic(__dirname + '/build'))
   .use(bodyParser.json())
   .use(bodyParser.urlencoded({ extended: true }))
   .use(cookieParser())
@@ -23,18 +45,18 @@ app
     next()
   })
 
-// Enable hot reloading of es6 client files in src/
-if (config.isDev) {
-  var shelljs = require('shelljs')
-  var fsmonitor = require('fsmonitor')
-  fsmonitor.watch('src/', null, function() {
-    console.log('\nRebuilding . . .')
-    shelljs.exec('npm run build &')
-  })
-}
+// Redirect all requests back to /
+app.all('*', function (req, res) {
+  res.redirect('/')
+})
 
-// Setup our API
-var nemoApi = require('./nemoApi')
+app.get('/*', function response(req, res) {
+  res.write(middleware.fileSystem.readFileSync(path.join(__dirname, 'build/index.html')))
+  res.end()
+})
+
+// Setup our API over socket connections
+const nemoApi = require('./nemoApi')
 io.of('/auth').on('connection', function(socket) {
   nemoApi.authService(socket)
 })
@@ -47,64 +69,14 @@ io
 
 io
   .of('/qstn')
-  // .use(socketioJwt.authorize({
-  //   secret: 'your secret or public key',
-  //   handshake: true
-  // }))
   .on('connection', function(socket) {
     nemoApi.questionService(socket)
   })
 
 io
   .of('/dash')
-  // .use(socketioJwt.authorize({
-  //   secret: 'your secret or public key',
-  //   handshake: true
-  // }))
   .on('connection', function(socket) {
     nemoApi.dashboardService(socket)
   })
 
-
-// Setup files to be used for client side app
-new Moonboots({
-  moonboots: {
-    jsFileName: 'nemo-js',
-    cssFileName: 'nemo-css',
-    main: __dirname + '/client/app.js',
-    developmentMode: config.isDev,
-    libraries: [],
-    stylesheets: [
-      __dirname + '/public/css/bootstrap.css',
-      __dirname + '/public/css/app.css'
-    ],
-    browserify: {
-      debug: false
-    },
-    beforeBuildJS: function () {
-      // This re-builds our template files from jade each time the app's main
-      // js file is requested. Which means you can seamlessly change jade and
-      // refresh in your browser to get new templates.
-    },
-    beforeBuildCSS: function () {
-      // This re-builds css from stylus each time the app's main
-      // css file is requested. Which means you can seamlessly change stylus files
-      // and see new styles on refresh.
-      if (config.isDev) {
-        stylizer({
-          infile: __dirname + '/public/css/app.styl',
-          outfile: __dirname + '/public/css/app.css',
-          development: true
-        }, function (err) {
-          if (err) {
-            console.log(err)
-          }
-        })
-      }
-    }
-  },
-  server: app
-})
-
 server.listen(config.http.port)
-console.log('[*] HTTP server listening on port:' + config.http.port)

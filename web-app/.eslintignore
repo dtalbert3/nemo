@@ -1,5 +1,5 @@
 node_modules/
-public/
-client/
-test/
+build/
 nemoApi.js
+server.js
+models/

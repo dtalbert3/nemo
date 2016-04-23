@@ -117,25 +117,25 @@ class Signup extends React.Component {
           <form onSubmit={this.handleSubmit} autoComplete='on'>
             <Input ref='firstName' type='text'
               label='First Name' placeholder='Enter email'
-              required={true} />
+              required />
             <Input ref='lastName' type='text'
               label='Last Name' placeholder='Enter password'
-              required={true} />
+              required />
             <Input ref='affiliation' type='text'
               label='Affiliation' placeholder='Enter affiliation' />
             <OverlayTrigger overlay={emailTooltip} trigger='focus'>
               <Input ref='email' type='email' hasFeedback
                 label='Email Address' value={this.state.email} onChange={this.handleChange}
-                required={true} bsStyle={this.inputStatus(this.validateEmail())} />
+                required bsStyle={this.inputStatus(this.validateEmail())} />
             </OverlayTrigger>
             <OverlayTrigger overlay={passwordTooltip} trigger='focus'>
               <Input ref='password' type='password' hasFeedback
                 label='Password' value={this.state.password} onChange={this.handleChange}
-                required={true} bsStyle={this.inputStatus(this.validatePassword())} />
+                required bsStyle={this.inputStatus(this.validatePassword())} />
             </OverlayTrigger>
             <Input ref='confirmPassword' type='password' hasFeedback
               label='Confirm Password' value={this.state.confirmPassword} onChange={this.handleChange}
-              required={true} bsStyle={this.inputStatus(this.validateConfirmPassword())} />
+              required bsStyle={this.inputStatus(this.validateConfirmPassword())} />
             <ButtonInput type='submit' value='Signup' bsStyle='primary' block/>
           </form>
         </Col>

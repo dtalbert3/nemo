@@ -59,7 +59,7 @@ class UserDashboard extends React.Component {
   }
 
   // Render user dashboard page
-  render() {
+  render () {
     return (
       <Grid>
         <h2>Create a question</h2>
@@ -293,17 +293,17 @@ class HiddenRow extends React.Component {
         <Row>
           <Col sm={6} md={6}>
             {(hasFeedback) ?
-              <Button className='pull-left' bsSize="xsmall" bsStyle="primary" onClick={this.handleFeedback}>
+              <Button className='pull-left' bsSize='xsmall' bsStyle='primary' onClick={this.handleFeedback}>
                 Submit Feedback
               </Button>
             : undefined}
           </Col>
           <Col sm={6} md={6}>
             <ButtonGroup className='pull-right'>
-              <Button bsSize="xsmall" bsStyle="warning" onClick={this.handleEdit}>
+              <Button bsSize='xsmall' bsStyle='warning' onClick={this.handleEdit}>
                 Edit
               </Button>
-              <Button bsSize="xsmall" bsStyle="danger" onClick={this.handleDelete}>
+              <Button bsSize='xsmall' bsStyle='danger' onClick={this.handleDelete}>
                 Delete
               </Button>
             </ButtonGroup>
