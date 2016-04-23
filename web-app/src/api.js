@@ -1,6 +1,5 @@
 import * as questions from './redux/modules/nemoQuestions'
 import * as questionCreator from './redux/modules/questionCreator'
-import Alert from './partials/alert'
 
 import config from 'clientconfig'
 import io from 'socket.io-client'
@@ -38,10 +37,9 @@ class NemoApi {
         if (!err) {
           data = JSON.parse(data)
           this.store.dispatch(questions.setGlobalQuestions(data))
-          resolve()
+          resolve('Fetched Global Questions')
         } else {
-          Alert('Error Fetching Questions', 'danger', 4 * 1000)
-          reject()
+          reject('Error Fetching Global Questions')
         }
       })
     })
@@ -54,10 +52,9 @@ class NemoApi {
         if (!err) {
           data = JSON.parse(data)
           this.store.dispatch(questions.setUserQuestions(data))
-          resolve()
+          resolve('Fetched User Questions')
         } else {
-          Alert('Error Fetching Questions', 'danger', 4 * 1000)
-          reject()
+          reject('Error Fetching User Questions')
         }
       })
     })
@@ -68,11 +65,9 @@ class NemoApi {
     var promise = new Promise((resolve, reject) => {
       this.dash.emit('delete', id, (err) => {
         if (!err) {
-          Alert('Question Deleted', 'success', 4 * 1000)
-          resolve()
+          resolve('Question Deleted')
         } else {
-          Alert('Error Deleting Questions', 'danger', 4 * 1000)
-          reject()
+          reject('Error Deleting Question')
         }
       })
     })
@@ -83,11 +78,9 @@ class NemoApi {
     var promise = new Promise((resolve, reject) => {
       this.dash.emit('feedback', params, (err) => {
         if (!err) {
-          Alert('Feedback Received', 'success', 4 * 1000)
-          resolve()
+          resolve('Feedback Received')
         } else {
-          Alert('Error Giving Feedback', 'danger', 4 * 1000)
-          reject()
+          reject('Error Giving Feedback')
         }
       })
     })
@@ -101,10 +94,9 @@ class NemoApi {
           if (!err) {
             data = data.map((d) => d)
             this.store.dispatch(questionCreator.setQuestionTypes(data))
-            resolve()
+            resolve('Fetched Question Types')
           } else {
-            Alert('Error Fetching Question Types', 'danger', 4 * 1000)
-            reject()
+            reject('Error Fetching Question Types')
           }
         })
       } else {
@@ -121,10 +113,9 @@ class NemoApi {
           if (!err) {
             data = data.map((d) => d)
             this.store.dispatch(questionCreator.setQuestionEvents(data))
-            resolve()
+            resolve('Fetched Question Events')
           } else {
-            Alert('Error Fetching Question Events', 'danger', 4 * 1000)
-            reject()
+            reject('Error Fetching Question Events')
           }
         })
       } else {
@@ -137,13 +128,15 @@ class NemoApi {
   getSuggestions () {
     var promise = new Promise((resolve, reject) => {
       if (sessionStorage.getItem('suggestions') === null) {
+        var startTime = new Date()
         this.qstn.emit('getSuggestions', (err, data) => {
           if (!err) {
             this.store.dispatch(questionCreator.setQuestionSuggestions(data))
-            resolve()
+            var endTime = new Date()
+            console.log((endTime - startTime) / 1000, 'seconds')
+            resolve('Fetched Parameter Suggestions')
           } else {
-            Alert('Error Fetching Parameter Suggestions', 'danger', 4 * 1000)
-            reject()
+            reject('Error Fetching Parameter Suggestions')
           }
         })
       } else {
@@ -157,11 +150,9 @@ class NemoApi {
     var promise = new Promise((resolve, reject) => {
       this.qstn.emit('create', data, (err) => {
         if (!err) {
-          Alert('Question Submitted!', 'success', 4 * 1000)
-          resolve()
+          resolve('Question Submitted!')
         } else {
-          Alert('Error Submitting Question!', 'danger', 4 * 1000)
-          reject()
+          reject('Error Submitting Question!')
         }
       })
     })

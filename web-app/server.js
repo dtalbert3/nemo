@@ -1,16 +1,16 @@
-var helmet = require('helmet');
-var Moonboots = require('moonboots-express');
-var config = require('getconfig');
-var stylizer = require('stylizer');
-var serveStatic = require('serve-static');
-var bodyParser = require('body-parser');
-var cookieParser = require('cookie-parser');
+var helmet = require('helmet')
+var Moonboots = require('moonboots-express')
+var config = require('getconfig')
+var stylizer = require('stylizer')
+var serveStatic = require('serve-static')
+var bodyParser = require('body-parser')
+var cookieParser = require('cookie-parser')
 
 // Setup our express app
-var app = require('express')();
-var server = require('http').createServer(app);
-var io = require('socket.io')(server);
-// var socketioJwt = require('socketio-jwt');
+var app = require('express')()
+var server = require('http').createServer(app)
+var io = require('socket.io')(server)
+// var socketioJwt = require('socketio-jwt')
 
 app
   .use(helmet())
@@ -19,31 +19,31 @@ app
   .use(bodyParser.urlencoded({ extended: true }))
   .use(cookieParser())
   .use(function (req, res, next) {
-    res.cookie('config', JSON.stringify(config.client));
-    next();
-  });
+    res.cookie('config', JSON.stringify(config.client))
+    next()
+  })
 
 // Enable hot reloading of es6 client files in src/
 if (config.isDev) {
-  var shelljs = require('shelljs');
-  var fsmonitor = require('fsmonitor');
+  var shelljs = require('shelljs')
+  var fsmonitor = require('fsmonitor')
   fsmonitor.watch('src/', null, function() {
-    console.log('\nRebuilding . . .');
-    shelljs.exec('npm run build &');
-  });
+    console.log('\nRebuilding . . .')
+    shelljs.exec('npm run build &')
+  })
 }
 
 // Setup our API
-var nemoApi = require('./nemoApi');
+var nemoApi = require('./nemoApi')
 io.of('/auth').on('connection', function(socket) {
-  nemoApi.authService(socket);
-});
+  nemoApi.authService(socket)
+})
 
 io
   .of('/user')
   .on('connection', function(socket) {
-    nemoApi.userService(socket);
-  });
+    nemoApi.userService(socket)
+  })
 
 io
   .of('/qstn')
@@ -52,8 +52,8 @@ io
   //   handshake: true
   // }))
   .on('connection', function(socket) {
-    nemoApi.questionService(socket);
-  });
+    nemoApi.questionService(socket)
+  })
 
 io
   .of('/dash')
@@ -62,8 +62,8 @@ io
   //   handshake: true
   // }))
   .on('connection', function(socket) {
-    nemoApi.dashboardService(socket);
-  });
+    nemoApi.dashboardService(socket)
+  })
 
 
 // Setup files to be used for client side app
@@ -97,14 +97,14 @@ new Moonboots({
           development: true
         }, function (err) {
           if (err) {
-            console.log(err);
+            console.log(err)
           }
-        });
+        })
       }
     }
   },
   server: app
-});
+})
 
-server.listen(config.http.port);
-console.log('[*] HTTP server listening on port:' + config.http.port);
+server.listen(config.http.port)
+console.log('[*] HTTP server listening on port:' + config.http.port)

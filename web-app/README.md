@@ -1,7 +1,5 @@
-Nemo Web App
+NEMO Web App
 ================
-
-Nemo Web Applicaion User Dashboard
 
 ## Prerequisites
 
@@ -9,7 +7,17 @@ Nemo Web Applicaion User Dashboard
 2. NPM Modules defined in packages.json
 
 Run `npm i` to download dependencies for application.
-Run 'npm run build' to convert src/ es6 files to client/ es5 files
+Run 'npm run build' to convert src/ files for use
+
+## Installing NPM
+
+NVM is a helpful tool for managing node version on linux
+
+1. `curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.31.0/install.sh | bash`
+2. `nvm install v5.6.0`
+3. `nvm use v5.6.0`
+
+This should set your default node version for future use, if it does not you will have to set the command in your bash profile.
 
 ## Usage
 

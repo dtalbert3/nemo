@@ -22,12 +22,19 @@ class UserDashboard extends React.Component {
 
   updateUserQuestions () {
     api.fetchUserData()
+      .catch((err) => {
+        Alert(err, 'danger', 4 * 1000)
+      })
   }
 
   handleSubmitQuestion (question) {
     api.addQuestion(question)
-      .then(() => {
+      .then((msg) => {
+        Alert(msg, 'success', 4 * 1000)
         this.updateUserQuestions()
+      })
+      .catch((err) => {
+        Alert(err, 'danger', 4 * 1000)
       })
   }
 
@@ -47,6 +54,9 @@ class UserDashboard extends React.Component {
 
     // Fetch user questions
     api.fetchUserData()
+      .catch((err) => {
+        Alert(err, 'danger', 4 * 1000)
+      })
 
     // Set periodic refresh of questions
     if (refresh === null) {
@@ -58,14 +68,23 @@ class UserDashboard extends React.Component {
       .then(() => {
         loadedTypes = true
       })
+      .catch((err) => {
+        Alert(err, 'danger', 4 * 1000)
+      })
     api.getEvents()
       .then(() => {
         loadedEvents = true
+      })
+      .catch((err) => {
+        Alert(err, 'danger', 4 * 1000)
       })
     api.getSuggestions()
       .then(() => {
         loadedSuggestions = true
         this.refs.QuestionCreator.updateTypeAhead()
+      })
+      .catch((err) => {
+        Alert(err, 'danger', 4 * 1000)
       })
 
     // Tell user when question creator has been loaded
@@ -171,8 +190,15 @@ class HiddenRow extends React.Component {
 
   handleDelete () {
     api.deleteQuestion(this.props.data.ID)
-      .then(() => {
+      .then((msg) => {
+        Alert(msg, 'success', 4 * 1000)
         api.fetchUserData()
+          .catch((err) => {
+            Alert(err, 'danger', 4 * 1000)
+          })
+      })
+      .catch((err) => {
+        Alert(err, 'danger', 4 * 1000)
       })
   }
 
@@ -189,6 +215,12 @@ class HiddenRow extends React.Component {
         params.value = 0
       }
       api.giveFeedback(params)
+        .then((msg) => {
+          Alert(msg, 'success', 4 * 1000)
+        })
+        .catch((err) => {
+          Alert(err, 'danger', 4 * 1000)
+        })
     }
   }
 

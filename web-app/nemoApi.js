@@ -1,12 +1,8 @@
-var Sequelize = require('sequelize');
-var bcrypt = require('bcrypt');
-var jwt = require('jsonwebtoken');
-var config = require('getconfig');
-var nodemailer = require('nodemailer');
-var fs = require('fs');
-
-// Include the EmailConfirmer
-eval(fs.readFileSync('../email-confirmer/EmailConfirmer.js').toString());
+var Sequelize = require('sequelize')
+var bcrypt = require('bcrypt')
+var jwt = require('jsonwebtoken')
+var config = require('getconfig')
+var nodemailer = require('nodemailer')
 
 // Create database connection
 var sequelize = new Sequelize(
@@ -17,18 +13,18 @@ var sequelize = new Sequelize(
     dialect: config.server.db.dialect,
     port: config.server.db.port,
     logging: (config.server.db.logging) ? console.log : false
-  });
+  })
 
 // Test connection to database
 sequelize
   .authenticate()
   .then(function() {
     console.log('[*] Connection to ' + config.server.db.name +
-      ' database established');
+      ' database established')
   }, function(err) {
     console.log('[ ] Unable to connect to ' + config.server.db.name +
-      ' database: ', err);
-  });
+      ' database: ', err)
+  })
 
 // apiDoc usage more info at http://apidocjs.com/
 /**
@@ -43,45 +39,43 @@ sequelize
  */
 
 // Define models
-var userModel = require('./models/User')(sequelize);
-var questionModel = require('./models/Question')(sequelize);
-var questionParameterModel = require('./models/QuestionParameter')(sequelize);
-var questionStatusModel = require('./models/QuestionStatus')(sequelize);
-var questionTypeModel = require('./models/QuestionType')(sequelize);
-var questionEventModel = require('./models/QuestionEvent')(sequelize);
-var aiModelModel = require('./models/AIModel')(sequelize);
-var aiParameterModel = require('./models/AIParameter')(sequelize);
-var aiModelParamsModel = require('./models/AIModelParams')(sequelize);
-// var parameterTypeModel = require('./models/ParameterType')(sequelize);
-var conceptModel = require('./models/concept_dimension')(sequelize);
+var userModel = require('./models/User')(sequelize)
+var questionModel = require('./models/Question')(sequelize)
+var questionParameterModel = require('./models/QuestionParameter')(sequelize)
+var questionStatusModel = require('./models/QuestionStatus')(sequelize)
+var questionTypeModel = require('./models/QuestionType')(sequelize)
+var questionEventModel = require('./models/QuestionEvent')(sequelize)
+var aiModelModel = require('./models/AIModel')(sequelize)
+var aiParameterModel = require('./models/AIParameter')(sequelize)
+var aiModelParamsModel = require('./models/AIModelParams')(sequelize)
+// var parameterTypeModel = require('./models/ParameterType')(sequelize)
+var conceptModel = require('./models/concept_dimension')(sequelize)
 
 // Define associations
-questionModel.hasMany(questionParameterModel);
-questionModel.hasMany(aiModelModel);
-aiModelModel.hasMany(aiParameterModel);
+questionModel.hasMany(questionParameterModel)
+questionModel.hasMany(aiModelModel)
+aiModelModel.hasMany(aiParameterModel)
 
-// questionStatusModel.hasMany(questionModel);
+// questionStatusModel.hasMany(questionModel)
 questionModel.belongsTo(questionStatusModel, {
   foreignKey: 'StatusID'
-});
+})
 questionModel.belongsTo(questionTypeModel, {
   foreignKey: 'TypeID'
-});
+})
 questionModel.belongsTo(questionEventModel, {
   foreignKey: 'EventID'
-});
+})
 
 // Helper to send email confirmation for users
 function sendEmailConfirmation(data) {
-	senderUsername = config.nemoConfirmationEmail.userName;
-	senderPassword = config.nemoConfirmationEmail.password;
-	console.log("Sender: " + senderUsername);
-	console.log("pass: " + senderPassword);
+	senderUsername = config.nemoConfirmationEmail.userName
+	senderPassword = config.nemoConfirmationEmail.password
 	var transporter = nodemailer.createTransport('smtps://'
 		+ senderUsername
 		+ '%40gmail.com:'
 		+ senderPassword
-		+ '@smtp.gmail.com');
+		+ '@smtp.gmail.com')
 
 	var mailOptions = {
 			from: '"No Reply" <' + senderUsername + '@gmail.com>',
@@ -98,27 +92,26 @@ function sendEmailConfirmation(data) {
 						+ '<b> Welcome to NEMO! An account has been created for you and must now be activated.'
 						+ ' Please click on the link below to complete the signup process.</b> <br> <br>'
 						+	'<a href="' + hostUrl + '/' + data.confirmationHash + '">Activate your account Here</a> </body></html>' */
-	};
+	}
 	// send mail with defined transport object
 	transporter.sendMail(mailOptions, function(error, info){
 		if(error){
-			console.log("There was an error when sending the confirmation email");
-			console.log(error);
+			console.log(error)
 		}
-		console.log('Message sent: ' + info.response);
-	});
-};
+		console.log('Message sent: ' + info.response)
+	})
+}
 
 exports.authService = function(socket, hooks) {
-  hooks = (typeof hooks !== 'undefined') ? hooks : [];
+  hooks = (typeof hooks !== 'undefined') ? hooks : []
 
   // Authenticate user
   socket.on('local', function(params, callback) {
     hooks.forEach(function(func) {
-      func(socket);
-    });
-    var error = 'Invalid Password/Username';
-    var result = null;
+      func(socket)
+    })
+    var error = 'Invalid Password/Username'
+    var result = null
     userModel.findOne({
       where: {
         email: params.email.toLowerCase()
@@ -131,29 +124,29 @@ exports.authService = function(socket, hooks) {
             email: data.dataValues.Email,
             userType: data.dataValues.UserTypeID,
             ID: data.dataValues.ID
-          };
-          error = null;
+          }
+          error = null
           result = jwt.sign(user, config.session.secret, {
             expiresIn: 24 * 60 * 60 * 1000
-          });
+          })
         }
       }
-      return callback(error, result);
+      return callback(error, result)
     }, function() {
-      return callback(error, result);
-    });
-  });
+      return callback(error, result)
+    })
+  })
 
-};
+}
 
 exports.userService = function(socket, hooks) {
-  hooks = (typeof hooks !== 'undefined') ? hooks : [];
+  hooks = (typeof hooks !== 'undefined') ? hooks : []
 
   // Sign user up
   socket.on('signup', function(data, callback) {
     hooks.forEach(function(func) {
-      func(socket);
-    });
+      func(socket)
+    })
 
     // Validate email!
     // Validate password!
@@ -178,20 +171,20 @@ exports.userService = function(socket, hooks) {
   						confirmationHash: confHash,
   						receiverEmail: data.email,
   						name: data.firstName
-  					};
-  					sendEmailConfirmation(emailData);
-  					return callback(null, 'Account created, please check your email.');
+  					}
+  					sendEmailConfirmation(emailData)
+  					return callback(null, 'Account created, please check your email.')
           }, function(error) {
-            return callback('Error creating account', null);
-          });
-				});
-      });
-    });
-	});
-};
+            return callback('Error creating account', null)
+          })
+				})
+      })
+    })
+	})
+}
 
 exports.questionService = function(socket, hooks) {
-  hooks = (typeof hooks !== 'undefined') ? hooks : [];
+  hooks = (typeof hooks !== 'undefined') ? hooks : []
 
   /* Create Question:
   	Takes attributes of question and parameters of question in object format
@@ -213,12 +206,12 @@ exports.questionService = function(socket, hooks) {
   			nval_num: 7788,
   			upper_bound: 1
   		}]
-  	};
+  	}
   */
   socket.on('create', function(params, callback) {
     hooks.forEach(function(func) {
-      func(socket);
-    });
+      func(socket)
+    })
 
     // Compile a question attributes for upsert
     var questionAttributes = {
@@ -226,16 +219,16 @@ exports.questionService = function(socket, hooks) {
       StatusID: params.QuestionStatusID,
       TypeID: params.QuestionTypeID,
       EventID: params.QuestionEventID
-    };
+    }
     // Declare questionID for use later
-    var questionID;
+    var questionID
     // Initiate transaction, will be committed if things go smoothly or rolled back if there is an issue at any point
     sequelize.transaction(function(t) {
       return questionModel.create(questionAttributes, {
         transaction: t
       }).then(function(data) {
         // QuestionID is needed as a foreign key for QuestionParameter
-        questionID = data.dataValues.ID;
+        questionID = data.dataValues.ID
         // Helper function to recursively chain questionParameter create promises
         var recurseParam = function(pArray, i) {
           // If the current parameter exists only, otherwise nothing is done and promise chain is ended
@@ -256,25 +249,25 @@ exports.questionService = function(socket, hooks) {
               max: pArray[i].max
             }, {
               transaction: t
-            }).then(recurseParam(pArray, (i + 1)));
+            }).then(recurseParam(pArray, (i + 1)))
           }
-        };
+        }
         // Call helper function to insert Question Parameters
-        return recurseParam(params.QuestionParamsArray, 0);
-      });
+        return recurseParam(params.QuestionParamsArray, 0)
+      })
     }).then(function() {
       // Return the Question ID of the created question
-      return callback(null, questionID);
+      return callback(null, questionID)
     }).catch(function(error) {
-      return callback(error, null);
-    });
-  });
+      return callback(error, null)
+    })
+  })
 
   // Fetch parameters allowed to be used by client from database
   socket.on('getSuggestions', function(callback) {
     hooks.forEach(function(func) {
-      func(socket);
-    });
+      func(socket)
+    })
     sequelize.transaction(function() {
       // return parameterTypeModel.findAll() OLD CODE
       return conceptModel.findAll({
@@ -290,47 +283,47 @@ exports.questionService = function(socket, hooks) {
         }
       })
       .then(function(data) {
-        return callback(null, data);
+        return callback(null, data)
       }, function(error) {
-        return callback(error, null);
-      });
-    });
-  });
+        return callback(error, null)
+      })
+    })
+  })
 
   // Fetch question types allowed to be used by the client from the database
   socket.on('getTypes', function(callback) {
     hooks.forEach(function(func) {
-      func(socket);
-    });
+      func(socket)
+    })
     sequelize.transaction(function() {
       return questionTypeModel.findAll()
         .then(function(data) {
-          return callback(null, data);
+          return callback(null, data)
         }, function(error) {
-          return callback(error, null);
-        });
-    });
-  });
+          return callback(error, null)
+        })
+    })
+  })
 
   // Fetch question events allowed to be used by the client from the database
   socket.on('getEvents', function(callback) {
     hooks.forEach(function(func) {
-      func(socket);
-    });
+      func(socket)
+    })
     sequelize.transaction(function() {
       return questionEventModel.findAll()
         .then(function(data) {
-          return callback(null, data);
+          return callback(null, data)
         }, function(error) {
-          return callback(error, null);
-        });
-    });
-  });
+          return callback(error, null)
+        })
+    })
+  })
 
-};
+}
 
 exports.dashboardService = function(socket, hooks) {
-  hooks = (typeof hooks !== 'undefined') ? hooks : [];
+  hooks = (typeof hooks !== 'undefined') ? hooks : []
 
   /* Get Dashboard for global:
   		Get a list of all the Questions in the NEMO Datamart
@@ -356,10 +349,10 @@ exports.dashboardService = function(socket, hooks) {
   */
   socket.on('getGlobal', function(params, callback) {
     hooks.forEach(function(func) {
-      func(socket);
-    });
-    var orderColumn = 'UserID' || params.orderColumn;
-    var order = 'DESC' || params.order;
+      func(socket)
+    })
+    var orderColumn = 'UserID' || params.orderColumn
+    var order = 'DESC' || params.order
     sequelize.transaction(function() {
       return questionModel.findAll({
         include: [questionParameterModel, aiModelModel, {
@@ -379,13 +372,13 @@ exports.dashboardService = function(socket, hooks) {
         ]
       }).then(function(d) {
         // Return data to callback
-        return callback(null, JSON.stringify(d));
+        return callback(null, JSON.stringify(d))
       }).catch(function(error) {
         // Catch and return errors to callback
-        return callback(error, null);
-      });
-    });
-  });
+        return callback(error, null)
+      })
+    })
+  })
 
   /* Get Dashboard for user:
   		Get a list of all the Questions for a particular user
@@ -412,14 +405,14 @@ exports.dashboardService = function(socket, hooks) {
   */
   socket.on('getUser', function(id, params, callback) {
     hooks.forEach(function(func) {
-      func(socket);
-    });
-    var orderColumn = 'ID' || params.orderColumn;
-    var order = 'DESC' || params.order;
-    var offset = null || params.start;
-    var limit = null || params.chunk;
+      func(socket)
+    })
+    var orderColumn = 'ID' || params.orderColumn
+    var order = 'DESC' || params.order
+    var offset = null || params.start
+    var limit = null || params.chunk
     sequelize.transaction(function() {
-      var userID = id;
+      var userID = id
       return questionModel.findAll({
         include: [questionParameterModel, {
           model: aiModelModel,
@@ -445,13 +438,13 @@ exports.dashboardService = function(socket, hooks) {
         }
       }).then(function(d) {
         // Return data to callback
-        return callback(null, JSON.stringify(d));
+        return callback(null, JSON.stringify(d))
       }).catch(function(error) {
         // Catch and return errors to callback
-        return callback(error, null);
-      });
-    });
-  });
+        return callback(error, null)
+      })
+    })
+  })
 
   /* Edit Dashboard Question:
   	Takes attributes of question and parameters of question in object format
@@ -484,19 +477,19 @@ exports.dashboardService = function(socket, hooks) {
   			nval_num: 123,
   			upper_bound: 1
   		}]
-  	};
+  	}
   */
   socket.on('find', function(id, data, params, callback) {
     hooks.forEach(function(func) {
-      func(socket);
-    });
+      func(socket)
+    })
     var questionAttributes = {
       ID: data.ID,
       UserID: data.UserID,
       StatusID: data.QuestionStatusID,
       TypeID: data.QuestionTypeID,
       EventID: data.QuestionEventID
-    };
+    }
     // Initiate transaction, will be committed if things go smoothly or rolled back if there is an issue at any point
     // Example data object:
 
@@ -507,7 +500,7 @@ exports.dashboardService = function(socket, hooks) {
         // Helper function to recursively chain questionParameter upsert promises
         var recurseParam = function(pArray, i) {
           if (pArray[i]) {
-            var questionParamData;
+            var questionParamData
             // If updating a param, send its ID up
             if (pArray[i].ID) {
               questionParamData = {
@@ -517,7 +510,7 @@ exports.dashboardService = function(socket, hooks) {
                 tval_char: pArray[i].tval_char,
                 nval_num: pArray[i].nval_num,
                 upper_bound: pArray[i].upper_bound
-              };
+              }
             } else { //If adding a new parameter, omit ID so the ID will be created by the database
               questionParamData = {
                 QuestionID: data.ID,
@@ -525,25 +518,25 @@ exports.dashboardService = function(socket, hooks) {
                 tval_char: pArray[i].tval_char,
                 nval_num: pArray[i].nval_num,
                 upper_bound: pArray[i].upper_bound
-              };
+              }
             }
             return questionParameterModel.upsert(
               questionParamData, {
                 transaction: t
-              }).then(recurseParam(pArray, (i + 1)));
+              }).then(recurseParam(pArray, (i + 1)))
           }
-        };
+        }
         // Call helper function to insert or update Question Parameters
-        return recurseParam(data.QuestionParamsArray, 0);
-      });
+        return recurseParam(data.QuestionParamsArray, 0)
+      })
     }).then(function(d) {
       // Return data to callback
-      return callback(null, d);
+      return callback(null, d)
     }).catch(function(error) {
       // Return error to callback
-      return callback(error, null);
-    });
-  });
+      return callback(error, null)
+    })
+  })
 
   /* Delete Dashboard Question:
   		Completely deletes a Question from the Question table, as well as its dependent tables
@@ -573,8 +566,8 @@ exports.dashboardService = function(socket, hooks) {
   				}
   			}).then(function(aiModelData) {
   				var aiModelDataIDList = aiModelData.map(function(a) {
-  					return a.dataValues.ID;
-  				});
+  					return a.dataValues.ID
+  				})
   				// Find all of the AI Model Parameters
   				return aiModelParamsModel.findAll({
   					where: {
@@ -584,8 +577,8 @@ exports.dashboardService = function(socket, hooks) {
   					}
   				}).then(function(aiModelParamsData) {
   					var aiModelParamsList = aiModelParamsData.map(function(b) {
-  						return b.dataValues.AIModel;
-  					});
+  						return b.dataValues.AIModel
+  					})
   					// Destroy all of the AI model parameters
   					return aiModelParamsModel.destroy({
   						where: {
@@ -607,24 +600,24 @@ exports.dashboardService = function(socket, hooks) {
   								where: {
   									ID: id,
   								}
-  							});
-  						});
-  					});
-  				});
+  							})
+  						})
+  					})
+  				})
   			}).then(function(d) {
   				// Return data to callback
-  				return callback(null, d);
+  				return callback(null, d)
   			}).catch(function(error) {
   				// Return error to callback
-  				return callback(error, null);
-  			});
-  		});
-  	});
-  });
+  				return callback(error, null)
+  			})
+  		})
+  	})
+  })
 
   socket.on('feedback', function(params, callback) {
-    var val = params.value;
-    var id = params.aiModelID;
+    var val = params.value
+    var id = params.aiModelID
     sequelize.transaction(function(t) {
       return aiModelModel.findById(id)
       .then(function(aiModel) {
@@ -640,11 +633,11 @@ exports.dashboardService = function(socket, hooks) {
           Active: aiModel.Active,
           DateModified: aiModel.DateModified,
 					ConfusionMatrix: aiModel.ConfusionMatrix
-        };
+        }
         return aiModelModel.upsert(updatedAiModel, {
           transaction: t
         }).then(function() {
-          var qid = aiModel.QuestionID;
+          var qid = aiModel.QuestionID
           return questionModel.findById(qid)
             .then(function(question) {
               var updatedQuestion = {
@@ -653,19 +646,19 @@ exports.dashboardService = function(socket, hooks) {
                 StatusID: 1,
                 EventID: question.EventID,
                 TypeID: question.TypeID
-              };
+              }
               return questionModel.upsert(updatedQuestion, {
                 transaction: t
-              });
-          });
-        });
-      });
+              })
+          })
+        })
+      })
     })
     .then(function(data) {
-      return callback(null, 'success');
+      return callback(null, 'success')
     })
     .catch(function(error) {
-      return callback(error, null);
-    });
-  });
-};
+      return callback(error, null)
+    })
+  })
+}

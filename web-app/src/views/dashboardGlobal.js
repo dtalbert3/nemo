@@ -16,18 +16,10 @@ class GlobalDashboard extends React.Component {
     super(props)
 
     this.updateGlobalQuestions = this.updateGlobalQuestions.bind(this)
-    this.handleSubmitQuestion = this.handleSubmitQuestion.bind(this)
   }
 
   updateGlobalQuestions () {
     api.fetchGlobalData()
-  }
-
-  handleSubmitQuestion (question) {
-    api.addQuestion(question)
-      .then(() => {
-        this.updateGlobalQuestions()
-      })
   }
 
   componentWillUnmount () {
@@ -111,7 +103,7 @@ class HiddenRow extends React.Component {
 
     this.handleCopy = this.handleCopy.bind(this)
   }
-  
+
   handleCopy () {
     // Insert question into local storage
     // Load user dashboard

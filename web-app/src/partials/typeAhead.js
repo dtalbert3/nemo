@@ -143,8 +143,11 @@ class TypeAhead extends React.Component {
   }
 
   updateSuggestions () {
+    var startTime = new Date()
     this.state.engine.clear()
     this.state.engine.add(this.props.suggestions)
+    var endTime = new Date()
+    console.log((endTime - startTime) / 1000, 'seconds')
     this.search(this.state.input)
   }
 

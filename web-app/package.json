@@ -63,7 +63,6 @@
     "eslint": "^2.0.0",
     "eslint-plugin-react": "^3.16.1",
     "fsmonitor": "^0.2.4",
-    "js-beautify": "~1",
     "precommit-hook": "~3",
     "shelljs": "^0.6.0"
   },
