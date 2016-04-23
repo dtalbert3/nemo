@@ -44,6 +44,7 @@ const ACTION_HANDLERS = {
     return {
       questionTypes: action.payload,
       questionEvents: state.questionEvents,
+      demographics: state.demographics,
       suggestions: state.questionEvents
     }
   },
@@ -52,6 +53,7 @@ const ACTION_HANDLERS = {
     return {
       questionTypes: state.questionTypes,
       questionEvents: action.payload,
+      demographics: state.demographics,
       suggestions: state.suggestions
     }
   },
@@ -60,6 +62,7 @@ const ACTION_HANDLERS = {
     return {
       questionTypes: state.questionTypes,
       questionEvents: state.questionEvents,
+      demographics: state.demographics,
       suggestions: action.payload
     }
   }
@@ -71,7 +74,8 @@ const ACTION_HANDLERS = {
 const initialState = {
   questionTypes: [],
   questionEvents: [],
-  suggestions: []
+  suggestions: [],
+  demographics: [{Name:'Sex', items: [{Name:'M'}, {Name: 'F'}]}, {Name:'Race', items: [{Name:'Black'}, {Name:'White'}]}, {Name:'Age'}]
 }
 
 export default function nemoQuestionsReducer (state = initialState, action) {

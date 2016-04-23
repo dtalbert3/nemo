@@ -107,6 +107,7 @@ class UserDashboard extends React.Component {
           questionTypes={this.props.questionTypes}
           questionEvents={this.props.questionEvents}
           suggestions={this.props.suggestions}
+          demographics={this.props.demographics}
           handleSubmit={this.handleSubmitQuestion} />
 
         <h2>Your Questions</h2>
@@ -125,21 +126,24 @@ UserDashboard.propTypes = {
   questions: PropTypes.array,
   questionTypes: PropTypes.array,
   questionEvents: PropTypes.array,
-  suggestions: PropTypes.array
+  suggestions: PropTypes.array,
+  demographics: PropTypes.array
 }
 
 UserDashboard.defaultProps = {
   questions: [],
   questionTypes: [],
   questionEvents: [],
-  suggestions: []
+  suggestions: [],
+  demographics: []
 }
 
 const mapStateToProps = (state) => ({
   questions: state.nemoQuestions.userQuestions,
   questionTypes: state.questionCreator.questionTypes,
   questionEvents: state.questionCreator.questionEvents,
-  suggestions: state.questionCreator.suggestions
+  suggestions: state.questionCreator.suggestions,
+  demographics: state.questionCreator.demographics
 })
 
 export default connect((mapStateToProps), {})(UserDashboard)
