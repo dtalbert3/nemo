@@ -170,6 +170,7 @@ class HiddenRow extends React.Component {
           .catch((err) => {
             Alert(err, 'danger', 4 * 1000)
           })
+        this.props.collapsibleTableCloseAll()
       })
       .catch((err) => {
         Alert(err, 'danger', 4 * 1000)
