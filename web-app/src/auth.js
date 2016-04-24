@@ -16,11 +16,11 @@ export default {
         var payload = jwt.decode(result, {complete: true, force: true}).payload
         localStorage.setItem('token', result)
         localStorage.setItem('userType', payload.userType)
+        localStorage.setItem('MaxQuestions', payload.MaxQuestions)
         localStorage.setItem('userID', payload.ID)
-        callback(true)
+        callback(null)
       } else {
-        console.log(error)
-        callback(false)
+        callback(error)
       }
     })
   },
