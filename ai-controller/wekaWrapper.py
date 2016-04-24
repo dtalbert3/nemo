@@ -7,7 +7,10 @@ from weka.core.database import InstanceQuery
 # from weka.classifiers.meta import CVParameterSelection
 import weka.core.serialization as serialization
 import weka.core.jvm as jvm
+from weka.core.dataset import Attribute, Instances
 import javabridge
+import pdb
+
 
 import json
 import os
@@ -75,6 +78,24 @@ class WekaWrapper:
 			self.status = self.config.NOT_ENOUGH_DATA
 			return False
 
+		# Loop and add patient's nominal values in case they aren't in masterDataset
+		# newDataset will be the new master header
+		# Waiting on prediction patient to be defined
+		# Should be like {sex_cd: "m", ...}
+		# atts = []
+		# for a in masterData.attributes():
+		# 	if not (a.is_nominal):
+		# 		atts.append(a)
+		# 	else:
+		# 		newValues = list(a.values)
+		#		pvalue = patient[attribute]
+		# 		if(pvalue not in newValues):
+		# 			newValues.append()
+		# 			atts.append(Attribute.create_nominal(a.name, newValues))
+		
+		# newDataset = Instances.create_instances("Dataset", atts, 0)
+		# newDataset.class_is_last()
+		
 		# Fix data up
 		masterData.delete()
 		learner = masterData.copy_instances(masterData, 0, 0)
@@ -141,12 +162,25 @@ def main():
 
 	# Instantiate api
 	API = nemoApi(CONFIG.HOST, CONFIG.PORT, CONFIG.USER, CONFIG.PASS, CONFIG.DB)
-
-
-	param = AIParam("238", "C", "1 4 4", "DefaultCVParams")
-	instance = WekaWrapper(208, 'SMO', 'weka.classifiers.functions.SMO', ["-W", "weka.classifiers.functions.SMO", "-P", (param.Param + ' ' + param.Value)], None)
-	instance.run()
-	instance.uploadData()
+	newWrappper = WekaWrapper(201, 'alg', 'classifier', 'parameters', 'modelParams', 'optimizer')
+	masterData = newWrappper.retrieveData(201, 'all')
+	print masterData
+	# atts = []
+	# for a in masterData.attributes():
+	# 	if not (a.is_nominal):
+	# 		atts.append(a)
+	# 	else:
+	# 		newValues = list(a.values)
+	# 		newValues.append("poop")
+	# 		atts.append(Attribute.create_nominal(a.name, newValues))
+	
+	# newDataset = Instances.create_instances("Dataset", atts, 0)
+	# newDataset.class_is_last()
+	pdb.set_trace()
+	#param = AIParam("238", "C", "1 4 4", "DefaultCVParams")
+	#instance = WekaWrapper(208, 'SMO', 'weka.classifiers.functions.SMO', ["-W", "weka.classifiers.functions.SMO", "-P", (param.Param + ' ' + param.Value)], None)
+	#instance.run()
+	#instance.uploadData()
 
 if  __name__ =='__main__':
 	main()
