@@ -162,7 +162,7 @@ exports.userService = function(socket, hooks) {
         bcrypt.hash(data.email, salt, function(err2, confHash) {
           // var typeId =
           userModel.upsert({
-            UserTypeID: 1,
+            UserTypeID: (/@.*\.edu/).test(data.email.toLowerCase()) ? 1 : 2,
             Email: data.email.toLowerCase(),
             Hash: hash,
             First: data.firstName,
