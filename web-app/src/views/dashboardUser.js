@@ -284,7 +284,7 @@ class HiddenRow extends React.Component {
         </Row>
         <Row>
           <Col sm={12} md={12}>
-            {(hasFeedback) ?
+            {(hasFeedback && localStorage.getItem('userType') === 1) ?
               <form>
                 Are you satisfied with the accuracy?
                 <span>{'  Yes'}</span>
@@ -297,7 +297,7 @@ class HiddenRow extends React.Component {
         </Row>
         <Row>
           <Col sm={6} md={6}>
-            {(hasFeedback) ?
+            {(hasFeedback && localStorage.getItem('userType') === 1) ?
               <Button className='pull-left' bsSize='xsmall' bsStyle='primary' onClick={this.handleFeedback}>
                 Submit Feedback
               </Button>
