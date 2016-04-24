@@ -70,7 +70,7 @@ class Tbody extends React.Component {
           const hiddenRow =
             <tr>
               <td colSpan={this.props.numCols} className={this.state.open[i] ? '' : 'hidden'}>
-                <Collapse in={this.state.open[i]}>
+                <Collapse in={this.state.open[i]} collapsibleTableCloseAll={this.closeAll}>
                   <this.props.hiddenRow
                     data={datum} />
                 </Collapse>

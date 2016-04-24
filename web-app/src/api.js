@@ -39,7 +39,7 @@ class NemoApi {
           this.store.dispatch(questions.setGlobalQuestions(data))
           resolve('Fetched Global Questions')
         } else {
-          reject('Error Fetching Global Questions')
+          reject(err)
         }
       })
     })
@@ -54,7 +54,7 @@ class NemoApi {
           this.store.dispatch(questions.setUserQuestions(data))
           resolve('Fetched User Questions')
         } else {
-          reject('Error Fetching User Questions')
+          reject(err)
         }
       })
     })
@@ -67,7 +67,7 @@ class NemoApi {
         if (!err) {
           resolve('Question Deleted')
         } else {
-          reject('Error Deleting Question')
+          reject(err)
         }
       })
     })
@@ -80,7 +80,7 @@ class NemoApi {
         if (!err) {
           resolve('Feedback Received')
         } else {
-          reject('Error Giving Feedback')
+          reject(err)
         }
       })
     })
@@ -96,7 +96,7 @@ class NemoApi {
             this.store.dispatch(questionCreator.setQuestionTypes(data))
             resolve('Fetched Question Types')
           } else {
-            reject('Error Fetching Question Types')
+            reject(err)
           }
         })
       } else {
@@ -115,7 +115,7 @@ class NemoApi {
             this.store.dispatch(questionCreator.setQuestionEvents(data))
             resolve('Fetched Question Events')
           } else {
-            reject('Error Fetching Question Events')
+            reject(err)
           }
         })
       } else {
@@ -133,7 +133,7 @@ class NemoApi {
             this.store.dispatch(questionCreator.setQuestionSuggestions(data))
             resolve('Fetched Parameter Suggestions')
           } else {
-            reject('Error Fetching Parameter Suggestions')
+            reject(err)
           }
         })
       } else {
@@ -149,7 +149,7 @@ class NemoApi {
         if (!err) {
           resolve('Question Submitted!')
         } else {
-          reject('Error Submitting Question!')
+          reject(err)
         }
       })
     })

@@ -40,6 +40,7 @@ sequelize
 
 // Define models
 var userModel = require('./models/User')(sequelize)
+var userType = require('./models/UserType')(sequelize)
 var questionModel = require('./models/Question')(sequelize)
 var questionParameterModel = require('./models/QuestionParameter')(sequelize)
 var questionStatusModel = require('./models/QuestionStatus')(sequelize)
@@ -57,6 +58,9 @@ questionModel.hasMany(aiModelModel)
 aiModelModel.hasMany(aiParameterModel)
 
 // questionStatusModel.hasMany(questionModel)
+userModel.belongsTo(userType, {
+  foreignKey: 'UserTypeID'
+})
 questionModel.belongsTo(questionStatusModel, {
   foreignKey: 'StatusID'
 })
@@ -85,7 +89,7 @@ function sendEmailConfirmation(data) {
 			text: data.name + ', \nWelcome to NEMO! An account has been'
 						+ ' created for you and must now be activated. Please '
 						+ 'click on the link below to verify your email and complete the signup process:'
-						+ '\n \n' + 'http://' + config.client.apiUrl + '/' + data.confirmationHash
+						+ '\n \n' + config.client.apiUrl + '/' + data.confirmationHash
 
 			// HTML message to be delivered to the user
 			/*html: '<!DOCTYPE html><body><b> ' + data.name + ', </b> <br>'
@@ -113,6 +117,7 @@ exports.authService = function(socket, hooks) {
     var error = 'Invalid Password/Username'
     var result = null
     userModel.findOne({
+      include: [userType],
       where: {
         email: params.email.toLowerCase()
       }
@@ -123,6 +128,7 @@ exports.authService = function(socket, hooks) {
           var user = {
             email: data.dataValues.Email,
             userType: data.dataValues.UserTypeID,
+            MaxQuestions: data.dataValues.UserType.dataValues.MaxQuestions,
             ID: data.dataValues.ID
           }
           error = null
@@ -156,7 +162,7 @@ exports.userService = function(socket, hooks) {
         bcrypt.hash(data.email, salt, function(err2, confHash) {
           // var typeId =
           userModel.upsert({
-            UserTypeID: 1,
+            UserTypeID: (/@.*\.edu/).test(data.email.toLowerCase()) ? 1 : 2,
             Email: data.email.toLowerCase(),
             Hash: hash,
             First: data.firstName,
@@ -180,6 +186,26 @@ exports.userService = function(socket, hooks) {
 				})
       })
     })
+	})
+
+	socket.on('confirmEmail', function(hash, callback) {
+    sequelize.transaction(function(t) {
+  		return userModel.findOne({
+  			where: {
+  				ConfirmationHash: hash
+  			}
+  		}).then(function(user) {
+				user.dataValues.Confirmed = true
+				return userModel.upsert(user, {
+					transaction: t
+				})		
+			})
+    }).then(function() {
+      // Return the email of the confirmed user
+      return callback(null, user.dataValues.Email)
+    }).catch(function(error) {
+      return callback(error, null)
+    })		
 	})
 }
 
@@ -213,54 +239,83 @@ exports.questionService = function(socket, hooks) {
       func(socket)
     })
 
-    // Compile a question attributes for upsert
-    var questionAttributes = {
-      UserID: params.UserID,
-      StatusID: params.QuestionStatusID,
-      TypeID: params.QuestionTypeID,
-      EventID: params.QuestionEventID
-    }
-    // Declare questionID for use later
-    var questionID
-    // Initiate transaction, will be committed if things go smoothly or rolled back if there is an issue at any point
-    sequelize.transaction(function(t) {
-      return questionModel.create(questionAttributes, {
-        transaction: t
-      }).then(function(data) {
-        // QuestionID is needed as a foreign key for QuestionParameter
-        questionID = data.dataValues.ID
-        // Helper function to recursively chain questionParameter create promises
-        var recurseParam = function(pArray, i) {
-          // If the current parameter exists only, otherwise nothing is done and promise chain is ended
-          if (pArray[i]) {
-            return questionParameterModel.create({
-              QuestionID: questionID,
-              //TypeID: pArray[i].TypeID,
-              tval_char: pArray[i].tval_char,
-              nval_num: pArray[i].nval_num,
-              //upper_bound: pArray[i].upper_bound,
-              // Name: pArray[i].Name,
-              concept_path: pArray[i].concept_path,
-              concept_cd: pArray[i].concept_cd,
-              valtype_cd: pArray[i].valtype_cd,
-              TableName: pArray[i].TableName,
-              TableColumn: pArray[i].TableColumn,
-              min: pArray[i].min,
-              max: pArray[i].max
-            }, {
-              transaction: t
-            }).then(recurseParam(pArray, (i + 1)))
+    // Find out how many questions a user has already asked
+    var count
+    var max
+    questionModel.count({where: {UserID: params.UserID}})
+      .then(function(c) {
+        count = c
+
+        // Find user type
+        var max
+        userModel.findOne({
+          include: [userType],
+          where: { ID: params.UserID }
+        }).then(function(userData) {
+          max = userData.dataValues.UserType.dataValues.MaxQuestions
+
+          // Check to if user can ask more questions
+          console.log(count, max)
+          if (count >= max) {
+            return callback('You are at your max number of questions!', null)
           }
-        }
-        // Call helper function to insert Question Parameters
-        return recurseParam(params.QuestionParamsArray, 0)
+
+          // Compile a question attributes for upsert
+          var questionAttributes = {
+            UserID: params.UserID,
+            StatusID: params.QuestionStatusID,
+            TypeID: params.QuestionTypeID,
+            EventID: params.QuestionEventID
+          }
+
+          // Declare questionID for use later
+          var questionID
+          // Initiate transaction, will be committed if things go smoothly or rolled back if there is an issue at any point
+          sequelize.transaction(function(t) {
+            return questionModel.create(questionAttributes, {
+              transaction: t
+            }).then(function(data) {
+              // QuestionID is needed as a foreign key for QuestionParameter
+              questionID = data.dataValues.ID
+              // Helper function to recursively chain questionParameter create promises
+              var recurseParam = function(pArray, i) {
+                // If the current parameter exists only, otherwise nothing is done and promise chain is ended
+                if (pArray[i]) {
+                  return questionParameterModel.create({
+                    QuestionID: questionID,
+                    //TypeID: pArray[i].TypeID,
+                    tval_char: pArray[i].tval_char,
+                    nval_num: pArray[i].nval_num,
+                    //upper_bound: pArray[i].upper_bound,
+                    // Name: pArray[i].Name,
+                    concept_path: pArray[i].concept_path,
+                    concept_cd: pArray[i].concept_cd,
+                    valtype_cd: pArray[i].valtype_cd,
+                    TableName: pArray[i].TableName,
+                    TableColumn: pArray[i].TableColumn,
+                    min: pArray[i].min,
+                    max: pArray[i].max
+                  }, {
+                    transaction: t
+                  }).then(recurseParam(pArray, (i + 1)))
+                }
+              }
+              // Call helper function to insert Question Parameters
+              return recurseParam(params.QuestionParamsArray, 0)
+            })
+          }).then(function() {
+            // Return the Question ID of the created question
+            return callback(null, questionID)
+          }).catch(function(error) {
+            return callback('Error Creating Question', null)
+          })
+        }).catch(function(err) {
+          return callback('Error Creating Question', null)
+        })
       })
-    }).then(function() {
-      // Return the Question ID of the created question
-      return callback(null, questionID)
-    }).catch(function(error) {
-      return callback(error, null)
-    })
+      .catch(function(err) {
+        return callback('Error Creating Question', null)
+      })
   })
 
   // Fetch parameters allowed to be used by client from database
@@ -285,7 +340,7 @@ exports.questionService = function(socket, hooks) {
       .then(function(data) {
         return callback(null, data)
       }, function(error) {
-        return callback(error, null)
+        return callback('Error fetching parameter suggestions', null)
       })
     })
   })
@@ -300,7 +355,7 @@ exports.questionService = function(socket, hooks) {
         .then(function(data) {
           return callback(null, data)
         }, function(error) {
-          return callback(error, null)
+          return callback('Error fetching question types', null)
         })
     })
   })
@@ -315,11 +370,121 @@ exports.questionService = function(socket, hooks) {
         .then(function(data) {
           return callback(null, data)
         }, function(error) {
-          return callback(error, null)
+          return callback('Error fetching questions events', null)
         })
     })
   })
 
+	socket.on('copyQuestion', function(params, callback) {
+		function copyQuestion(params, callback) {
+			Sequelize.transaction(function(t) {
+				var id = params.ID
+				var useAiModels = params.useAiModels
+				var newQuestion
+				var newQuestionID
+				return questionModel.findById(id).then(function(oldQuestion) {
+					newQuestion = {
+						UserID: params.UserID,
+						TypeID: oldQuestion.TypeID,
+						StatusID: oldQuestion.StatusID,
+						EventID: oldQuestion.EventID
+					}
+					return questionModel.create(newQuestion, {
+						transaction: t
+					}).then(function(data) {
+						newQuestionID = data.dataValues.ID
+						return questionParameterModel.findAll({
+							where: {
+								QuestionID: id
+							}
+						}).then(function(oldParams) {
+							var newID = data.dataValues.ID
+							var recurseParams = function(pArray, i) {
+								if (pArray[i]) {
+									return questionParameterModel.create({
+										QuestionID: newID,
+										tval_char: pArray[i].dataValues.tval_char,
+										nval_num: pArray[i].dataValues.nval_num,
+										concept_path: pArray[i].dataValues.concept_path,
+										concept_cd: pArray[i].dataValues.concept_cd,
+										valtype_cd: pArray[i].dataValues.valtype_cd,
+										TableName: pArray[i].dataValues.TableName,
+										TableColumn: pArray[i].dataValues.TableColumn,
+										min: pArray[i].dataValues.min,
+										max: pArray[i].dataValues.max
+									}, {
+										transaction: t
+									}).then(recurseParams(pArray, (i + 1)))
+								}
+							}
+							if (useAiModels) {
+								recurseParams(oldParams, 0)
+		
+								return aiModelModel.findAll({
+									where: {
+										QuestionID: id
+									}
+								}).then(function(oldAiModels) {
+									var recurseAiModel = function(mArray, i) {
+										if (mArray[i]) {
+											return aiModelModel.create({
+												QuestionID: newID,
+												Value: mArray[i].dataValues.Value,
+												Accuracy: mArray[i].dataValues.Accuracy,
+												AIFeedback: mArray[i].dataValues.AIFeedback,
+												PredictionFeedback: mArray[i].dataValues.PredictionFeedback,
+												AI: mArray[i].dataValues.AI,
+												Active: mArray[i].dataValues.Active,
+												ConfusionMatrix: mArray[i].dataValues.ConfusionMatrix
+											}, {
+												transaction: t
+											}).then(function(newAiModel) {
+												return aiModelParamsModel.findAll({
+													where: {
+														AIModel:  mArray[i].dataValues.ID
+													}
+												}).then(function(oldAiModelParams) {
+													var recurseAiModelParams = function(mpArray, i) {
+														if (mpArray[i]) {
+															return aiModelParamsModel.create({
+																AIModel: newAiModel.dataValues.ID,
+																Param: mpArray[i].dataValues.Param,
+																Value: mpArray[i].dataValues.Value,
+																param_use: mpArray[i].dataValues.param_use,
+															}, {
+																transaction: t
+															}).then(recurseAiModelParams(mpArray, (i + 1)));
+														}
+													}
+													if (oldAiModelParams.length > 0) {
+														return recurseAiModelParams(oldAiModelParams, 0
+		
+														).then(function() {
+															return recurseAiModel(mArray, (i + 1))
+														})
+													} else {
+														return recurseAiModel(mArray, (i + 1))
+													}
+												})
+											})
+										}
+									}
+									return recurseAiModel(oldAiModels, 0)
+								})
+							} else {
+								return recurseParams(oldParams, 0)
+							}
+						})
+					})
+				})
+		   }).then(function() {
+		     // Return the Question ID of the created question
+		     return callback(null, newQuestionID)
+		   }).catch(function(error) {
+		     return callback("Error: An error has occurred when copying question", null)
+		   })
+		}
+	})
 }
 
 exports.dashboardService = function(socket, hooks) {
@@ -375,7 +540,7 @@ exports.dashboardService = function(socket, hooks) {
         return callback(null, JSON.stringify(d))
       }).catch(function(error) {
         // Catch and return errors to callback
-        return callback(error, null)
+        return callback('Error fetching global questions', null)
       })
     })
   })
@@ -441,7 +606,7 @@ exports.dashboardService = function(socket, hooks) {
         return callback(null, JSON.stringify(d))
       }).catch(function(error) {
         // Catch and return errors to callback
-        return callback(error, null)
+        return callback('Error fetching user questions', null)
       })
     })
   })
@@ -609,7 +774,7 @@ exports.dashboardService = function(socket, hooks) {
   				return callback(null, d)
   			}).catch(function(error) {
   				// Return error to callback
-  				return callback(error, null)
+  				return callback('Error deleting question', null)
   			})
   		})
   	})
@@ -658,7 +823,7 @@ exports.dashboardService = function(socket, hooks) {
       return callback(null, 'success')
     })
     .catch(function(error) {
-      return callback(error, null)
+      return callback('Error giving feedback', null)
     })
   })
 }
