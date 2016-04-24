@@ -40,6 +40,7 @@ sequelize
 
 // Define models
 var userModel = require('./models/User')(sequelize)
+var userType = require('./models/UserType')(sequelize)
 var questionModel = require('./models/Question')(sequelize)
 var questionParameterModel = require('./models/QuestionParameter')(sequelize)
 var questionStatusModel = require('./models/QuestionStatus')(sequelize)
@@ -57,6 +58,9 @@ questionModel.hasMany(aiModelModel)
 aiModelModel.hasMany(aiParameterModel)
 
 // questionStatusModel.hasMany(questionModel)
+userModel.belongsTo(userType, {
+  foreignKey: 'UserTypeID'
+})
 questionModel.belongsTo(questionStatusModel, {
   foreignKey: 'StatusID'
 })
@@ -113,6 +117,7 @@ exports.authService = function(socket, hooks) {
     var error = 'Invalid Password/Username'
     var result = null
     userModel.findOne({
+      include: [userType],
       where: {
         email: params.email.toLowerCase()
       }
@@ -123,6 +128,7 @@ exports.authService = function(socket, hooks) {
           var user = {
             email: data.dataValues.Email,
             userType: data.dataValues.UserTypeID,
+            MaxQuestions: data.dataValues.UserType.dataValues.MaxQuestions,
             ID: data.dataValues.ID
           }
           error = null

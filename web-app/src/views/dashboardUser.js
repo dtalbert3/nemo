@@ -60,6 +60,9 @@ class UserDashboard extends React.Component {
 
   // Render user dashboard page
   render () {
+    var questionsLeft = this.props.questions.length + '/' +
+      localStorage.getItem('MaxQuestions')
+
     return (
       <Grid>
         <h2>Create a question</h2>
@@ -73,7 +76,8 @@ class UserDashboard extends React.Component {
           searchEngine={this.props.searchEngine}
           handleSubmit={this.handleSubmitQuestion} />
 
-        <h2>Your Questions</h2>
+        <h2>Your Questions <span className='pull-right'>{questionsLeft} Questions Asked</span>
+        </h2>
         <CollapsibleTable
           data={this.props.questions}
           numCols={3}
