@@ -89,7 +89,7 @@ function sendEmailConfirmation(data) {
 			text: data.name + ', \nWelcome to NEMO! An account has been'
 						+ ' created for you and must now be activated. Please '
 						+ 'click on the link below to verify your email and complete the signup process:'
-						+ '\n \n' + 'http://' + config.client.apiUrl + '/' + data.confirmationHash
+						+ '\n \n' + config.client.apiUrl + '/' + data.confirmationHash
 
 			// HTML message to be delivered to the user
 			/*html: '<!DOCTYPE html><body><b> ' + data.name + ', </b> <br>'
@@ -219,54 +219,83 @@ exports.questionService = function(socket, hooks) {
       func(socket)
     })
 
-    // Compile a question attributes for upsert
-    var questionAttributes = {
-      UserID: params.UserID,
-      StatusID: params.QuestionStatusID,
-      TypeID: params.QuestionTypeID,
-      EventID: params.QuestionEventID
-    }
-    // Declare questionID for use later
-    var questionID
-    // Initiate transaction, will be committed if things go smoothly or rolled back if there is an issue at any point
-    sequelize.transaction(function(t) {
-      return questionModel.create(questionAttributes, {
-        transaction: t
-      }).then(function(data) {
-        // QuestionID is needed as a foreign key for QuestionParameter
-        questionID = data.dataValues.ID
-        // Helper function to recursively chain questionParameter create promises
-        var recurseParam = function(pArray, i) {
-          // If the current parameter exists only, otherwise nothing is done and promise chain is ended
-          if (pArray[i]) {
-            return questionParameterModel.create({
-              QuestionID: questionID,
-              //TypeID: pArray[i].TypeID,
-              tval_char: pArray[i].tval_char,
-              nval_num: pArray[i].nval_num,
-              //upper_bound: pArray[i].upper_bound,
-              // Name: pArray[i].Name,
-              concept_path: pArray[i].concept_path,
-              concept_cd: pArray[i].concept_cd,
-              valtype_cd: pArray[i].valtype_cd,
-              TableName: pArray[i].TableName,
-              TableColumn: pArray[i].TableColumn,
-              min: pArray[i].min,
-              max: pArray[i].max
-            }, {
-              transaction: t
-            }).then(recurseParam(pArray, (i + 1)))
+    // Find out how many questions a user has already asked
+    var count
+    var max
+    questionModel.count({where: {UserID: params.UserID}})
+      .then(function(c) {
+        count = c
+
+        // Find user type
+        var max
+        userModel.findOne({
+          include: [userType],
+          where: { ID: params.UserID }
+        }).then(function(userData) {
+          max = userData.dataValues.UserType.dataValues.MaxQuestions
+
+          // Check to if user can ask more questions
+          console.log(count, max)
+          if (count >= max) {
+            return callback('You are at your max number of questions!', null)
           }
-        }
-        // Call helper function to insert Question Parameters
-        return recurseParam(params.QuestionParamsArray, 0)
+
+          // Compile a question attributes for upsert
+          var questionAttributes = {
+            UserID: params.UserID,
+            StatusID: params.QuestionStatusID,
+            TypeID: params.QuestionTypeID,
+            EventID: params.QuestionEventID
+          }
+
+          // Declare questionID for use later
+          var questionID
+          // Initiate transaction, will be committed if things go smoothly or rolled back if there is an issue at any point
+          sequelize.transaction(function(t) {
+            return questionModel.create(questionAttributes, {
+              transaction: t
+            }).then(function(data) {
+              // QuestionID is needed as a foreign key for QuestionParameter
+              questionID = data.dataValues.ID
+              // Helper function to recursively chain questionParameter create promises
+              var recurseParam = function(pArray, i) {
+                // If the current parameter exists only, otherwise nothing is done and promise chain is ended
+                if (pArray[i]) {
+                  return questionParameterModel.create({
+                    QuestionID: questionID,
+                    //TypeID: pArray[i].TypeID,
+                    tval_char: pArray[i].tval_char,
+                    nval_num: pArray[i].nval_num,
+                    //upper_bound: pArray[i].upper_bound,
+                    // Name: pArray[i].Name,
+                    concept_path: pArray[i].concept_path,
+                    concept_cd: pArray[i].concept_cd,
+                    valtype_cd: pArray[i].valtype_cd,
+                    TableName: pArray[i].TableName,
+                    TableColumn: pArray[i].TableColumn,
+                    min: pArray[i].min,
+                    max: pArray[i].max
+                  }, {
+                    transaction: t
+                  }).then(recurseParam(pArray, (i + 1)))
+                }
+              }
+              // Call helper function to insert Question Parameters
+              return recurseParam(params.QuestionParamsArray, 0)
+            })
+          }).then(function() {
+            // Return the Question ID of the created question
+            return callback(null, questionID)
+          }).catch(function(error) {
+            return callback('Error Creating Question', null)
+          })
+        }).catch(function(err) {
+          return callback('Error Creating Question', null)
+        })
       })
-    }).then(function() {
-      // Return the Question ID of the created question
-      return callback(null, questionID)
-    }).catch(function(error) {
-      return callback(error, null)
-    })
+      .catch(function(err) {
+        return callback('Error Creating Question', null)
+      })
   })
 
   // Fetch parameters allowed to be used by client from database
@@ -291,7 +320,7 @@ exports.questionService = function(socket, hooks) {
       .then(function(data) {
         return callback(null, data)
       }, function(error) {
-        return callback(error, null)
+        return callback('Error fetching parameter suggestions', null)
       })
     })
   })
@@ -306,7 +335,7 @@ exports.questionService = function(socket, hooks) {
         .then(function(data) {
           return callback(null, data)
         }, function(error) {
-          return callback(error, null)
+          return callback('Error fetching question types', null)
         })
     })
   })
@@ -321,7 +350,7 @@ exports.questionService = function(socket, hooks) {
         .then(function(data) {
           return callback(null, data)
         }, function(error) {
-          return callback(error, null)
+          return callback('Error fetching questions events', null)
         })
     })
   })
@@ -381,7 +410,7 @@ exports.dashboardService = function(socket, hooks) {
         return callback(null, JSON.stringify(d))
       }).catch(function(error) {
         // Catch and return errors to callback
-        return callback(error, null)
+        return callback('Error fetching global questions', null)
       })
     })
   })
@@ -447,7 +476,7 @@ exports.dashboardService = function(socket, hooks) {
         return callback(null, JSON.stringify(d))
       }).catch(function(error) {
         // Catch and return errors to callback
-        return callback(error, null)
+        return callback('Error fetching user questions', null)
       })
     })
   })
@@ -615,7 +644,7 @@ exports.dashboardService = function(socket, hooks) {
   				return callback(null, d)
   			}).catch(function(error) {
   				// Return error to callback
-  				return callback(error, null)
+  				return callback('Error deleting question', null)
   			})
   		})
   	})
@@ -664,7 +693,7 @@ exports.dashboardService = function(socket, hooks) {
       return callback(null, 'success')
     })
     .catch(function(error) {
-      return callback(error, null)
+      return callback('Error giving feedback', null)
     })
   })
 }

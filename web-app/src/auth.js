@@ -18,10 +18,9 @@ export default {
         localStorage.setItem('userType', payload.userType)
         localStorage.setItem('MaxQuestions', payload.MaxQuestions)
         localStorage.setItem('userID', payload.ID)
-        callback(true)
+        callback(null)
       } else {
-        console.log(error)
-        callback(false)
+        callback(error)
       }
     })
   },

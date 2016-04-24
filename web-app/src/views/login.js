@@ -19,11 +19,11 @@ class Login extends React.Component {
     var email = this.refs.email.getValue()
     var password = this.refs.password.getValue()
 
-    Auth.login(email, password, (valid) => {
-      if (valid) {
+    Auth.login(email, password, (error) => {
+      if (!error) {
         this.context.router.replace('/user')
       } else {
-        Alert('Invalid email/password', 'danger', 4 * 1000)
+        Alert(error, 'danger', 4 * 1000)
       }
     })
   }
