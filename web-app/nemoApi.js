@@ -181,6 +181,26 @@ exports.userService = function(socket, hooks) {
       })
     })
 	})
+
+	socket.on('confirmEmail', function(hash, callback) {
+    sequelize.transaction(function(t) {
+  		return userModel.findOne({
+  			where: {
+  				ConfirmationHash: hash
+  			}
+  		}).then(function(user) {
+				user.dataValues.Confirmed = true
+				return userModel.upsert(user, {
+					transaction: t
+				})		
+			})
+    }).then(function() {
+      // Return the email of the confirmed user
+      return callback(null, user.dataValues.Email)
+    }).catch(function(error) {
+      return callback(error, null)
+    })		
+	})
 }
 
 exports.questionService = function(socket, hooks) {
@@ -320,6 +340,116 @@ exports.questionService = function(socket, hooks) {
     })
   })
 
+	socket.on('copyQuestion', function(params, callback) {
+		function copyQuestion(params, callback) {
+			Sequelize.transaction(function(t) {
+				var id = params.ID
+				var useAiModels = params.useAiModels
+				var newQuestion
+				var newQuestionID
+				return questionModel.findById(id).then(function(oldQuestion) {
+					newQuestion = {
+						UserID: params.UserID,
+						TypeID: oldQuestion.TypeID,
+						StatusID: oldQuestion.StatusID,
+						EventID: oldQuestion.EventID
+					}
+					return questionModel.create(newQuestion, {
+						transaction: t
+					}).then(function(data) {
+						newQuestionID = data.dataValues.ID
+						return questionParameterModel.findAll({
+							where: {
+								QuestionID: id
+							}
+						}).then(function(oldParams) {
+							var newID = data.dataValues.ID
+							var recurseParams = function(pArray, i) {
+								if (pArray[i]) {
+									return questionParameterModel.create({
+										QuestionID: newID,
+										tval_char: pArray[i].dataValues.tval_char,
+										nval_num: pArray[i].dataValues.nval_num,
+										concept_path: pArray[i].dataValues.concept_path,
+										concept_cd: pArray[i].dataValues.concept_cd,
+										valtype_cd: pArray[i].dataValues.valtype_cd,
+										TableName: pArray[i].dataValues.TableName,
+										TableColumn: pArray[i].dataValues.TableColumn,
+										min: pArray[i].dataValues.min,
+										max: pArray[i].dataValues.max
+									}, {
+										transaction: t
+									}).then(recurseParams(pArray, (i + 1)))
+								}
+							}
+							if (useAiModels) {
+								recurseParams(oldParams, 0)
+		
+								return aiModelModel.findAll({
+									where: {
+										QuestionID: id
+									}
+								}).then(function(oldAiModels) {
+									var recurseAiModel = function(mArray, i) {
+										if (mArray[i]) {
+											return aiModelModel.create({
+												QuestionID: newID,
+												Value: mArray[i].dataValues.Value,
+												Accuracy: mArray[i].dataValues.Accuracy,
+												AIFeedback: mArray[i].dataValues.AIFeedback,
+												PredictionFeedback: mArray[i].dataValues.PredictionFeedback,
+												AI: mArray[i].dataValues.AI,
+												Active: mArray[i].dataValues.Active,
+												ConfusionMatrix: mArray[i].dataValues.ConfusionMatrix
+											}, {
+												transaction: t
+											}).then(function(newAiModel) {
+												return aiModelParamsModel.findAll({
+													where: {
+														AIModel:  mArray[i].dataValues.ID
+													}
+												}).then(function(oldAiModelParams) {
+													var recurseAiModelParams = function(mpArray, i) {
+														if (mpArray[i]) {
+															return aiModelParamsModel.create({
+																AIModel: newAiModel.dataValues.ID,
+																Param: mpArray[i].dataValues.Param,
+																Value: mpArray[i].dataValues.Value,
+																param_use: mpArray[i].dataValues.param_use,
+															}, {
+																transaction: t
+															}).then(recurseAiModelParams(mpArray, (i + 1)));
+														}
+													}
+													if (oldAiModelParams.length > 0) {
+														return recurseAiModelParams(oldAiModelParams, 0
+		
+														).then(function() {
+															return recurseAiModel(mArray, (i + 1))
+														})
+													} else {
+														return recurseAiModel(mArray, (i + 1))
+													}
+												})
+											})
+										}
+									}
+									return recurseAiModel(oldAiModels, 0)
+								})
+							} else {
+								return recurseParams(oldParams, 0)
+							}
+						})
+					})
+				})
+		   }).then(function() {
+		     // Return the Question ID of the created question
+		     return callback(null, newQuestionID)
+		   }).catch(function(error) {
+		     return callback("Error: An error has occurred when copying question", null)
+		   })
+		}
+	})
 }
 
 exports.dashboardService = function(socket, hooks) {
