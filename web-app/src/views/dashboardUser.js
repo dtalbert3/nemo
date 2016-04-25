@@ -1,6 +1,7 @@
 import React, { PropTypes } from 'react'
+import ReactDOM from 'react-dom'
 import { connect } from 'react-redux'
-import { Table, Well, ButtonGroup, Button, Grid, Col, Row } from 'react-bootstrap'
+import { Input, Table, Well, ButtonGroup, Button, ButtonInput, DropdownButton, Grid, Col, Row, MenuItem, Modal, Popover, Tooltip, OverlayTrigger } from 'react-bootstrap'
 import QuestionCreator from '../partials/questionCreator.js'
 import CollapsibleTable from '../partials/collapsibleTable.js'
 import Alert from '../partials/alert'
@@ -156,10 +157,15 @@ class HiddenRow extends React.Component {
     this.handleEdit = this.handleEdit.bind(this)
     this.handleDelete = this.handleDelete.bind(this)
     this.handleFeedback = this.handleFeedback.bind(this)
+    this.handlePatient = this.handlePatient.bind(this)
   }
 
   handleEdit () {
 
+  }
+  
+  handlePatient () {
+    ReactDOM.render(<PatientModal data={this.props.data}/>, document.getElementById('modalMount'))
   }
 
   handleDelete () {
@@ -284,7 +290,7 @@ class HiddenRow extends React.Component {
         </Row>
         <Row>
           <Col sm={12} md={12}>
-            {(hasFeedback && localStorage.getItem('userType') === 1) ?
+            {(hasFeedback && localStorage.getItem('userType') === '1') ?
               <form>
                 Are you satisfied with the accuracy?
                 <span>{'  Yes'}</span>
@@ -297,7 +303,7 @@ class HiddenRow extends React.Component {
         </Row>
         <Row>
           <Col sm={6} md={6}>
-            {(hasFeedback && localStorage.getItem('userType') === 1) ?
+            {(hasFeedback && localStorage.getItem('userType') === '1') ?
               <Button className='pull-left' bsSize='xsmall' bsStyle='primary' onClick={this.handleFeedback}>
                 Submit Feedback
               </Button>
@@ -305,6 +311,9 @@ class HiddenRow extends React.Component {
           </Col>
           <Col sm={6} md={6}>
             <ButtonGroup className='pull-right'>
+              <Button bsSize='xsmall' bsStyle='success' onClick={this.handlePatient}>
+                Add Patient
+              </Button>
               <Button bsSize='xsmall' bsStyle='warning' onClick={this.handleEdit}>
                 Edit
               </Button>
@@ -322,3 +331,92 @@ class HiddenRow extends React.Component {
 HiddenRow.propTypes = {
   data: PropTypes.any
 }
+
+class PatientModal extends React.Component {
+
+  constructor(props){
+    super(props)  
+    this.close = this.close.bind(this)
+    this.open = this.open.bind(this)
+    this.handleSexDropdownSelect = this.handleSexDropdownSelect.bind(this)
+    this.handleRaceDropdownSelect = this.handleRaceDropdownSelect.bind(this)
+    this.handleAgeSelect = this.handleAgeSelect.bind(this)
+    this.state = {  sex_cd_title: 'Sex', sex_cd: null, age_in_years: null, race_cd_title: 'Race', race_cd: null }
+    
+  }
+  
+
+  close() {
+    ReactDOM.unmountComponentAtNode(document.getElementById('modalMount'))
+  }
+
+  open() {
+  }
+
+  handleSexDropdownSelect(key, object){
+    this.setState({
+      sex_cd: this.props.sex_cd_options[object],
+      sex_cd_title: this.props.sex_cd_options[object]
+    })
+  }
+  
+  handleRaceDropdownSelect(key, object){
+    this.setState({
+      race_cd: this.props.race_cd_options[object],
+      race_cd_title: this.props.race_cd_options[object],
+    })
+  }
+  
+  handleAgeSelect(){
+    var age = this.refs.age.getValue()
+    age = (age !== '') ? parseInt(age) : null
+    if(age > 150){
+      age = 150
+    }
+    if(age < 0){
+      age = 0
+    }
+    this.setState({
+     age_in_years: age
+    })
+  }
+  
+  render() {
+    var data = this.props.data
+
+    return (
+
+        <Modal ref='Modal' id='Modal' show onHide={this.close}>
+          <Modal.Header closeButton>
+            <Modal.Title>Add Patient</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+              <form onSubmit={this.handleSubmit} autoComplete='on'>
+                <DropdownButton title={this.state.sex_cd_title} onSelect = {this.handleSexDropdownSelect}>
+                  {this.props.sex_cd_options.map((d, i) => {
+                    return <MenuItem key={i} eventKey={i}> {d} </MenuItem>
+                  })}
+                </DropdownButton>
+                <DropdownButton title={this.state.race_cd_title} onSelect = {this.handleRaceDropdownSelect}>
+                  {this.props.race_cd_options.map((d, i) => {
+                    return <MenuItem key={i} eventKey={i}> {d} </MenuItem>
+                  })}
+                </DropdownButton>
+                <Input type='number' ref='age'
+                  placeholder='Age'
+                  value={this.state.age_in_years}
+                  onChange={this.handleAgeSelect}
+                  min='0'
+                  max='150'/>
+                <ButtonInput type='submit' value='Save' bsStyle='primary' block/>
+              </form>  
+          </Modal.Body>
+          <Modal.Footer>
+            <Button onClick={this.close}>Close</Button>
+          </Modal.Footer>
+        </Modal>
+    );
+  }
+}
+PatientModal.defaultProps = {sex_cd_options: config.Demographics.sex_cd, race_cd_options: config.Demographics.race_cd }
+
