@@ -332,6 +332,52 @@ HiddenRow.propTypes = {
   data: PropTypes.any
 }
 
+class ObservationFactForm extends React.Component {
+  constructor(props){
+    super(props)  
+    this.handleNvalnum = this.handleNvalnum.bind(this)
+    this.handleTvalchar = this.handleTvalchar.bind(this)
+    this.state = {  n_valnum: null, tval_char: null }
+  }
+  
+  handleNvalnum() {
+    var x = this.refs[(this.props.concept_cd + 'nval_num')].getValue()
+    x = (x !== '') ? parseInt(x) : null
+    this.setState({
+      n_valnum: x,
+    })
+    this.props.parentState[this.props.concept_cd].n_valnum = x
+  }
+  
+  handleTvalchar() {
+    var x = this.refs[(this.props.concept_cd + 'tval_char')].getValue()
+    this.setState({
+      tval_char: x
+    })
+    this.props.parentState[this.props.concept_cd]['tval_char'] = x
+  }
+  
+  render() {
+    this.props.parentState[this.props.concept_cd] = {}
+    return (
+              <div>
+              <h4>{this.props.concept_cd}</h4>
+                <Input type='number' ref={(this.props.concept_cd + 'nval_num')}
+                  placeholder={(this.props.concept_cd + 'nval_num')}
+                  value={this.state.n_valnum}
+                  onChange={this.handleNvalnum}> </Input>
+                  
+                <Input type='text' ref={(this.props.concept_cd + 'tval_char')}
+                  placeholder={(this.props.concept_cd + 'tval_char')}
+                  value={this.state.t_valchar}
+                  onChange={this.handleTvalchar}> </Input>
+             </div>
+          )
+  }
+}
+
+ObservationFactForm.defaultProps = {  concept_cd: null, parentState: null }
+
 class PatientModal extends React.Component {
 
   constructor(props){
@@ -341,6 +387,7 @@ class PatientModal extends React.Component {
     this.handleSexDropdownSelect = this.handleSexDropdownSelect.bind(this)
     this.handleRaceDropdownSelect = this.handleRaceDropdownSelect.bind(this)
     this.handleAgeSelect = this.handleAgeSelect.bind(this)
+    this.setSomething = this.setSomething.bind(this)
     this.state = {  sex_cd_title: 'Sex', sex_cd: null, age_in_years: null, race_cd_title: 'Race', race_cd: null }
     
   }
@@ -381,6 +428,7 @@ class PatientModal extends React.Component {
     })
   }
   
+  
   render() {
     var data = this.props.data
 
@@ -408,6 +456,9 @@ class PatientModal extends React.Component {
                   onChange={this.handleAgeSelect}
                   min='0'
                   max='150'/>
+                 {this.props.data.QuestionParameters.map((d, i) => {
+                    return <ObservationFactForm concept_cd={d.concept_cd} parentState={this.state} parent = {this}/>
+                 })}
                 <ButtonInput type='submit' value='Save' bsStyle='primary' block/>
               </form>  
           </Modal.Body>
