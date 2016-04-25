@@ -23,7 +23,7 @@
         "password": "NEMO",
         "dialect": "mysql",
         "port": 3306,
-        "logging": false
+        "logging": true
       }
     },
 		"nemoConfirmationEmail":{

@@ -42,6 +42,18 @@ module.exports = function(sequelize) {
         model: 'QuestionEvent',
         key: 'ID'
       }
+    },
+    PatientJSON: {
+      type: Sequelize.STRING,
+      allowNull: true
+    },
+    NextClassifier: {
+      type: Sequelize.STRING,
+      allowNull: true
+    },
+    NextOptimizer: {
+      type: Sequelize.STRING,
+      allowNull: true
     }
   }, {
     tableName: 'Question',

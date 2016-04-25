@@ -198,14 +198,14 @@ exports.userService = function(socket, hooks) {
 				user.dataValues.Confirmed = true
 				return userModel.upsert(user, {
 					transaction: t
-				})		
+				})
 			})
     }).then(function() {
       // Return the email of the confirmed user
       return callback(null, user.dataValues.Email)
     }).catch(function(error) {
       return callback(error, null)
-    })		
+    })
 	})
 }
 
@@ -419,7 +419,7 @@ exports.questionService = function(socket, hooks) {
 							}
 							if (useAiModels) {
 								recurseParams(oldParams, 0)
-		
+
 								return aiModelModel.findAll({
 									where: {
 										QuestionID: id
@@ -458,7 +458,7 @@ exports.questionService = function(socket, hooks) {
 													}
 													if (oldAiModelParams.length > 0) {
 														return recurseAiModelParams(oldAiModelParams, 0
-		
+
 														).then(function() {
 															return recurseAiModel(mArray, (i + 1))
 														})
@@ -824,6 +824,22 @@ exports.dashboardService = function(socket, hooks) {
     })
     .catch(function(error) {
       return callback('Error giving feedback', null)
+    })
+  })
+
+  socket.on('addPatient', function(id, data, callback) {
+    console.log(id, data)
+    questionModel.update({
+      PatientJSON: data
+    }, {
+      where: {
+        ID: id
+      }
+    }).then(function(d) {
+      return callback(null, 'Patient Added!')
+    }).catch(function(d) {
+      console.log(d)
+      return callback('Error Adding Patient', null)
     })
   })
 }

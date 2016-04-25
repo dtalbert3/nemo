@@ -163,7 +163,7 @@ class HiddenRow extends React.Component {
   handleEdit () {
 
   }
-  
+
   handlePatient () {
     ReactDOM.render(<PatientModal data={this.props.data}/>, document.getElementById('modalMount'))
   }
@@ -312,7 +312,7 @@ class HiddenRow extends React.Component {
           <Col sm={6} md={6}>
             <ButtonGroup className='pull-right'>
               <Button bsSize='xsmall' bsStyle='success' onClick={this.handlePatient}>
-                Add Patient
+                Edit Patient
               </Button>
               <Button bsSize='xsmall' bsStyle='warning' onClick={this.handleEdit}>
                 Edit
@@ -334,70 +334,85 @@ HiddenRow.propTypes = {
 
 class ObservationFactForm extends React.Component {
   constructor(props){
-    super(props)  
+    super(props)
+
+    this.state = {
+      n_valnum: null,
+      tval_char: null
+    }
+
     this.handleNvalnum = this.handleNvalnum.bind(this)
     this.handleTvalchar = this.handleTvalchar.bind(this)
-    this.state = {  n_valnum: null, tval_char: null }
+    this.getObservationFacts = this.getObservationFacts.bind(this)
   }
-  
+
   handleNvalnum() {
-    var x = this.refs[(this.props.concept_cd + 'nval_num')].getValue()
+    var x = this.refs['nval_num'].getValue()
     x = (x !== '') ? parseInt(x) : null
     this.setState({
       n_valnum: x,
     })
-    this.props.parentState[this.props.concept_cd].n_valnum = x
   }
-  
+
   handleTvalchar() {
-    var x = this.refs[(this.props.concept_cd + 'tval_char')].getValue()
+    var x = this.refs['tval_char'].getValue()
     this.setState({
       tval_char: x
     })
-    this.props.parentState[this.props.concept_cd]['tval_char'] = x
   }
-  
+
+  getObservationFacts () {
+    return {
+      n_valnum: this.state.n_valnum,
+      tval_char: this.state.tval_char
+    }
+  }
+
   render() {
-    this.props.parentState[this.props.concept_cd] = {}
     return (
-              <div>
-              <h4>{this.props.concept_cd}</h4>
-                <Input type='number' ref={(this.props.concept_cd + 'nval_num')}
-                  placeholder={(this.props.concept_cd + 'nval_num')}
-                  value={this.state.n_valnum}
-                  onChange={this.handleNvalnum}> </Input>
-                  
-                <Input type='text' ref={(this.props.concept_cd + 'tval_char')}
-                  placeholder={(this.props.concept_cd + 'tval_char')}
-                  value={this.state.t_valchar}
-                  onChange={this.handleTvalchar}> </Input>
-             </div>
-          )
+      <div>
+        <h4>{this.props.concept_cd}</h4>
+        <Input type='number'
+          ref='nval_num'
+          placeholder='nval_num'
+          value={this.state.n_valnum}
+          onChange={this.handleNvalnum} />
+
+        <Input type='text'
+          ref='tval_char'
+          placeholder='tval_char'
+          value={this.state.t_valchar}
+          onChange={this.handleTvalchar} />
+     </div>
+    )
   }
 }
 
-ObservationFactForm.defaultProps = {  concept_cd: null, parentState: null }
+ObservationFactForm.defaultProps = {
+  concept_cd: null
+}
 
 class PatientModal extends React.Component {
 
   constructor(props){
-    super(props)  
+    super(props)
+
+    this.state = {
+      sex_cd_title: 'Sex',
+      sex_cd: null, age_in_years: null,
+      race_cd_title: 'Race',
+      race_cd: null
+    }
+
     this.close = this.close.bind(this)
-    this.open = this.open.bind(this)
     this.handleSexDropdownSelect = this.handleSexDropdownSelect.bind(this)
     this.handleRaceDropdownSelect = this.handleRaceDropdownSelect.bind(this)
     this.handleAgeSelect = this.handleAgeSelect.bind(this)
-    this.setSomething = this.setSomething.bind(this)
-    this.state = {  sex_cd_title: 'Sex', sex_cd: null, age_in_years: null, race_cd_title: 'Race', race_cd: null }
-    
+    this.handleSubmit = this.handleSubmit.bind(this)
   }
-  
 
   close() {
     ReactDOM.unmountComponentAtNode(document.getElementById('modalMount'))
-  }
-
-  open() {
   }
 
   handleSexDropdownSelect(key, object){
@@ -406,14 +421,14 @@ class PatientModal extends React.Component {
       sex_cd_title: this.props.sex_cd_options[object]
     })
   }
-  
+
   handleRaceDropdownSelect(key, object){
     this.setState({
       race_cd: this.props.race_cd_options[object],
       race_cd_title: this.props.race_cd_options[object],
     })
   }
-  
+
   handleAgeSelect(){
     var age = this.refs.age.getValue()
     age = (age !== '') ? parseInt(age) : null
@@ -427,47 +442,74 @@ class PatientModal extends React.Component {
      age_in_years: age
     })
   }
-  
-  
+
+  handleSubmit () {
+    var patient = {
+      sex_cd: this.state.sex_cd,
+      race_cd: this.state.race_cd,
+      age_in_years: this.state.age_in_years,
+      observation_facts: []
+    }
+
+    this.props.data.QuestionParameters.forEach((d, i) => {
+      var observations = this.refs['observationFact' + i].getObservationFacts()
+      var fact = {
+        concept_cd: d.concept_cd,
+        tval_char:  observations.tval_char,
+        nval_num: observations.nval_num
+      }
+      patient.observation_facts.push(fact)
+    })
+
+    api.addPatient(this.props.data.ID, patient)
+      .then((msg) => {
+        Alert(msg, 'success', 4 * 1000)
+        this.close()
+      })
+      .catch((err) => {
+        Alert(err, 'danger', 4 * 1000)
+      })
+  }
+
   render() {
     var data = this.props.data
 
     return (
-
-        <Modal ref='Modal' id='Modal' show onHide={this.close}>
-          <Modal.Header closeButton>
-            <Modal.Title>Add Patient</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-              <form onSubmit={this.handleSubmit} autoComplete='on'>
-                <DropdownButton title={this.state.sex_cd_title} onSelect = {this.handleSexDropdownSelect}>
-                  {this.props.sex_cd_options.map((d, i) => {
-                    return <MenuItem key={i} eventKey={i}> {d} </MenuItem>
-                  })}
-                </DropdownButton>
-                <DropdownButton title={this.state.race_cd_title} onSelect = {this.handleRaceDropdownSelect}>
-                  {this.props.race_cd_options.map((d, i) => {
-                    return <MenuItem key={i} eventKey={i}> {d} </MenuItem>
-                  })}
-                </DropdownButton>
-                <Input type='number' ref='age'
-                  placeholder='Age'
-                  value={this.state.age_in_years}
-                  onChange={this.handleAgeSelect}
-                  min='0'
-                  max='150'/>
-                 {this.props.data.QuestionParameters.map((d, i) => {
-                    return <ObservationFactForm concept_cd={d.concept_cd} parentState={this.state} parent = {this}/>
-                 })}
-                <ButtonInput type='submit' value='Save' bsStyle='primary' block/>
-              </form>  
-          </Modal.Body>
-          <Modal.Footer>
-            <Button onClick={this.close}>Close</Button>
-          </Modal.Footer>
-        </Modal>
+      <Modal ref='Modal' id='Modal' show>
+        <Modal.Header closeButton>
+          <Modal.Title>Edit Patient</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <DropdownButton id={1} title={this.state.sex_cd_title} onSelect = {this.handleSexDropdownSelect}>
+            {this.props.sex_cd_options.map((d, i) => {
+              return <MenuItem key={i} eventKey={i}> {d} </MenuItem>
+            })}
+          </DropdownButton>
+          <DropdownButton id={2} title={this.state.race_cd_title} onSelect = {this.handleRaceDropdownSelect}>
+            {this.props.race_cd_options.map((d, i) => {
+              return <MenuItem key={i} eventKey={i}> {d} </MenuItem>
+            })}
+          </DropdownButton>
+          <Input type='number' ref='age'
+            placeholder='Age'
+            value={this.state.age_in_years}
+            onChange={this.handleAgeSelect}
+            min='0'
+            max='150'/>
+           {this.props.data.QuestionParameters.map((d, i) => {
+              return <ObservationFactForm key={i} ref={'observationFact' + i} concept_cd={d.concept_cd} />
+           })}
+          <ButtonInput onClick={this.handleSubmit} type='submit' value='Save' bsStyle='primary' block/>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button onClick={this.close}>Close</Button>
+        </Modal.Footer>
+      </Modal>
     );
   }
 }
-PatientModal.defaultProps = {sex_cd_options: config.Demographics.sex_cd, race_cd_options: config.Demographics.race_cd }
 
+PatientModal.defaultProps = {
+  sex_cd_options: config.Demographics.sex_cd,
+  race_cd_options: config.Demographics.race_cd
+}
