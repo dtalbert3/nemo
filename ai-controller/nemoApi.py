@@ -72,6 +72,19 @@ class nemoApi():
         result =  cursor.fetchone()
         db.close()
         return result
+        
+    # Get info on specific question
+    def fetchPatientJSON(self, id):
+        db = MySQLdb.connect(self.host, self.user, self.password, self.database)
+        cursor = db.cursor(cursorclass=MySQLdb.cursors.DictCursor)
+        cursor.execute(
+            "SELECT PatientJSON " +
+            "FROM Question " +
+            "WHERE ID = " + str(id) + " " +
+            "LIMIT 1")
+        result =  cursor.fetchone()
+        db.close()
+        return result   
 
     # Get AIModelParams on specific AIModel
     def fetchAIModelParams(self, aiModelId):
@@ -121,8 +134,10 @@ class nemoApi():
     # Construct query for gathering data
     def getDataQuery(self, questionID, dataset):
         # Whitelist of database attributes to select in query
-        observationAttributes = ["encounter_num", "concept_cd", "provider_id", "nval_num"]
-        patientAttributes = ["vital_status_cd", "sex_cd", "age_in_years_num", "language_cd", "race_cd", "marital_status_cd", "zip_cd", "income_cd"]
+        #observationAttributes = ["encounter_num", "concept_cd", "provider_id", "nval_num"]
+        #patientAttributes = ["vital_status_cd", "sex_cd", "age_in_years_num", "language_cd", "race_cd", "marital_status_cd", "zip_cd", "income_cd"]
+        observationAttributes = ["nval_num", "tval_char"]
+        patientAttributes = ["race_cd", "sex_cd", "age_in_years_num"]
 
         # Open database connection
         db = MySQLdb.connect(self.host, self.user, self.password, self.database)
@@ -212,6 +227,7 @@ class nemoApi():
 
         dataQuery += " INNER JOIN PatientReadmittance pr on p.patient_num = pr.patient_num "
         # Add WHERE clause for each parameter
+        # Need to add demographic selection if param.TableName = patient_dimension
         if(len(question.params) > 0):
             dataQuery += " WHERE "
             for i, param in enumerate(question.params):
