@@ -337,7 +337,7 @@ class ObservationFactForm extends React.Component {
     super(props)
 
     this.state = {
-      n_valnum: null,
+      nval_num: null,
       tval_char: null
     }
 
@@ -350,7 +350,7 @@ class ObservationFactForm extends React.Component {
     var x = this.refs['nval_num'].getValue()
     x = (x !== '') ? parseInt(x) : null
     this.setState({
-      n_valnum: x,
+      nval_num: x,
     })
   }
 
@@ -363,7 +363,7 @@ class ObservationFactForm extends React.Component {
 
   getObservationFacts () {
     return {
-      n_valnum: this.state.n_valnum,
+      nval_num: this.state.nval_num,
       tval_char: this.state.tval_char
     }
   }
@@ -375,7 +375,7 @@ class ObservationFactForm extends React.Component {
         <Input type='number'
           ref='nval_num'
           placeholder='nval_num'
-          value={this.state.n_valnum}
+          value={this.state.nval_num}
           onChange={this.handleNvalnum} />
 
         <Input type='text'
