@@ -9,6 +9,7 @@ import weka.core.serialization as serialization
 import weka.core.jvm as jvm
 from weka.core.dataset import Attribute, Instances
 import javabridge
+import numpy as np
 import pdb
 
 
@@ -54,6 +55,23 @@ class WekaWrapper:
 		for mParam in self.modelParams:
 			mParam.AIModel = modelID
 			self.api.addAIModelParam(mParam)
+			
+	def addInstancesToDataset(self, source, dest):
+		# Align the instances of a source dataset to destination's header and add them to the destination dataset
+		i = 0
+		while i < source.num_instances:
+			values = source.get_instance(i).values
+			it = np.nditer(values, flags=['f_index'], op_flags=['readwrite'])
+			while not it.finished:
+				(it[0], it.index),
+				if (source.attribute(it.index).is_nominal):
+					stringVal = source.get_instance(i).get_string_value(it.index)
+					# print stringVal
+					if(stringVal != '?'):
+						values[it.index] = dest.attribute(it.index).values.index(stringVal)
+				it.iternext()
+			dest.add_instance(Instance.create_instance(values))
+			i = i + 1
 
 	def run(self):
 		# Attach JVM
@@ -96,18 +114,25 @@ class WekaWrapper:
 		# newDataset = Instances.create_instances("Dataset", atts, 0)
 		# newDataset.class_is_last()
 		
-		# Fix data up
+		# Fix dataset headers up to match and fix instances to match headers
 		masterData.delete()
 		learner = masterData.copy_instances(masterData, 0, 0)
 		test = masterData.copy_instances(masterData, 0, 0)
-		i = 0
-		while i < learnerData.num_instances:
-		    learner.add_instance(Instance.create_instance(learnerData.get_instance(i).values))
-		    i = i + 1
-		i = 0
-		while i < testData.num_instances:
-		    test.add_instance(Instance.create_instance(testData.get_instance(i).values))
-		    i = i + 1
+		self.addInstancesToDataset(learnerData, learner)
+		self.addInstancesToDataset(testData, test)
+		
+		# Comparison of data for testing purposes
+		# print 'learnerData'
+		# print learnerData
+		
+		# print 'learner'
+		# print learner
+		
+		# print 'testData'
+		# print testData
+		
+		# print 'test'
+		# print test
 
 		# Instantiate classifier
 		self.cls = Classifier(classname=self.classifier, options=self.parameters)
@@ -162,9 +187,13 @@ def main():
 
 	# Instantiate api
 	API = nemoApi(CONFIG.HOST, CONFIG.PORT, CONFIG.USER, CONFIG.PASS, CONFIG.DB)
-	newWrappper = WekaWrapper(201, 'alg', 'classifier', 'parameters', 'modelParams', 'optimizer')
-	masterData = newWrappper.retrieveData(201, 'all')
-	print masterData
+	newWrapper = WekaWrapper(201, 'alg', 'classifier', 'parameters', 'modelParams', 'optimizer')
+	masterData = newWrapper.retrieveData(201, 'all')
+	learnerData = newWrapper.retrieveData(201, 'learner')
+	testData = newWrapper.retrieveData(201, 'test')
+	masterData.delete()
+	newWrapper.addInstancesToDataset(learnerData, masterData)
+
 	# atts = []
 	# for a in masterData.attributes():
 	# 	if not (a.is_nominal):
