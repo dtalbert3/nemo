@@ -47,7 +47,19 @@ app
 
 // Redirect all requests back to /
 app.all('*', function (req, res) {
-  res.redirect('/')
+  if ((/confirm*.*/).test(req.url)) {
+    nemoApi.confirmEmail(req.query.hash, function(msg) {
+      res.writeHeader(200, {"Content-Type": "text/html"});
+      res.write(
+        '<!DOCTYPE html><body>' +
+          msg +
+          '<script>window.setTimeout(function(){ window.location = "' + config.client.apiUrl + '"; }, 3000);</script>' +
+        '</body></html>')
+      res.end()
+    })
+  } else {
+    res.redirect('/')
+  }
 })
 
 app.get('/*', function response(req, res) {

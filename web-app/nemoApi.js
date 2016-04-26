@@ -89,7 +89,7 @@ function sendEmailConfirmation(data) {
 			text: data.name + ', \nWelcome to NEMO! An account has been'
 						+ ' created for you and must now be activated. Please '
 						+ 'click on the link below to verify your email and complete the signup process:'
-						+ '\n \n' + config.client.apiUrl + '/' + data.confirmationHash
+						+ '\n \n' + config.client.apiUrl + '?hash=' + data.confirmationHash
 
 			// HTML message to be delivered to the user
 			/*html: '<!DOCTYPE html><body><b> ' + data.name + ', </b> <br>'
@@ -104,6 +104,33 @@ function sendEmailConfirmation(data) {
 		}
 		console.log('Message sent: ' + info.response)
 	})
+}
+
+exports.confirmEmail = function(hash, callback) {
+  userModel.findOne({
+    where: { ConfirmationHash: hash }
+  }).then(function(user) {
+    if (user) {
+      sequelize.transaction(function(t) {
+        return userModel.update({
+            Confirmed: 1,
+            ConfirmationHash: ''
+          }, {
+            where: { ConfirmationHash: hash }
+          }, {
+            transaction: t
+          })
+      }).then(function() {
+        return callback('Email confirmed. Redirecting to ' + config.client.apiUrl)
+      }).catch(function(error) {
+        return callback('Error confirming email. Redirecting to ' + config.client.apiUrl)
+      })
+    } else {
+      return callback('Error confirming email. Redirecting to ' + config.client.apiUrl)
+    }
+  }).catch(function() {
+    return callback('Error confirming email. Redirecting to ' + config.client.apiUrl)
+  })
 }
 
 exports.authService = function(socket, hooks) {
@@ -124,7 +151,7 @@ exports.authService = function(socket, hooks) {
     }).then(function(data) {
       // If user exists validate password
       if (data !== null) {
-        if (bcrypt.compareSync(params.password, data.dataValues.Hash)) {
+        if (bcrypt.compareSync(params.password, data.dataValues.Hash) && data.dataValues.Confirmed) {
           var user = {
             email: data.dataValues.Email,
             userType: data.dataValues.UserTypeID,
@@ -154,13 +181,9 @@ exports.userService = function(socket, hooks) {
       func(socket)
     })
 
-    // Validate email!
-    // Validate password!
-    // Make sure user email doesn't already exist!
     bcrypt.genSalt(10, function(err, salt) {
       bcrypt.hash(data.password, salt, function(err, hash) {
         bcrypt.hash(data.email, salt, function(err2, confHash) {
-          // var typeId =
           userModel.upsert({
             UserTypeID: (/@.*\.edu/).test(data.email.toLowerCase()) ? 1 : 2,
             Email: data.email.toLowerCase(),
@@ -185,26 +208,6 @@ exports.userService = function(socket, hooks) {
           })
 				})
       })
-    })
-	})
-
-	socket.on('confirmEmail', function(hash, callback) {
-    sequelize.transaction(function(t) {
-  		return userModel.findOne({
-  			where: {
-  				ConfirmationHash: hash
-  			}
-  		}).then(function(user) {
-				user.dataValues.Confirmed = true
-				return userModel.upsert(user, {
-					transaction: t
-				})
-			})
-    }).then(function() {
-      // Return the email of the confirmed user
-      return callback(null, user.dataValues.Email)
-    }).catch(function(error) {
-      return callback(error, null)
     })
 	})
 }

@@ -21,8 +21,8 @@ const requireAuth = (nextState, replace) => {
 }
 
 const defaultPage = (nextState, replace) => {
-  console.log(nextState.location.pathname)
-  if (nextState.location.pathname === '/') {
+  var path = nextState.location.pathname
+  if (path === '/') {
     if (!Auth.loggedIn()) {
       replace({
         pathname: '/login',
