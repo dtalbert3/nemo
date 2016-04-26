@@ -447,7 +447,7 @@ class PatientModal extends React.Component {
     var patient = {
       sex_cd: this.state.sex_cd,
       race_cd: this.state.race_cd,
-      age_in_years: this.state.age_in_years,
+      age_in_years_num: this.state.age_in_years,
       observation_facts: []
     }
 
