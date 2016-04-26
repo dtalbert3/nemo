@@ -1,5 +1,6 @@
 import MySQLdb
 import MySQLdb.cursors
+import json as json
 
 def borg(cls):
     cls._state = {}
@@ -84,7 +85,9 @@ class nemoApi():
             "LIMIT 1")
         result =  cursor.fetchone()
         db.close()
-        return result   
+        patientJSON = result['PatientJSON']
+        patient = json.loads(patientJSON)
+        return patient   
 
     # Get AIModelParams on specific AIModel
     def fetchAIModelParams(self, aiModelId):
@@ -207,15 +210,15 @@ class nemoApi():
         for i, param in enumerate(question.params):
             for j, attribute in enumerate(observationAttributes):
                 if(j == (len(observationAttributes) - 1) and i == (len(question.params) - 1)):
-                    dataQuery += "o{0}.{1} as o{0}{1} ".format(i, attribute)
+                    dataQuery += "`{0}`.{1} as `{0}{1}` ".format(param.concept_cd, attribute)
                 else:
-                    dataQuery += "o{0}.{1} as o{0}{1}, ".format(i, attribute)
+                    dataQuery += "`{0}`.{1} as `{0}{1}`, ".format(param.concept_cd, attribute)
 
         dataQuery += " ,pr.readmitted"
         dataQuery += " from patient_dimension p"
         # Build query, add observation_fact joins for each parameter
         for i, param in enumerate(question.params):
-            dataQuery += " INNER JOIN observation_fact o{0} on p.patient_num = o{0}.patient_num ".format(i)
+            dataQuery += " INNER JOIN observation_fact `{0}` on p.patient_num = `{0}`.patient_num ".format(param.concept_cd)
 
         # TODO: Add the left outer join when the ReadmittancePatients table is up
 
@@ -232,11 +235,11 @@ class nemoApi():
             dataQuery += " WHERE "
             for i, param in enumerate(question.params):
                 if(i == 0):
-                    dataQuery += " o{0}.concept_cd = '{1}' ".format(i, param.concept_cd)
+                    dataQuery += " `{0}`.concept_cd = '{0}' ".format(param.concept_cd)
                 else:
-                    dataQuery += "AND o{0}.concept_cd = '{1}' ".format(i, param.concept_cd)
+                    dataQuery += "AND `{0}`.concept_cd = '{0}' ".format(param.concept_cd)
                 if(param.min != None and param.max != None):
-                    dataQuery += " AND o{0}.nval_num BETWEEN {1} AND {2} ".format(i, param.min, param.max)
+                    dataQuery += " AND `{0}`.nval_num BETWEEN {1} AND {2} ".format(param.concept_cd, param.min, param.max)
         dataQuery += ";"
         # disconnect from server
         db.close()

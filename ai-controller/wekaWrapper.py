@@ -10,6 +10,7 @@ import weka.core.jvm as jvm
 from weka.core.dataset import Attribute, Instances
 import javabridge
 import numpy as np
+
 import pdb
 
 
@@ -72,7 +73,44 @@ class WekaWrapper:
 				it.iternext()
 			dest.add_instance(Instance.create_instance(values))
 			i = i + 1
-
+			
+	def buildPatientObject(self, dataset):
+		# Build a patient instance to classify
+		patient = self.api.fetchPatientJSON(self.questionID)
+		newPatient = {}
+		demographics = ['race_cd', 'sex_cd', 'age_in_years']
+		observation_fact_features = ['tval_char', 'nval_num']
+		for demo in demographics:
+			newPatient[demo] = patient[demo]
+		for obs in patient['observation_facts']:
+			concept_cd = obs['concept_cd']
+			for feat in observation_fact_features:
+				newPatient[(concept_cd + feat)] = obs[feat]
+				
+	def addPatientNominals(self, patient, dataset):
+		# Add the nominal values for the patient to the master header, in case they aren't already there
+		# Loop and add patient's nominal values in case they aren't in masterDataset
+		# newDataset will be the new master header
+		# Waiting on prediction patient to be defined
+		# Should be like {sex_cd: "m", ...}
+		atts = []
+		for a in dataset.attributes():
+			if not (a.is_nominal):
+				atts.append(a)
+			else:
+				newValues = list(a.values)
+				pvalue = patient[a.name]
+				if(pvalue not in newValues):
+					newValues.append()
+					atts.append(Attribute.create_nominal(a.name, newValues))
+		
+		newDataset = Instances.create_instances("Dataset", atts, 0)
+		newDataset.class_is_last()
+		return newDataset
+		
+		
+		
+		
 	def run(self):
 		# Attach JVM
 		javabridge.attach()
@@ -96,23 +134,7 @@ class WekaWrapper:
 			self.status = self.config.NOT_ENOUGH_DATA
 			return False
 
-		# Loop and add patient's nominal values in case they aren't in masterDataset
-		# newDataset will be the new master header
-		# Waiting on prediction patient to be defined
-		# Should be like {sex_cd: "m", ...}
-		# atts = []
-		# for a in masterData.attributes():
-		# 	if not (a.is_nominal):
-		# 		atts.append(a)
-		# 	else:
-		# 		newValues = list(a.values)
-		#		pvalue = patient[attribute]
-		# 		if(pvalue not in newValues):
-		# 			newValues.append()
-		# 			atts.append(Attribute.create_nominal(a.name, newValues))
 		
-		# newDataset = Instances.create_instances("Dataset", atts, 0)
-		# newDataset.class_is_last()
 		
 		# Fix dataset headers up to match and fix instances to match headers
 		masterData.delete()
@@ -187,12 +209,19 @@ def main():
 
 	# Instantiate api
 	API = nemoApi(CONFIG.HOST, CONFIG.PORT, CONFIG.USER, CONFIG.PASS, CONFIG.DB)
-	newWrapper = WekaWrapper(201, 'alg', 'classifier', 'parameters', 'modelParams', 'optimizer')
-	masterData = newWrapper.retrieveData(201, 'all')
-	learnerData = newWrapper.retrieveData(201, 'learner')
-	testData = newWrapper.retrieveData(201, 'test')
+	newWrapper = WekaWrapper(312, 'alg', 'classifier', 'parameters', 'modelParams', 'optimizer')
+	masterData = newWrapper.retrieveData(312, 'all')
+	#learnerData = newWrapper.retrieveData(312, 'learner')
+	#testData = newWrapper.retrieveData(312, 'test')
 	masterData.delete()
-	newWrapper.addInstancesToDataset(learnerData, masterData)
+	patient = API.fetchPatientJSON(312)
+	patientObj = newWrapper.buildPatientObject(patient)
+	newDataset = newWrapper.addPatientNominals(patientObj, masterData)
+	
+			
+	
+		
+	#newWrapper.addInstancesToDataset(learnerData, masterData)
 
 	# atts = []
 	# for a in masterData.attributes():
