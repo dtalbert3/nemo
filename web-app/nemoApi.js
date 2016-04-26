@@ -89,7 +89,7 @@ function sendEmailConfirmation(data) {
 			text: data.name + ', \nWelcome to NEMO! An account has been'
 						+ ' created for you and must now be activated. Please '
 						+ 'click on the link below to verify your email and complete the signup process:'
-						+ '\n \n' + config.client.apiUrl + '?hash=' + data.confirmationHash
+						+ '\n \n' + config.client.apiUrl + '/confirm?hash=' + data.confirmationHash
 
 			// HTML message to be delivered to the user
 			/*html: '<!DOCTYPE html><body><b> ' + data.name + ', </b> <br>'
@@ -830,8 +830,7 @@ exports.dashboardService = function(socket, hooks) {
     })
   })
 
-  socket.on('addPatient', function(id, data, callback) {
-    console.log(id, data)
+  socket.on('editPatient', function(id, data, callback) {
     questionModel.update({
       PatientJSON: data
     }, {
@@ -839,10 +838,10 @@ exports.dashboardService = function(socket, hooks) {
         ID: id
       }
     }).then(function(d) {
-      return callback(null, 'Patient Added!')
+      return callback(null, 'Patient Edited!')
     }).catch(function(d) {
       console.log(d)
-      return callback('Error Adding Patient', null)
+      return callback('Error Editing Patient', null)
     })
   })
 }

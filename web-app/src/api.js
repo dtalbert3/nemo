@@ -156,11 +156,11 @@ class NemoApi {
     return promise
   }
 
-  addPatient (id, data) {
+  editPatient (id, data) {
     var promise = new Promise((resolve, reject) => {
-      this.dash.emit('addPatient', id, JSON.stringify(data), (err) => {
+      this.dash.emit('editPatient', id, JSON.stringify(data), (err) => {
         if (!err) {
-          resolve('Patient Added!')
+          resolve('Patient Edited!')
         } else {
           reject(err)
         }

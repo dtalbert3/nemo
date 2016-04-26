@@ -116,13 +116,13 @@ class Signup extends React.Component {
         <Col sm={6} smOffset={3} md={6} mdOffset={3}>
           <form onSubmit={this.handleSubmit} autoComplete='on'>
             <Input ref='firstName' type='text'
-              label='First Name' placeholder='Enter email'
+              label='First Name' placeholder='Enter First Name'
               required />
             <Input ref='lastName' type='text'
-              label='Last Name' placeholder='Enter password'
+              label='Last Name' placeholder='Enter Last Name'
               required />
             <Input ref='affiliation' type='text'
-              label='Affiliation' placeholder='Enter affiliation' />
+              label='Affiliation' placeholder='Enter Affiliation' />
             <OverlayTrigger overlay={emailTooltip} trigger='focus'>
               <Input ref='email' type='email' hasFeedback
                 label='Email Address' value={this.state.email} onChange={this.handleChange}

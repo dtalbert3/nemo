@@ -461,7 +461,7 @@ class PatientModal extends React.Component {
       patient.observation_facts.push(fact)
     })
 
-    api.addPatient(this.props.data.ID, patient)
+    api.editPatient(this.props.data.ID, patient)
       .then((msg) => {
         Alert(msg, 'success', 4 * 1000)
         this.close()
