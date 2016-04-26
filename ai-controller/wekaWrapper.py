@@ -78,7 +78,7 @@ class WekaWrapper:
 		# Build a patient instance to classify
 		patient = self.api.fetchPatientJSON(self.questionID)
 		newPatient = {}
-		demographics = ['race_cd', 'sex_cd', 'age_in_years']
+		demographics = ['race_cd', 'sex_cd', 'age_in_years_num']
 		observation_fact_features = ['tval_char', 'nval_num']
 		for demo in demographics:
 			newPatient[demo] = patient[demo]
@@ -86,6 +86,7 @@ class WekaWrapper:
 			concept_cd = obs['concept_cd']
 			for feat in observation_fact_features:
 				newPatient[(concept_cd + feat)] = obs[feat]
+		return newPatient
 				
 	def addPatientNominals(self, patient, dataset):
 		# Add the nominal values for the patient to the master header, in case they aren't already there
@@ -93,21 +94,36 @@ class WekaWrapper:
 		# newDataset will be the new master header
 		# Waiting on prediction patient to be defined
 		# Should be like {sex_cd: "m", ...}
+		ignoreAttributes = ['readmitted']
 		atts = []
 		for a in dataset.attributes():
-			if not (a.is_nominal):
+			if (not (a.is_nominal)) or (a.name in ignoreAttributes) :
 				atts.append(a)
 			else:
 				newValues = list(a.values)
+				#print a.name 
 				pvalue = patient[a.name]
 				if(pvalue not in newValues):
-					newValues.append()
-					atts.append(Attribute.create_nominal(a.name, newValues))
-		
+					newValues.append(pvalue)
+				atts.append(Attribute.create_nominal(a.name, newValues))
 		newDataset = Instances.create_instances("Dataset", atts, 0)
 		newDataset.class_is_last()
 		return newDataset
 		
+	def createPatientInstance(self, patient, dataset):
+		# Create a patient instance to classify
+		ignoreAttributes = ['readmitted']
+		values = []
+		for a in dataset.attributes():
+			if not a.is_nominal:
+				values.append(patient[a.name])
+			elif a.name in ignoreAttributes:
+				values.append(0)
+			else:
+				values.append(a.values.index(patient[a.name]))
+		#print values
+		newInst = Instance.create_instance(values)
+		return newInst
 		
 		
 		
@@ -209,15 +225,17 @@ def main():
 
 	# Instantiate api
 	API = nemoApi(CONFIG.HOST, CONFIG.PORT, CONFIG.USER, CONFIG.PASS, CONFIG.DB)
-	newWrapper = WekaWrapper(312, 'alg', 'classifier', 'parameters', 'modelParams', 'optimizer')
-	masterData = newWrapper.retrieveData(312, 'all')
+	newWrapper = WekaWrapper(313, 'alg', 'classifier', 'parameters', 'modelParams', 'optimizer')
+	masterData = newWrapper.retrieveData(313, 'all')
 	#learnerData = newWrapper.retrieveData(312, 'learner')
 	#testData = newWrapper.retrieveData(312, 'test')
 	masterData.delete()
-	patient = API.fetchPatientJSON(312)
+	patient = API.fetchPatientJSON(313)
 	patientObj = newWrapper.buildPatientObject(patient)
+	patientObj['age_in_years_num'] = 32
+	print patientObj
 	newDataset = newWrapper.addPatientNominals(patientObj, masterData)
-	
+	newWrapper.createPatientInstance(patientObj, newDataset)
 			
 	
 		
