@@ -28,7 +28,13 @@
           "CV_O": {"param":"-O", "value":true},
           "CV_B": {"param":"-B", "value":true}
         },
-        "DefaultFeatureSelection": {}
+        "DefaultFeatureSelection": {},
+        "Ensemble": {
+          "SMO": {"param":"-B", "value":"weka.classifiers.functions.SMO"},
+          "NaiveBayes": {"param":"-B", "value":"weka.classifiers.bayes.NaiveBayes"},
+          "J48": {"param":"-B", "value":"weka.classifiers.trees.J48"},
+          "Perceptron": {"param":"-B", "value":"weka.classifiers.functions.MultilayerPerceptron"}
+        }
       }
     },
     "SMO":{
@@ -39,7 +45,13 @@
           "CV_V": {"param":"V", "value":"1 5 5"},
           "CV_W": {"param":"W", "value":"1 10 10"}
         },
-        "DefaultFeatureSelection": {}
+        "DefaultFeatureSelection": {},
+        "Ensemble": {
+          "RandomForest": {"param":"-B", "value":"weka.classifiers.trees.RandomForest"},
+          "NaiveBayes": {"param":"-B", "value":"weka.classifiers.bayes.NaiveBayes"},
+          "J48": {"param":"-B", "value":"weka.classifiers.trees.J48"},
+          "Perceptron": {"param":"-B", "value":"weka.classifiers.functions.MultilayerPerceptron"}
+        }
       }
     },
     "NaiveBayes": {
@@ -49,7 +61,13 @@
           "CV_K": {"param":"-K", "value":true},
           "CV_D": {"param":"-D", "value":true}
         },
-        "DefaultFeatureSelection": {}
+        "DefaultFeatureSelection": {},
+        "Ensemble": {
+          "RandomForest": {"param":"-B", "value":"weka.classifiers.trees.RandomForest"},
+          "J48": {"param":"-B", "value":"weka.classifiers.trees.J48"},
+          "Perceptron": {"param":"-B", "value":"weka.classifiers.functions.MultilayerPerceptron"},
+          "SMO": {"param":"-B", "value":"weka.classifiers.functions.SMO"}
+        }
       }
     },
     "J48": {
@@ -63,7 +81,13 @@
           "CV_A": {"param":"-A", "value":true},
           "CV_J": {"param":"-J", "value":true}
         },
-        "DefaultFeatureSelection": {}
+        "DefaultFeatureSelection": {},
+        "Ensemble": {
+          "RandomForest": {"param":"-B", "value":"weka.classifiers.trees.RandomForest"},
+          "NaiveBayes": {"param":"-B", "value":"weka.classifiers.bayes.NaiveBayes"},
+          "Perceptron": {"param":"-B", "value":"weka.classifiers.functions.MultilayerPerceptron"},
+          "SMO": {"param":"-B", "value":"weka.classifiers.functions.SMO"}
+        }
       }
     },
     "Perceptron": {
@@ -75,7 +99,13 @@
           "CV_I": {"param":"-I", "value":true},
           "CV_D": {"param":"-D", "value":true}
         },
-        "DefaultFeatureSelection": {}
+        "DefaultFeatureSelection": {},
+        "Ensemble": {
+          "RandomForest": {"param":"-B", "value":"weka.classifiers.trees.RandomForest"},
+          "NaiveBayes": {"param":"-B", "value":"weka.classifiers.bayes.NaiveBayes"},
+          "J48": {"param":"-B", "value":"weka.classifiers.trees.J48"},
+          "SMO": {"param":"-B", "value":"weka.classifiers.functions.SMO"}
+        }
       }
     }
   }

@@ -93,9 +93,13 @@ def run(id):
                 modelParamsToSave.append(mParam)
                 parameters = parameters + ["-P", (mParam.Param + ' ' + mParam.Value)]
 
-
-    # TODO: Next iteration, maybe?
-    # Get options
+    # If we are using ensemble, only pass ensemble params to classifier
+    elif optimizer == 'Ensemble':
+        for mParam in modelParams:
+            if mParam.param_use == 'Ensemble' and mParam.Value is not None:
+                modelParamsToSave.append(mParam)
+                parameters = parameters + [mParam.Param, mParam.Value]
+    
 
 
     # Run
@@ -142,7 +146,23 @@ def run(id):
             instance = WekaWrapper(id, algorithm, 'weka.classifiers.meta.AttributeSelectedClassifier', parameters, modelParamsToSave, optimizer)
         elif algorithm == "Perceptron": 
             parameters = parameters + ["-W", "weka.classifiers.functions.MultilayerPerceptron", "-E", "weka.attributeSelection.CfsSubsetEval -M", "-S", "weka.attributeSelection.BestFirst -D 1 -N 5"]
-            instance = WekaWrapper(id, algorithm, 'weka.classifiers.meta.AttributeSelectedClassifier', parameters, modelParamsToSave, optimizer)
+            instance = WekaWrapper(id, algorithm, 'weka.classifiers.meta.AttributeSelectedClassifier', parameters, modelParamsToSave, optimizer)      
+    elif optimizer == 'Ensemble':
+        if algorithm == "SMO":
+            parameters = parameters + ["-B", "weka.classifiers.functions.SMO"]
+            instance = WekaWrapper(id, algorithm, 'weka.classifiers.meta.Stacking', parameters, modelParamsToSave, optimizer)
+        elif algorithm == "RandomForest":
+            parameters = parameters + ["-B", "weka.classifiers.trees.RandomForest"]
+            instance = WekaWrapper(id, algorithm, 'weka.classifiers.meta.Stacking', parameters, modelParamsToSave, optimizer)
+        elif algorithm == "NaiveBayes":
+            parameters = parameters + ["-B", "weka.classifiers.bayes.NaiveBayes"]
+            instance = WekaWrapper(id, algorithm, 'weka.classifiers.meta.Stacking', parameters, modelParamsToSave, optimizer)
+        elif algorithm == "J48": 
+            parameters = parameters + ["-B", "weka.classifiers.trees.J48"]
+            instance = WekaWrapper(id, algorithm, 'weka.classifiers.meta.Stacking', parameters, modelParamsToSave, optimizer)
+        elif algorithm == "Perceptron": 
+            parameters = parameters + ["-B", "weka.classifiers.functions.MultilayerPerceptron"]
+            instance = WekaWrapper(id, algorithm, 'weka.classifiers.meta.Stacking', parameters, modelParamsToSave, optimizer)
     return instance
 
 def predict(id):
@@ -190,6 +210,12 @@ def predict(id):
                     modelParamsToSave.append(mParam)
                     parameters = parameters + ["-P", (mParam.Param + ' ' + mParam.Value)]
 
+        # If we are using ensemble, only pass ensemble params to classifier
+        elif optimizer == 'Ensemble':
+            for mParam in modelParams:
+                if mParam.param_use == 'Ensemble' and mParam.Value is not None:
+                    modelParamsToSave.append(mParam)
+                    parameters = parameters + [mParam.Param, mParam.Value]
 
         # Run
         instance = None
@@ -236,6 +262,22 @@ def predict(id):
             elif algorithm == "Perceptron": 
                 parameters = parameters + ["-W", "weka.classifiers.functions.MultilayerPerceptron", "-E", "weka.attributeSelection.CfsSubsetEval -M", "-S", "weka.attributeSelection.BestFirst -D 1 -N 5"]
                 instance = WekaWrapper(id, algorithm, 'weka.classifiers.meta.AttributeSelectedClassifier', parameters, modelParamsToSave, optimizer, predict=1)
+        elif optimizer == 'Ensemble':
+            if algorithm == "SMO":
+                parameters = parameters + ["-B", "weka.classifiers.functions.SMO"]
+                instance = WekaWrapper(id, algorithm, 'weka.classifiers.meta.Stacking', parameters, modelParamsToSave, optimizer, predict=1)
+            elif algorithm == "RandomForest":
+                parameters = parameters + ["-B", "weka.classifiers.trees.RandomForest"]
+                instance = WekaWrapper(id, algorithm, 'weka.classifiers.meta.Stacking', parameters, modelParamsToSave, optimizer, predict=1)
+            elif algorithm == "NaiveBayes":
+                parameters = parameters + ["-B", "weka.classifiers.bayes.NaiveBayes"]
+                instance = WekaWrapper(id, algorithm, 'weka.classifiers.meta.Stacking', parameters, modelParamsToSave, optimizer, predict=1)
+            elif algorithm == "J48": 
+                parameters = parameters + ["-B", "weka.classifiers.trees.J48"]
+                instance = WekaWrapper(id, algorithm, 'weka.classifiers.meta.Stacking', parameters, modelParamsToSave, optimizer, predict=1)
+            elif algorithm == "Perceptron": 
+                parameters = parameters + ["-B", "weka.classifiers.functions.MultilayerPerceptron"]
+                instance = WekaWrapper(id, algorithm, 'weka.classifiers.meta.Stacking', parameters, modelParamsToSave, optimizer, predict=1)
         return instance
     else:
         return None
