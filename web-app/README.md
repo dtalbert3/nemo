@@ -19,6 +19,10 @@ NVM is a helpful tool for managing node version on linux
 
 This should set your default node version for future use, if it does not you will have to set the command in your bash profile.
 
+## Configuration
+
+NOTE: src/config.js must have apiUrl correctly set
+
 ## Usage
 
 The application can be started via `npm start`. The application will start using the settings defined in `config/dev.json`. To access the web app open a page in your browser pointing at `localhost:3030`.

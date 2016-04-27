@@ -1,14 +1,14 @@
 import * as questions from './redux/modules/nemoQuestions'
 import * as questionCreator from './redux/modules/questionCreator'
 
-import config from 'clientconfig'
+import config from './config'
 import io from 'socket.io-client'
 
 class NemoApi {
 
   constructor (store = null) {
     this.store = store
-    this.userQuestions = []
+
     this.dash = io.connect(config.apiUrl + '/dash')
     this.qstn = io.connect(config.apiUrl + '/qstn')
     this.user = io.connect(config.apiUrl + '/user')

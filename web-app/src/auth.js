@@ -1,4 +1,4 @@
-import config from 'clientconfig'
+import config from './config'
 import io from 'socket.io-client'
 import jwt from 'jsonwebtoken'
 

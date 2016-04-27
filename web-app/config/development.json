@@ -11,10 +11,6 @@
         "listen": "localhost",
         "port": 3030
     },
-    "client": {
-        "apiUrl": "http://localhost:3030",
-        "debugMode": true
-    },
     "server": {
       "ssl": {
         "certPath": "/ssl/cert.pem",
