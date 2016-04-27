@@ -16,6 +16,10 @@
         "debugMode": true
     },
     "server": {
+      "ssl": {
+        "certPath": "/ssl/cert.pem",
+        "keyPath": "/ssl/key.pem"
+      },
       "db": {
         "host": "codyemoffitt.com",
         "name": "NEMO_DEV",

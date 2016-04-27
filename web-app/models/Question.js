@@ -47,11 +47,11 @@ module.exports = function(sequelize) {
       type: Sequelize.STRING,
       allowNull: true
     },
-    NextClassifier: {
+    Classifier: {
       type: Sequelize.STRING,
       allowNull: true
     },
-    NextOptimizer: {
+    Optimizer: {
       type: Sequelize.STRING,
       allowNull: true
     }

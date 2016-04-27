@@ -4,7 +4,7 @@ var sequelize = require('sequelize');
 var bcrypt = require('bcrypt');
 var fs = require('fs');
 //var EmailConfirmer = require('../email-confirmer/EmailConfirmer.js');
-var data = fs.readFileSync('./dataLoaderConfig.json'),
+var data = fs.readFileSync('../dataLoaderConfig.json'),
 	dataLoaderOptions;
 
 //eval(fs.readFileSync('../email-confirmer/EmailConfirmer.js').toString());
@@ -30,38 +30,47 @@ var Sequelize = new sequelize(
 
 
 // Load the models
-var userModel = require('./models/NEMO/User')(
+var userModel = require('../models/NEMO/User')(
 	Sequelize);
 
-var questionModel = require('./models/NEMO/Question')(
+var userType = require('../models/NEMO/UserType')(
 	Sequelize);
 
-var questionParameterModel = require('./models/NEMO/QuestionParameter')(
+var questionModel = require('../models/NEMO/Question')(
 	Sequelize);
 
-var questionStatusModel = require('./models/NEMO/QuestionStatus')(
+var questionParameterModel = require('../models/NEMO/QuestionParameter')(
 	Sequelize);
 
-var questionTypeModel = require('./models/NEMO/QuestionType')(
+var questionStatusModel = require('../models/NEMO/QuestionStatus')(
 	Sequelize);
 
-var questionEventModel = require('./models/NEMO/QuestionEvent')(
+var questionTypeModel = require('../models/NEMO/QuestionType')(
 	Sequelize);
 
-var aiModelModel = require('./models/NEMO/AIModel')(
+var questionEventModel = require('../models/NEMO/QuestionEvent')(
 	Sequelize);
 
-var aiModelParamsModel = require('./models/NEMO/AIModelParams')(
+var aiModelModel = require('../models/NEMO/AIModel')(
 	Sequelize);
 
-var aiParameterModel = require('./models/NEMO/AIParameter')(
+var aiModelParamsModel = require('../models/NEMO/AIModelParams')(
 	Sequelize);
 
-var parameterTypeModel = require('./models/NEMO/ParameterType')(
+var aiParameterModel = require('../models/NEMO/AIParameter')(
 	Sequelize);
 
-var conceptModel = require('./models/NEMO/concept_dimension')(
+var parameterTypeModel = require('../models/NEMO/ParameterType')(
 	Sequelize);
+
+var conceptModel = require('../models/NEMO/concept_dimension')(
+	Sequelize);
+
+
+userModel.belongsTo(userType, {
+  foreignKey: 'UserTypeID'
+})
+
 
 //
 // var userModel = require('./models/NEMO/User')(
@@ -334,7 +343,178 @@ var data = {
 //});
 //console.log("ran it");
 
-function editQuestion(data, params, callback) {
+var editData = {
+	deleteOld: true,
+	oldID: 201,
+	UserID: 9,
+	QuestionStatusID: 1,
+	QuestionTypeID: 1,
+	QuestionEventID: 1,
+	QuestionParamsArray: [{
+		TypeID: 1,
+		valtype_cd: 'N',
+		tval_char: 'Edited parameter 1 Some data',
+		nval_num: 7777
+	}, {
+		TypeID: 1,
+		valtype_cd: 'N',
+		tval_char: 'Edited Parameter 2 Some more data',
+		nval_num: 7788
+	}, {
+		TypeID: 1,
+		valtype_cd: 'N',
+		tval_char: 'Added Parameter 3 On Edit',
+		nval_num: 123
+	}]
+
+}
+
+
+function editQuestion(params, callback) {
+	var deleteOld = params.deleteOld
+  var questionID
+	var oldID = params.oldID
+	var count
+  var max
+  questionModel.count({where: {UserID: params.UserID}})
+ 		.then(function(c) {
+			count = c
+     	userModel.findOne({
+      	include: [userType],
+       	where: { ID: params.UserID }
+     	}).then(function(userData) {
+				max = userData.dataValues.UserType.dataValues.MaxQuestions
+     		// Check to if user can ask more questions
+      	console.log(count, max)
+      	if (count >= max && !deleteOld) {
+					return callback('You are at your max number of questions!', null)
+     		}
+		  	var questionAttributes = {
+		    	UserID: params.UserID,
+		    	StatusID: params.QuestionStatusID,
+		    	TypeID: params.QuestionTypeID,
+		    	EventID: params.QuestionEventID
+		    }
+	
+	   		// Initiate transaction, will be committed if things go smoothly or rolled back if there is an issue at any point
+				Sequelize.transaction(function(t) {
+	    
+					return questionModel.create(questionAttributes, {
+			    	transaction: t
+			    }).then(function(data) {
+			    	// QuestionID is needed as a foreign key for QuestionParameter
+			    	questionID = data.dataValues.ID
+						// Helper function to recursively chain questionParameter create promises
+			      var recurseParam = function(pArray, i) {
+			      // If the current parameter exists only, otherwise nothing is done and promise chain is ended
+			      if (pArray[i]) {
+			      	return questionParameterModel.create({
+			        	QuestionID: questionID,
+			          tval_char: pArray[i].tval_char,
+			          nval_num: pArray[i].nval_num,
+			          concept_path: pArray[i].concept_path,
+			          concept_cd: pArray[i].concept_cd,
+			          valtype_cd: pArray[i].valtype_cd,
+			          TableName: pArray[i].TableName,
+			          TableColumn: pArray[i].TableColumn,
+			          min: pArray[i].min,
+			          max: pArray[i].max
+			        }, {
+			        	transaction: t
+			        }).then(recurseParam(pArray, (i + 1)))
+			      }
+			    }
+			   	// Call helper function to insert Question Parameters
+			  	return recurseParam(params.QuestionParamsArray, 0)
+						.then(function() {
+							if (deleteOld) {
+					  		return questionParameterModel.destroy({
+					  			where: {
+					  				QuestionID: oldID
+					  			}
+					  		}).then(function() {
+					  			// Get list of AI Model IDs to destroy
+					  			return aiModelModel.findAll({
+					  				where: {
+					  					QuestionID: oldID
+					  				}
+					  			}).then(function(aiModelData) {
+					  				var aiModelDataIDList = aiModelData.map(function(a) {
+					  					return a.dataValues.ID
+					  				})
+					  				// Find all of the AI Model Parameters
+					  				return aiModelParamsModel.findAll({
+					  					where: {
+					  						AIModel: {
+					  							$in: aiModelDataIDList
+					  						}
+					  					}
+					  				}).then(function(aiModelParamsData) {
+					  					var aiModelParamsList = aiModelParamsData.map(function(b) {
+					  						return b.dataValues.AIModel
+					  					})
+					  					// Destroy all of the AI model parameters
+					  					return aiModelParamsModel.destroy({
+					  						where: {
+					  							AIModel: {
+					  								$in: aiModelParamsList
+					  							}
+					  						}
+					  					}).then(function() {
+					  						//Destroy the AI models
+					  						return aiModelModel.destroy({
+					  							where: {
+					  								ID: {
+					  									$in: aiModelDataIDList
+					  								}
+					  							}
+					  						}).then(function() {
+					  							//Finally delete the question itself
+					  							return questionModel.destroy({
+					  								where: {
+					  									ID: oldID,
+					  								}
+					  							})
+					  						})
+					  					})
+					  				})
+					  			}).then(function(d) {
+					  				// Return data to callback
+					  				return callback(null, d)
+					  			}).catch(function(error) {
+					  				// Return error to callback
+					  				return callback('Error deleting question', null)
+					  			})
+					  		})
+							}
+						})
+					})
+				}).then(function() {
+		    	// Return the Question ID of the created question
+		      return callback(null, questionID)
+		    }).catch(function(error) {
+		    	return callback('Error Creating Question', null)
+		    })
+		  })
+			.catch(function(err) {
+		  	return callback('Error Creating Question', null)
+		  })
+		})
+		.catch(function(err) {
+			return callback('Error Creating Question', null)
+	 	})
+}
+
+editQuestion(editData, function(x, y) {
+	return x;
+});
+			
+
+//createUser(data, function(x, y){
+//	return x;
+//});
+			
+/*
 	var questionAttributes = {
 		ID: data.ID,
 		UserID: data.UserID,
@@ -403,7 +583,8 @@ function editQuestion(data, params, callback) {
 		// Return error to callback
 		return callback(error, null);
 	});
-}
+	*/
+
 
 /* Delete Question:
 		Completely deletes a Question from the Question table, as well as its dependent tables
@@ -664,33 +845,33 @@ var getQuestionStatus = function(params, callback) {
 		*/
 function copyQuestion(params, callback) {
 	Sequelize.transaction(function(t) {
-		var id = params.ID;
-		var useAiModels = params.useAiModels;
-		var newQuestion;
+		var id = params.ID
+		var useAiModels = params.useAiModels
+		var newQuestion
+		var newQuestionID
 		return questionModel.findById(id).then(function(oldQuestion) {
 			newQuestion = {
 				UserID: params.UserID,
 				TypeID: oldQuestion.TypeID,
 				StatusID: oldQuestion.StatusID,
 				EventID: oldQuestion.EventID
-			};
+			}
 			return questionModel.create(newQuestion, {
 				transaction: t
 			}).then(function(data) {
+				newQuestionID = data.dataValues.ID
 				return questionParameterModel.findAll({
 					where: {
 						QuestionID: id
 					}
 				}).then(function(oldParams) {
-					var newID = data.dataValues.ID;
+					var newID = data.dataValues.ID
 					var recurseParams = function(pArray, i) {
 						if (pArray[i]) {
 							return questionParameterModel.create({
 								QuestionID: newID,
-								//TypeID: pArray[i].dataValues.TypeID,
 								tval_char: pArray[i].dataValues.tval_char,
 								nval_num: pArray[i].dataValues.nval_num,
-								// Name: pArray[i].dataValues.Name,
 								concept_path: pArray[i].dataValues.concept_path,
 								concept_cd: pArray[i].dataValues.concept_cd,
 								valtype_cd: pArray[i].dataValues.valtype_cd,
@@ -698,22 +879,19 @@ function copyQuestion(params, callback) {
 								TableColumn: pArray[i].dataValues.TableColumn,
 								min: pArray[i].dataValues.min,
 								max: pArray[i].dataValues.max
-									//upper_bound: pArray[i].dataValues.upper_bound
 							}, {
 								transaction: t
-							}).then(recurseParams(pArray, (i + 1)));
+							}).then(recurseParams(pArray, (i + 1)))
 						}
-					};
+					}
 					if (useAiModels) {
-						recurseParams(oldParams, 0);
+						recurseParams(oldParams, 0)
 
 						return aiModelModel.findAll({
 							where: {
 								QuestionID: id
 							}
 						}).then(function(oldAiModels) {
-							//console.log("models found:");
-							//console.log(oldAiModels);
 							var recurseAiModel = function(mArray, i) {
 								if (mArray[i]) {
 									return aiModelModel.create({
@@ -728,15 +906,11 @@ function copyQuestion(params, callback) {
 									}, {
 										transaction: t
 									}).then(function(newAiModel) {
-										//console.log("created new AI Model:");
-										//console.log(newAiModel.dataValues.ID);
 										return aiModelParamsModel.findAll({
 											where: {
 												AIModel:  mArray[i].dataValues.ID
 											}
 										}).then(function(oldAiModelParams) {
-											//console.log("model params found:");
-											//console.log(oldAiModelParams);
 											var recurseAiModelParams = function(mpArray, i) {
 												if (mpArray[i]) {
 													return aiModelParamsModel.create({
@@ -748,29 +922,34 @@ function copyQuestion(params, callback) {
 														transaction: t
 													}).then(recurseAiModelParams(mpArray, (i + 1)));
 												}
-											};
+											}
 											if (oldAiModelParams.length > 0) {
 												return recurseAiModelParams(oldAiModelParams, 0
 
 												).then(function() {
-													return recurseAiModel(mArray, (i + 1));
-												});
+													return recurseAiModel(mArray, (i + 1))
+												})
 											} else {
-												return recurseAiModel(mArray, (i + 1)); 
+												return recurseAiModel(mArray, (i + 1))
 											}
-										});
-									});
+										})
+									})
 								}
-							};
-							return recurseAiModel(oldAiModels, 0);
-						});
+							}
+							return recurseAiModel(oldAiModels, 0)
+						})
 					} else {
-						return recurseParams(oldParams, 0);
+						return recurseParams(oldParams, 0)
 					}
-				});
-			});
-		});
-	});
+				})
+			})
+		})
+   }).then(function() {
+     // Return the Question ID of the created question
+     return callback(null, newQuestionID)
+   }).catch(function(error) {
+     return callback("Error: An error has occurred when copying question", null)
+   })
 }
 /*
 console.log("copying QUestion"); 
