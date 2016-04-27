@@ -39,7 +39,7 @@ class nemoApi():
         db = MySQLdb.connect(self.host, self.user, self.password, self.database)
         cursor = db.cursor(cursorclass=MySQLdb.cursors.DictCursor)
         cursor.execute(
-            "SELECT ID " +
+            "SELECT ID, MakePrediction " +
             "FROM Question " +
             "WHERE StatusID = " + str(status) + " " +
             "ORDER BY DateModified DESC " +
@@ -85,6 +85,9 @@ class nemoApi():
             "LIMIT 1")
         result =  cursor.fetchone()
         db.close()
+        if(result['PatientJSON'] is None):
+            print "No patient found"
+            return None
         patientJSON = result['PatientJSON']
         patient = json.loads(patientJSON)
         return patient   
@@ -133,7 +136,29 @@ class nemoApi():
         result =  cursor.fetchone()
         db.close()
         return result
-
+        
+    def fetchBestAIModelByQuestion(self, questionID):
+        db = MySQLdb.connect(self.host, self.user, self.password, self.database)
+        cursor = db.cursor(cursorclass=MySQLdb.cursors.DictCursor)
+        cursor.execute(
+            "SELECT ID, Algorithm, Optimizer " +
+            "FROM AIModel " +
+            "WHERE QuestionID = " + str(questionID) + " " +
+            "ORDER BY Accuracy DESC " +
+            "LIMIT 1")
+        result =  cursor.fetchone()
+        db.close()
+        return result
+        
+    # Set prediction of given question
+    def updatePrediction(self, questionID, predictionString):
+        db = MySQLdb.connect(self.host, self.user, self.password, self.database)
+        cursor = db.cursor()
+        query = "UPDATE Question " + "SET Prediction = '" + predictionString + "' " + "WHERE ID = " + str(questionID)
+        cursor.execute(query)
+        db.commit()
+        db.close()
+        # Return true/false?
     # Construct query for gathering data
     def getDataQuery(self, questionID, dataset):
         # Whitelist of database attributes to select in query

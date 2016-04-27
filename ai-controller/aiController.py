@@ -20,13 +20,15 @@ class HelloRPC(object):
 
 
 # Create worker to process question
-def worker(id, s):
+def worker(questionObj, s):
     global API, CONFIG, QUEUE
 
+    id = questionObj['id']
+    makePrediction = questionObj['makePrediction']
     # Set question status to running
     API.updateQuestionStatus(id, CONFIG.RUNNING_STATUS)
 
-    # Determine which alogirthm to use
+    # Determine which algorithm to use
     instance = algorithmAnalyzer.run(id)
 
     # Run algorithm if analyzer returned algorithm
@@ -45,7 +47,24 @@ def worker(id, s):
             API.updateQuestionStatus(id, CONFIG.QUEUED_STATUS)
             print e
             # Need to log exception
+    predictionInstance = None
+    if(makePrediction > 0):
+        predictionInstance = algorithmAnalyzer.predict(id)
+    if predictionInstance is not None:
 
+        # Run the algorithm
+        try:
+            success = predictionInstance.run()
+
+            # Check if algorithm was successful
+            if success:
+                # Upload alogirthms results and feedback to datamart
+                predictionInstance.uploadPrediction()
+        except:
+            e = sys.exc_info()[0]
+            API.updateQuestionStatus(id, CONFIG.QUEUED_STATUS)
+            print e
+            # Need to log exception
     # Set question status
     API.updateQuestionStatus(id, instance.status)
 
@@ -81,7 +100,7 @@ def main():
     while True:
         RESULTS = API.fetchQuestions(CONFIG.MAX_QUEUE_SIZE, CONFIG.QUEUED_STATUS)
         for ROW in RESULTS:
-            QUEUE.put(ROW['ID'])
+            QUEUE.put({'id': ROW['ID'], 'makePrediction':ROW['MakePrediction']})
         if QUEUE.empty():
             time.sleep(CONFIG.TIMEOUT)
         else:
