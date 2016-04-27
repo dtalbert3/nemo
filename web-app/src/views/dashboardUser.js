@@ -236,6 +236,7 @@ class HiddenRow extends React.Component {
     var currentOptimizer = ''
     var currentClassifier = ''
     var status = objectByString(data, 'QuestionStatus.Status')
+    var optimizer = ''
     var classifier = ''
     var accuracy = ''
     var matrix = ''
@@ -246,6 +247,7 @@ class HiddenRow extends React.Component {
         denyPredict = false
       }
       var aiModel = data.AIModels[0]
+      optimizer = aiModel.Optimizer
       classifier = aiModel.Algorithm
       accuracy = aiModel.Accuracy
 
@@ -290,6 +292,8 @@ class HiddenRow extends React.Component {
             <dl className='dl-horizontal'>
               <dt>Status: </dt>
               <dd>{status}</dd>
+              <dt>Optimizer: </dt>
+              <dd>{optimizer}</dd>
               <dt>Classifier: </dt>
               <dd>{classifier}</dd>
               <dt>Accuracy: </dt>
