@@ -355,8 +355,8 @@ class ObservationFactForm extends React.Component {
     super(props)
 
     this.state = {
-      nval_num: null,
-      tval_char: null
+      nval_num: this.props.data.nval_num,
+      tval_char: this.props.data.tval_char
     }
 
     this.handleNvalnum = this.handleNvalnum.bind(this)
@@ -402,7 +402,7 @@ class ObservationFactForm extends React.Component {
         <Input type='text'
           ref='tval_char'
           placeholder='tval_char'
-          value={this.state.t_valchar}
+          value={this.state.tval_char}
           onChange={this.handleTvalchar} />
      </div>
     )
@@ -418,13 +418,16 @@ class PatientModal extends React.Component {
   constructor (props){
     super(props)
 
+    var patient = JSON.parse(this.props.data.PatientJSON)
+    console.log(patient)
     this.state = {
-      sex_cd_title: 'Sex',
-      sex_cd: null, age_in_years: null,
-      race_cd_title: 'Race',
-      race_cd: null
+      sex_cd: patient.sex_cd,
+      race_cd: patient.race_cd,
+      age_in_years: patient.age_in_years_num,
+      observation_facts: patient.observation_facts
     }
 
+    console.log(this.state.observation_facts)
     this.close = this.close.bind(this)
     this.handleSexDropdownSelect = this.handleSexDropdownSelect.bind(this)
     this.handleRaceDropdownSelect = this.handleRaceDropdownSelect.bind(this)
@@ -439,14 +442,12 @@ class PatientModal extends React.Component {
   handleSexDropdownSelect (key, index){
     this.setState({
       sex_cd: this.props.sex_cd_options[index],
-      sex_cd_title: this.props.sex_cd_options[index]
     })
   }
 
   handleRaceDropdownSelect (key, index){
     this.setState({
       race_cd: this.props.race_cd_options[index],
-      race_cd_title: this.props.race_cd_options[index],
     })
   }
 
@@ -501,25 +502,31 @@ class PatientModal extends React.Component {
           <Modal.Title>Edit Patient</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <DropdownButton id={1} title={this.state.sex_cd_title} onSelect = {this.handleSexDropdownSelect}>
+          Sex:
+          <DropdownButton id={1} title={this.state.sex_cd} onSelect = {this.handleSexDropdownSelect}>
             {this.props.sex_cd_options.map((d, i) => {
               return <MenuItem key={i} eventKey={i}> {d} </MenuItem>
             })}
-          </DropdownButton>
-          <DropdownButton id={2} title={this.state.race_cd_title} onSelect = {this.handleRaceDropdownSelect}>
+          </DropdownButton><br/>
+          Race:
+          <DropdownButton id={2} title={this.state.race_cd} onSelect = {this.handleRaceDropdownSelect}>
             {this.props.race_cd_options.map((d, i) => {
               return <MenuItem key={i} eventKey={i}> {d} </MenuItem>
             })}
-          </DropdownButton>
+          </DropdownButton><br/>
+          Age:
           <Input type='number' ref='age'
             placeholder='Age'
             value={this.state.age_in_years}
             onChange={this.handleAgeSelect}
             min='0'
-            max='150'/>
-           {this.props.data.QuestionParameters.map((d, i) => {
-              return <ObservationFactForm key={i} ref={'observationFact' + i} concept_cd={d.concept_cd} />
-           })}
+            max='150'/><br/>
+          {this.props.data.QuestionParameters.map((d, i) => {
+            return <ObservationFactForm key={i}
+              ref={'observationFact' + i}
+              concept_cd={d.concept_cd}
+              data={this.state.observation_facts[i]}/>
+          })}
           <ButtonInput onClick={this.handleSubmit} type='submit' value='Save' bsStyle='primary' block/>
         </Modal.Body>
         <Modal.Footer>
