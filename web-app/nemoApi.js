@@ -978,7 +978,6 @@ exports.dashboardService = function(socket, hooks) {
   })
 
   socket.on('editAlgorithm', function(id, data, callback) {
-    console.log(data)
     questionModel.update({
       Optimizer: data.optimizer,
       Classifier: data.classifier
@@ -991,6 +990,21 @@ exports.dashboardService = function(socket, hooks) {
     }).catch(function(d) {
       console.log(d)
       return callback('Error Editing Algorithm', null)
+    })
+  })
+
+  socket.on('markPrediction', function(id) {
+    questionModel.update({
+      MakePrediction: true
+    }, {
+      where: {
+        ID: id
+      }
+    }).then(function(d) {
+      return callback(null, 'Will run prediction using specified patient')
+    }).catch(function(d) {
+      console.log(d)
+      return callback('Error marking for prediction', null)
     })
   })
 }

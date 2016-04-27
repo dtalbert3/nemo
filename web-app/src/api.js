@@ -188,6 +188,19 @@ class NemoApi {
     return promise
   }
 
+  markPrediction (id) {
+    var promise = new Promise((resolve, reject) => {
+      this.dash.emit('markPrediction', id, (err) => {
+        if (!err) {
+          resolve('Will run prediction using specified patient')
+        } else {
+          reject(err)
+        }
+      })
+    })
+    return promise
+  }
+
 }
 
 // Export a singleton instance of our client side api

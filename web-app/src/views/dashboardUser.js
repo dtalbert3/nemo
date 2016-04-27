@@ -167,10 +167,25 @@ class HiddenRow extends React.Component {
     this.handleFeedback = this.handleFeedback.bind(this)
     this.handlePatient = this.handlePatient.bind(this)
     this.handleAlgorithm = this.handleAlgorithm.bind(this)
+    this.handlePredict = this.handlePredict.bind(this)
   }
 
   handleEdit () {
 
+  }
+
+  handlePredict () {
+    api.markPrediction(this.props.data.ID)
+      .then((msg) => {
+        Alert(msg, 'success', 4 * 1000)
+        api.fetchUserData()
+          .catch((err) => {
+            Alert(err, 'danger', 4 * 1000)
+          })
+      })
+      .catch((err) => {
+        Alert(err, 'danger', 4 * 1000)
+      })
   }
 
   // Create modal to handle editing of question classifer and optimizer
@@ -215,6 +230,10 @@ class HiddenRow extends React.Component {
       api.giveFeedback(params)
         .then((msg) => {
           Alert(msg, 'success', 4 * 1000)
+          api.fetchUserData()
+            .catch((err) => {
+              Alert(err, 'danger', 4 * 1000)
+            })
         })
         .catch((err) => {
           Alert(err, 'danger', 4 * 1000)
