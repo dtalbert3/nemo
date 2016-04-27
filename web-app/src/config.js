@@ -7,7 +7,7 @@ export default {
   'Optimizers': [
     'Ensemble',
     'FeatureSelection',
-    'ParameterOptimization'
+    'CVParams'
   ],
   'Classifiers': [
     'J48',

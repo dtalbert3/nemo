@@ -170,12 +170,6 @@ class NemoApi {
   }
 
   editAlgorithm (id, data) {
-    // Fix optimizer names for use with aiController
-    if (data.optimizer === 'FeatureSelection') {
-      data.optimizer = 'DefaultFeatureSelection'
-    } else if (data.optimizer === 'ParameterOptimization') {
-      data.optimizer = 'DefaultCVParams'
-    }
     var promise = new Promise((resolve, reject) => {
       this.dash.emit('editAlgorithm', id, data, (err) => {
         if (!err) {

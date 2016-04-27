@@ -287,7 +287,7 @@ def main():
 	# newDataset = Instances.create_instances("Dataset", atts, 0)
 	# newDataset.class_is_last()
 	#pdb.set_trace()
-	#param = AIParam("238", "C", "1 4 4", "DefaultCVParams")
+	#param = AIParam("238", "C", "1 4 4", "CVParams")
 	#instance = WekaWrapper(208, 'SMO', 'weka.classifiers.functions.SMO', ["-W", "weka.classifiers.functions.SMO", "-P", (param.Param + ' ' + param.Value)], None)
 	#instance.run()
 	#instance.uploadData()

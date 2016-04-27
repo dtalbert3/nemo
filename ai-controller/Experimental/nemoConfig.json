@@ -17,29 +17,29 @@
   "ALGORITHMS": {
     "RandomForest": {
       "Active": true,
-      "DefaultCVParams": {
+      "CVParams": {
         "CV_I": "I 1 100 100",
         "CV_K": "K 1 100 100",
         "CV_S": "S 1 100 100"
       },
-      "DefaultOptions": {
+      "Options": {
         "CV_O": true,
         "CV_B": true
       }
     },
     "SMO":{
       "Active": true,
-      "DefaultCVParams": {
+      "CVParams": {
         "CV_C": "C 1 4 4",
         "CV_V": "V 1 5 5",
         "CV_W": "W 1 10 10"
       },
-      "DefaultOptions": {}
+      "Options": {}
     },
     "NaiveBayes": {
       "Active": true,
-      "DefaultCVParams": {},
-      "DefaultOptions": {
+      "CVParams": {},
+      "Options": {
         "CV_K": true,
         "CV_D": true
       }

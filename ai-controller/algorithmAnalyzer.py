@@ -78,18 +78,18 @@ def run(id):
         modelParams.append(newParam)
 
     # If we are using options, only pass options to classifier
-    if optimizer == 'DefaultOptions':
+    if optimizer == 'Options':
         for mParam in modelParams:
             # I think this part is wrong, the truthiness of the downloaded from DB Optional Params I was unable to figure out
             # PLEASE FIX
-            if mParam.param_use == 'DefaultOptions' and (mParam.Value == True or mParam.Value == 1 or mParam.Value == "1"):
+            if mParam.param_use == 'Options' and (mParam.Value == True or mParam.Value == 1 or mParam.Value == "1"):
                 modelParamsToSave.append(mParam)
                 parameters = parameters + [mParam.Param]
 
     # If we are using cvparams, only pass cvparams to classifier
-    elif optimizer == 'DefaultCVParams':
+    elif optimizer == 'CVParams':
         for mParam in modelParams:
-            if mParam.param_use == 'DefaultCVParams' and mParam.Value is not None:
+            if mParam.param_use == 'CVParams' and mParam.Value is not None:
                 modelParamsToSave.append(mParam)
                 parameters = parameters + ["-P", (mParam.Param + ' ' + mParam.Value)]
 
@@ -104,7 +104,7 @@ def run(id):
 
     # Run
     instance = None
-    if optimizer == 'DefaultOptions':
+    if optimizer == 'Options':
         if algorithm == "SMO":
             instance = WekaWrapper(id, algorithm, 'weka.classifiers.functions.SMO', parameters, modelParamsToSave, optimizer)
         elif algorithm == "RandomForest":
@@ -115,7 +115,7 @@ def run(id):
             instance = WekaWrapper(id, algorithm, 'weka.classifiers.trees.J48', parameters, modelParamsToSave, optimizer)
         elif algorithm == "Perceptron": 
             instance = WekaWrapper(id, algorithm, 'weka.classifiers.functions.MultilayerPerceptron', parameters, modelParamsToSave, optimizer)
-    elif optimizer == 'DefaultCVParams':
+    elif optimizer == 'CVParams':
         if algorithm == "SMO":
             parameters = parameters + ["-W", "weka.classifiers.functions.SMO"]
             instance = WekaWrapper(id, algorithm, 'weka.classifiers.meta.CVParameterSelection', parameters, modelParamsToSave, optimizer)
@@ -131,7 +131,7 @@ def run(id):
         elif algorithm == "Perceptron": 
             parameters = parameters + ["-W", "weka.classifiers.functions.MultilayerPerceptron"]
             instance = WekaWrapper(id, algorithm, 'weka.classifiers.meta.CVParameterSelection', parameters, modelParamsToSave, optimizer)
-    elif optimizer == 'DefaultFeatureSelection':
+    elif optimizer == 'FeatureSelection':
         if algorithm == "SMO":
             parameters = parameters + ["-W", "weka.classifiers.functions.SMO", "-E", "weka.attributeSelection.CfsSubsetEval -M", "-S", "weka.attributeSelection.BestFirst -D 1 -N 5"]
             instance = WekaWrapper(id, algorithm, 'weka.classifiers.meta.AttributeSelectedClassifier', parameters, modelParamsToSave, optimizer)
@@ -195,18 +195,18 @@ def predict(id):
         optimizer = latestAIModel['Optimizer']
         
         # If we are using options, only pass options to classifier
-        if optimizer == 'DefaultOptions':
+        if optimizer == 'Options':
             for mParam in modelParams:
                 # I think this part is wrong, the truthiness of the downloaded from DB Optional Params I was unable to figure out
                 # PLEASE FIX
-                if mParam.param_use == 'DefaultOptions' and (mParam.Value == True or mParam.Value == 1 or mParam.Value == "1"):
+                if mParam.param_use == 'Options' and (mParam.Value == True or mParam.Value == 1 or mParam.Value == "1"):
                     modelParamsToSave.append(mParam)
                     parameters = parameters + [mParam.Param]
 
         # If we are using cvparams, only pass cvparams to classifier
-        elif optimizer == 'DefaultCVParams':
+        elif optimizer == 'CVParams':
             for mParam in modelParams:
-                if mParam.param_use == 'DefaultCVParams' and mParam.Value is not None:
+                if mParam.param_use == 'CVParams' and mParam.Value is not None:
                     modelParamsToSave.append(mParam)
                     parameters = parameters + ["-P", (mParam.Param + ' ' + mParam.Value)]
 
@@ -219,7 +219,7 @@ def predict(id):
 
         # Run
         instance = None
-        if optimizer == 'DefaultOptions':
+        if optimizer == 'Options':
             if algorithm == "SMO":
                 instance = WekaWrapper(id, algorithm, 'weka.classifiers.functions.SMO', parameters, modelParamsToSave, optimizer, predict=1)
             elif algorithm == "RandomForest":
@@ -230,7 +230,7 @@ def predict(id):
                 instance = WekaWrapper(id, algorithm, 'weka.classifiers.trees.J48', parameters, modelParamsToSave, optimizer, predict=1)
             elif algorithm == "Perceptron": 
                 instance = WekaWrapper(id, algorithm, 'weka.classifiers.functions.MultilayerPerceptron', parameters, modelParamsToSave, optimizer, predict=1)
-        elif optimizer == 'DefaultCVParams':
+        elif optimizer == 'CVParams':
             if algorithm == "SMO":
                 parameters = parameters + ["-W", "weka.classifiers.functions.SMO"]
                 instance = WekaWrapper(id, algorithm, 'weka.classifiers.meta.CVParameterSelection', parameters, modelParamsToSave, optimizer, predict=1)
@@ -246,7 +246,7 @@ def predict(id):
             elif algorithm == "Perceptron": 
                 parameters = parameters + ["-W", "weka.classifiers.functions.MultilayerPerceptron"]
                 instance = WekaWrapper(id, algorithm, 'weka.classifiers.meta.CVParameterSelection', parameters, modelParamsToSave, optimizer, predict=1)
-        elif optimizer == 'DefaultFeatureSelection':
+        elif optimizer == 'FeatureSelection':
             if algorithm == "SMO":
                 parameters = parameters + ["-W", "weka.classifiers.functions.SMO", "-E", "weka.attributeSelection.CfsSubsetEval -M", "-S", "weka.attributeSelection.BestFirst -D 1 -N 5"]
                 instance = WekaWrapper(id, algorithm, 'weka.classifiers.meta.AttributeSelectedClassifier', parameters, modelParamsToSave, optimizer, predict=1)
