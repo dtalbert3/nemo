@@ -1,10 +1,10 @@
-
 const helmet = require('helmet')
 const config = require('getconfig')
 const bodyParser = require('body-parser')
 const cookieParser = require('cookie-parser')
 const serveStatic = require('serve-static')
 const path = require('path')
+const fs = require('fs')
 
 const webpack = require('webpack')
 const webpackMiddleware = require('webpack-dev-middleware')
@@ -13,10 +13,22 @@ const webpackConfig = require('./webpack.config.js')
 
 // Setup our express app
 const app = require('express')()
+
+// Start HTTPS Server
+// const credentials = {
+//   key: fs.readFileSync(__dirname + config.server.ssl.keyPath, 'utf8'),
+//   cert: fs.readFileSync(__dirname + config.server.ssl.certPath, 'utf8')
+// }
+// const server = require('https').createServer(credentials, app)
+
+// Start HTTP Server
 const server = require('http').createServer(app)
+
+// Create Socket
 const io = require('socket.io')(server)
 // const socketioJwt = require('socketio-jwt')
 
+// Setup webpack
 const compiler = webpack(webpackConfig)
 const middleware = webpackMiddleware(compiler, {
   publicPath: webpackConfig.output.publicPath,
@@ -32,6 +44,7 @@ const middleware = webpackMiddleware(compiler, {
   }
 })
 
+// Setup express app
 app
   .use(middleware)
   .use(webpackHotMiddleware(compiler))
@@ -45,9 +58,22 @@ app
     next()
   })
 
-// Redirect all requests back to /
+// Redirect requests back to /
+// Unless path equals /confirm?hash=
 app.all('*', function (req, res) {
-  res.redirect('/')
+  if ((/confirm*.*/).test(req.url)) {
+    nemoApi.confirmEmail(req.query.hash, function(msg) {
+      res.writeHeader(200, {"Content-Type": "text/html"});
+      res.write(
+        '<!DOCTYPE html><body>' +
+          msg +
+          '<script>window.setTimeout(function(){ window.location = "' + config.client.apiUrl + '"; }, 3000);</script>' +
+        '</body></html>')
+      res.end()
+    })
+  } else {
+    res.redirect('/')
+  }
 })
 
 app.get('/*', function response(req, res) {
@@ -61,22 +87,20 @@ io.of('/auth').on('connection', function(socket) {
   nemoApi.authService(socket)
 })
 
-io
-  .of('/user')
+io.of('/user')
   .on('connection', function(socket) {
     nemoApi.userService(socket)
   })
 
-io
-  .of('/qstn')
+io.of('/qstn')
   .on('connection', function(socket) {
     nemoApi.questionService(socket)
   })
 
-io
-  .of('/dash')
+io.of('/dash')
   .on('connection', function(socket) {
     nemoApi.dashboardService(socket)
   })
 
+// Start our server on designated port
 server.listen(config.http.port)

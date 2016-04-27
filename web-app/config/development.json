@@ -16,6 +16,10 @@
         "debugMode": true
     },
     "server": {
+      "ssl": {
+        "certPath": "/ssl/cert.pem",
+        "keyPath": "/ssl/key.pem"
+      },
       "db": {
         "host": "codyemoffitt.com",
         "name": "NEMO_DEV",
@@ -23,7 +27,7 @@
         "password": "NEMO",
         "dialect": "mysql",
         "port": 3306,
-        "logging": false
+        "logging": true
       }
     },
 		"nemoConfirmationEmail":{

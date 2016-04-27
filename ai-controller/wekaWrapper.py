@@ -7,7 +7,12 @@ from weka.core.database import InstanceQuery
 # from weka.classifiers.meta import CVParameterSelection
 import weka.core.serialization as serialization
 import weka.core.jvm as jvm
+from weka.core.dataset import Attribute, Instances
 import javabridge
+import numpy as np
+
+import pdb
+
 
 import json
 import os
@@ -51,7 +56,77 @@ class WekaWrapper:
 		for mParam in self.modelParams:
 			mParam.AIModel = modelID
 			self.api.addAIModelParam(mParam)
-
+			
+	def addInstancesToDataset(self, source, dest):
+		# Align the instances of a source dataset to destination's header and add them to the destination dataset
+		i = 0
+		while i < source.num_instances:
+			values = source.get_instance(i).values
+			it = np.nditer(values, flags=['f_index'], op_flags=['readwrite'])
+			while not it.finished:
+				(it[0], it.index),
+				if (source.attribute(it.index).is_nominal):
+					stringVal = source.get_instance(i).get_string_value(it.index)
+					# print stringVal
+					if(stringVal != '?'):
+						values[it.index] = dest.attribute(it.index).values.index(stringVal)
+				it.iternext()
+			dest.add_instance(Instance.create_instance(values))
+			i = i + 1
+			
+	def buildPatientObject(self, dataset):
+		# Build a patient instance to classify
+		patient = self.api.fetchPatientJSON(self.questionID)
+		newPatient = {}
+		demographics = ['race_cd', 'sex_cd', 'age_in_years_num']
+		observation_fact_features = ['tval_char', 'nval_num']
+		for demo in demographics:
+			newPatient[demo] = patient[demo]
+		for obs in patient['observation_facts']:
+			concept_cd = obs['concept_cd']
+			for feat in observation_fact_features:
+				newPatient[(concept_cd + feat)] = obs[feat]
+		return newPatient
+				
+	def addPatientNominals(self, patient, dataset):
+		# Add the nominal values for the patient to the master header, in case they aren't already there
+		# Loop and add patient's nominal values in case they aren't in masterDataset
+		# newDataset will be the new master header
+		# Waiting on prediction patient to be defined
+		# Should be like {sex_cd: "m", ...}
+		ignoreAttributes = ['readmitted']
+		atts = []
+		for a in dataset.attributes():
+			if (not (a.is_nominal)) or (a.name in ignoreAttributes) :
+				atts.append(a)
+			else:
+				newValues = list(a.values)
+				#print a.name 
+				pvalue = patient[a.name]
+				if(pvalue not in newValues):
+					newValues.append(pvalue)
+				atts.append(Attribute.create_nominal(a.name, newValues))
+		newDataset = Instances.create_instances("Dataset", atts, 0)
+		newDataset.class_is_last()
+		return newDataset
+		
+	def createPatientInstance(self, patient, dataset):
+		# Create a patient instance to classify
+		ignoreAttributes = ['readmitted']
+		values = []
+		for a in dataset.attributes():
+			if not a.is_nominal:
+				values.append(patient[a.name])
+			elif a.name in ignoreAttributes:
+				values.append(0)
+			else:
+				values.append(a.values.index(patient[a.name]))
+		#print values
+		newInst = Instance.create_instance(values)
+		return newInst
+		
+		
+		
 	def run(self):
 		# Attach JVM
 		javabridge.attach()
@@ -75,18 +150,27 @@ class WekaWrapper:
 			self.status = self.config.NOT_ENOUGH_DATA
 			return False
 
-		# Fix data up
+		
+		
+		# Fix dataset headers up to match and fix instances to match headers
 		masterData.delete()
 		learner = masterData.copy_instances(masterData, 0, 0)
 		test = masterData.copy_instances(masterData, 0, 0)
-		i = 0
-		while i < learnerData.num_instances:
-		    learner.add_instance(Instance.create_instance(learnerData.get_instance(i).values))
-		    i = i + 1
-		i = 0
-		while i < testData.num_instances:
-		    test.add_instance(Instance.create_instance(testData.get_instance(i).values))
-		    i = i + 1
+		self.addInstancesToDataset(learnerData, learner)
+		self.addInstancesToDataset(testData, test)
+		
+		# Comparison of data for testing purposes
+		# print 'learnerData'
+		# print learnerData
+		
+		# print 'learner'
+		# print learner
+		
+		# print 'testData'
+		# print testData
+		
+		# print 'test'
+		# print test
 
 		# Instantiate classifier
 		self.cls = Classifier(classname=self.classifier, options=self.parameters)
@@ -141,12 +225,38 @@ def main():
 
 	# Instantiate api
 	API = nemoApi(CONFIG.HOST, CONFIG.PORT, CONFIG.USER, CONFIG.PASS, CONFIG.DB)
+	newWrapper = WekaWrapper(313, 'alg', 'classifier', 'parameters', 'modelParams', 'optimizer')
+	masterData = newWrapper.retrieveData(313, 'all')
+	#learnerData = newWrapper.retrieveData(312, 'learner')
+	#testData = newWrapper.retrieveData(312, 'test')
+	masterData.delete()
+	patient = API.fetchPatientJSON(313)
+	patientObj = newWrapper.buildPatientObject(patient)
+	patientObj['age_in_years_num'] = 32
+	print patientObj
+	newDataset = newWrapper.addPatientNominals(patientObj, masterData)
+	newWrapper.createPatientInstance(patientObj, newDataset)
+			
+	
+		
+	#newWrapper.addInstancesToDataset(learnerData, masterData)
 
-
-	param = AIParam("238", "C", "1 4 4", "DefaultCVParams")
-	instance = WekaWrapper(208, 'SMO', 'weka.classifiers.functions.SMO', ["-W", "weka.classifiers.functions.SMO", "-P", (param.Param + ' ' + param.Value)], None)
-	instance.run()
-	instance.uploadData()
+	# atts = []
+	# for a in masterData.attributes():
+	# 	if not (a.is_nominal):
+	# 		atts.append(a)
+	# 	else:
+	# 		newValues = list(a.values)
+	# 		newValues.append("poop")
+	# 		atts.append(Attribute.create_nominal(a.name, newValues))
+	
+	# newDataset = Instances.create_instances("Dataset", atts, 0)
+	# newDataset.class_is_last()
+	pdb.set_trace()
+	#param = AIParam("238", "C", "1 4 4", "DefaultCVParams")
+	#instance = WekaWrapper(208, 'SMO', 'weka.classifiers.functions.SMO', ["-W", "weka.classifiers.functions.SMO", "-P", (param.Param + ' ' + param.Value)], None)
+	#instance.run()
+	#instance.uploadData()
 
 if  __name__ =='__main__':
 	main()

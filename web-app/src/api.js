@@ -155,6 +155,33 @@ class NemoApi {
     })
     return promise
   }
+
+  editPatient (id, data) {
+    var promise = new Promise((resolve, reject) => {
+      this.dash.emit('editPatient', id, JSON.stringify(data), (err) => {
+        if (!err) {
+          resolve('Patient Edited!')
+        } else {
+          reject(err)
+        }
+      })
+    })
+    return promise
+  }
+
+  editAlgorithm (id, data) {
+    var promise = new Promise((resolve, reject) => {
+      this.dash.emit('editAlgorithm', id, data, (err) => {
+        if (!err) {
+          resolve('Algorithm Edited!')
+        } else {
+          reject(err)
+        }
+      })
+    })
+    return promise
+  }
+
 }
 
 // Export a singleton instance of our client side api

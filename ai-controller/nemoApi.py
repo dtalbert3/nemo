@@ -1,5 +1,6 @@
 import MySQLdb
 import MySQLdb.cursors
+import json as json
 
 def borg(cls):
     cls._state = {}
@@ -72,6 +73,21 @@ class nemoApi():
         result =  cursor.fetchone()
         db.close()
         return result
+        
+    # Get info on specific question
+    def fetchPatientJSON(self, id):
+        db = MySQLdb.connect(self.host, self.user, self.password, self.database)
+        cursor = db.cursor(cursorclass=MySQLdb.cursors.DictCursor)
+        cursor.execute(
+            "SELECT PatientJSON " +
+            "FROM Question " +
+            "WHERE ID = " + str(id) + " " +
+            "LIMIT 1")
+        result =  cursor.fetchone()
+        db.close()
+        patientJSON = result['PatientJSON']
+        patient = json.loads(patientJSON)
+        return patient   
 
     # Get AIModelParams on specific AIModel
     def fetchAIModelParams(self, aiModelId):
@@ -121,8 +137,10 @@ class nemoApi():
     # Construct query for gathering data
     def getDataQuery(self, questionID, dataset):
         # Whitelist of database attributes to select in query
-        observationAttributes = ["encounter_num", "concept_cd", "provider_id", "nval_num"]
-        patientAttributes = ["vital_status_cd", "sex_cd", "age_in_years_num", "language_cd", "race_cd", "marital_status_cd", "zip_cd", "income_cd"]
+        #observationAttributes = ["encounter_num", "concept_cd", "provider_id", "nval_num"]
+        #patientAttributes = ["vital_status_cd", "sex_cd", "age_in_years_num", "language_cd", "race_cd", "marital_status_cd", "zip_cd", "income_cd"]
+        observationAttributes = ["nval_num", "tval_char"]
+        patientAttributes = ["race_cd", "sex_cd", "age_in_years_num"]
 
         # Open database connection
         db = MySQLdb.connect(self.host, self.user, self.password, self.database)
@@ -192,15 +210,15 @@ class nemoApi():
         for i, param in enumerate(question.params):
             for j, attribute in enumerate(observationAttributes):
                 if(j == (len(observationAttributes) - 1) and i == (len(question.params) - 1)):
-                    dataQuery += "o{0}.{1} as o{0}{1} ".format(i, attribute)
+                    dataQuery += "`{0}`.{1} as `{0}{1}` ".format(param.concept_cd, attribute)
                 else:
-                    dataQuery += "o{0}.{1} as o{0}{1}, ".format(i, attribute)
+                    dataQuery += "`{0}`.{1} as `{0}{1}`, ".format(param.concept_cd, attribute)
 
         dataQuery += " ,pr.readmitted"
         dataQuery += " from patient_dimension p"
         # Build query, add observation_fact joins for each parameter
         for i, param in enumerate(question.params):
-            dataQuery += " INNER JOIN observation_fact o{0} on p.patient_num = o{0}.patient_num ".format(i)
+            dataQuery += " INNER JOIN observation_fact `{0}` on p.patient_num = `{0}`.patient_num ".format(param.concept_cd)
 
         # TODO: Add the left outer join when the ReadmittancePatients table is up
 
@@ -212,15 +230,16 @@ class nemoApi():
 
         dataQuery += " INNER JOIN PatientReadmittance pr on p.patient_num = pr.patient_num "
         # Add WHERE clause for each parameter
+        # Need to add demographic selection if param.TableName = patient_dimension
         if(len(question.params) > 0):
             dataQuery += " WHERE "
             for i, param in enumerate(question.params):
                 if(i == 0):
-                    dataQuery += " o{0}.concept_cd = '{1}' ".format(i, param.concept_cd)
+                    dataQuery += " `{0}`.concept_cd = '{0}' ".format(param.concept_cd)
                 else:
-                    dataQuery += "AND o{0}.concept_cd = '{1}' ".format(i, param.concept_cd)
+                    dataQuery += "AND `{0}`.concept_cd = '{0}' ".format(param.concept_cd)
                 if(param.min != None and param.max != None):
-                    dataQuery += " AND o{0}.nval_num BETWEEN {1} AND {2} ".format(i, param.min, param.max)
+                    dataQuery += " AND `{0}`.nval_num BETWEEN {1} AND {2} ".format(param.concept_cd, param.min, param.max)
         dataQuery += ";"
         # disconnect from server
         db.close()

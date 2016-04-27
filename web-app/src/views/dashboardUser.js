@@ -1,6 +1,7 @@
 import React, { PropTypes } from 'react'
+import ReactDOM from 'react-dom'
 import { connect } from 'react-redux'
-import { Table, Well, ButtonGroup, Button, Grid, Col, Row } from 'react-bootstrap'
+import { Input, Table, Well, ButtonGroup, Button, ButtonInput, DropdownButton, Grid, Col, Row, MenuItem, Modal, Popover, Tooltip, OverlayTrigger } from 'react-bootstrap'
 import QuestionCreator from '../partials/questionCreator.js'
 import CollapsibleTable from '../partials/collapsibleTable.js'
 import Alert from '../partials/alert'
@@ -156,10 +157,20 @@ class HiddenRow extends React.Component {
     this.handleEdit = this.handleEdit.bind(this)
     this.handleDelete = this.handleDelete.bind(this)
     this.handleFeedback = this.handleFeedback.bind(this)
+    this.handlePatient = this.handlePatient.bind(this)
+    this.handleAlgorithm = this.handleAlgorithm.bind(this)
   }
 
   handleEdit () {
 
+  }
+
+  handleAlgorithm () {
+    ReactDOM.render(<AlgorithmModal data={this.props.data} />, document.getElementById('modalMount'))
+  }
+
+  handlePatient () {
+    ReactDOM.render(<PatientModal data={this.props.data} />, document.getElementById('modalMount'))
   }
 
   handleDelete () {
@@ -222,6 +233,8 @@ class HiddenRow extends React.Component {
     }
 
     // Get AI related info
+    var currentOptimizer = ''
+    var currentClassifier = ''
     var status = objectByString(data, 'QuestionStatus.Status')
     var classifier = ''
     var accuracy = ''
@@ -264,9 +277,9 @@ class HiddenRow extends React.Component {
           <Col sm={6} md={6}>
             <dl className='dl-horizontal'>
               <dt>Question: </dt>
-              <dd>{question}</dd>
+              <dd>{question} </dd>
               <dt>Parameters: </dt>
-              <dd>{paramsLong}</dd>
+              <dd>{paramsLong} </dd>
             </dl>
           </Col>
           <Col sm={6} md={6}>
@@ -284,7 +297,7 @@ class HiddenRow extends React.Component {
         </Row>
         <Row>
           <Col sm={12} md={12}>
-            {(hasFeedback && localStorage.getItem('userType') === 1) ?
+            {(hasFeedback && localStorage.getItem('userType') === '1') ?
               <form>
                 Are you satisfied with the accuracy?
                 <span>{'  Yes'}</span>
@@ -297,7 +310,7 @@ class HiddenRow extends React.Component {
         </Row>
         <Row>
           <Col sm={6} md={6}>
-            {(hasFeedback && localStorage.getItem('userType') === 1) ?
+            {(hasFeedback && localStorage.getItem('userType') === '1') ?
               <Button className='pull-left' bsSize='xsmall' bsStyle='primary' onClick={this.handleFeedback}>
                 Submit Feedback
               </Button>
@@ -305,6 +318,12 @@ class HiddenRow extends React.Component {
           </Col>
           <Col sm={6} md={6}>
             <ButtonGroup className='pull-right'>
+              <Button bsSize='xsmall' bsStyle='info' onClick={this.handleAlgorithm}>
+                Edit Algorithm
+              </Button>
+              <Button bsSize='xsmall' bsStyle='success' onClick={this.handlePatient}>
+                Edit Patient
+              </Button>
               <Button bsSize='xsmall' bsStyle='warning' onClick={this.handleEdit}>
                 Edit
               </Button>
@@ -321,4 +340,269 @@ class HiddenRow extends React.Component {
 
 HiddenRow.propTypes = {
   data: PropTypes.any
+}
+
+class ObservationFactForm extends React.Component {
+  constructor(props){
+    super(props)
+
+    this.state = {
+      nval_num: null,
+      tval_char: null
+    }
+
+    this.handleNvalnum = this.handleNvalnum.bind(this)
+    this.handleTvalchar = this.handleTvalchar.bind(this)
+    this.getObservationFacts = this.getObservationFacts.bind(this)
+  }
+
+  handleNvalnum() {
+    var x = this.refs['nval_num'].getValue()
+    x = (x !== '') ? parseInt(x) : null
+    this.setState({
+      nval_num: x,
+    })
+  }
+
+  handleTvalchar() {
+    var x = this.refs['tval_char'].getValue()
+    this.setState({
+      tval_char: x
+    })
+  }
+
+  getObservationFacts () {
+    return {
+      nval_num: this.state.nval_num,
+      tval_char: this.state.tval_char
+    }
+  }
+
+  render() {
+    return (
+      <div>
+        <h4>{this.props.concept_cd}</h4>
+        <Input type='number'
+          ref='nval_num'
+          placeholder='nval_num'
+          value={this.state.nval_num}
+          onChange={this.handleNvalnum} />
+
+        <Input type='text'
+          ref='tval_char'
+          placeholder='tval_char'
+          value={this.state.t_valchar}
+          onChange={this.handleTvalchar} />
+     </div>
+    )
+  }
+}
+
+ObservationFactForm.defaultProps = {
+  concept_cd: null
+}
+
+class PatientModal extends React.Component {
+
+  constructor(props){
+    super(props)
+
+    this.state = {
+      sex_cd_title: 'Sex',
+      sex_cd: null, age_in_years: null,
+      race_cd_title: 'Race',
+      race_cd: null
+    }
+
+    this.close = this.close.bind(this)
+    this.handleSexDropdownSelect = this.handleSexDropdownSelect.bind(this)
+    this.handleRaceDropdownSelect = this.handleRaceDropdownSelect.bind(this)
+    this.handleAgeSelect = this.handleAgeSelect.bind(this)
+    this.handleSubmit = this.handleSubmit.bind(this)
+  }
+
+  close() {
+    ReactDOM.unmountComponentAtNode(document.getElementById('modalMount'))
+  }
+
+  handleSexDropdownSelect(key, object){
+    this.setState({
+      sex_cd: this.props.sex_cd_options[object],
+      sex_cd_title: this.props.sex_cd_options[object]
+    })
+  }
+
+  handleRaceDropdownSelect(key, object){
+    this.setState({
+      race_cd: this.props.race_cd_options[object],
+      race_cd_title: this.props.race_cd_options[object],
+    })
+  }
+
+  handleAgeSelect(){
+    var age = this.refs.age.getValue()
+    age = (age !== '') ? parseInt(age) : null
+    if(age > 150){
+      age = 150
+    }
+    if(age < 0){
+      age = 0
+    }
+    this.setState({
+     age_in_years: age
+    })
+  }
+
+  handleSubmit () {
+    var patient = {
+      sex_cd: this.state.sex_cd,
+      race_cd: this.state.race_cd,
+      age_in_years_num: this.state.age_in_years,
+      observation_facts: []
+    }
+
+    this.props.data.QuestionParameters.forEach((d, i) => {
+      var observations = this.refs['observationFact' + i].getObservationFacts()
+      var fact = {
+        concept_cd: d.concept_cd,
+        tval_char:  observations.tval_char,
+        nval_num: observations.nval_num
+      }
+      patient.observation_facts.push(fact)
+    })
+
+    api.editPatient(this.props.data.ID, patient)
+      .then((msg) => {
+        Alert(msg, 'success', 4 * 1000)
+        this.close()
+      })
+      .catch((err) => {
+        Alert(err, 'danger', 4 * 1000)
+      })
+  }
+
+  render() {
+    var data = this.props.data
+
+    return (
+      <Modal ref='Modal' id='Modal' show>
+        <Modal.Header>
+          <Modal.Title>Edit Patient</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <DropdownButton id={1} title={this.state.sex_cd_title} onSelect = {this.handleSexDropdownSelect}>
+            {this.props.sex_cd_options.map((d, i) => {
+              return <MenuItem key={i} eventKey={i}> {d} </MenuItem>
+            })}
+          </DropdownButton>
+          <DropdownButton id={2} title={this.state.race_cd_title} onSelect = {this.handleRaceDropdownSelect}>
+            {this.props.race_cd_options.map((d, i) => {
+              return <MenuItem key={i} eventKey={i}> {d} </MenuItem>
+            })}
+          </DropdownButton>
+          <Input type='number' ref='age'
+            placeholder='Age'
+            value={this.state.age_in_years}
+            onChange={this.handleAgeSelect}
+            min='0'
+            max='150'/>
+           {this.props.data.QuestionParameters.map((d, i) => {
+              return <ObservationFactForm key={i} ref={'observationFact' + i} concept_cd={d.concept_cd} />
+           })}
+          <ButtonInput onClick={this.handleSubmit} type='submit' value='Save' bsStyle='primary' block/>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button onClick={this.close}>Close</Button>
+        </Modal.Footer>
+      </Modal>
+    );
+  }
+}
+
+PatientModal.defaultProps = {
+  sex_cd_options: config.Demographics.sex_cd,
+  race_cd_options: config.Demographics.race_cd
+}
+
+class AlgorithmModal extends React.Component {
+
+  constructor(props){
+    super(props)
+
+    var data = this.props.data
+    this.state = {
+      optimizer: (data.Optimizer === null) ? 'Optimizer' : data.Optimizer,
+      classifier: (data.Classifier === null) ? 'Classifier' : data.Classifier
+    }
+
+    this.close = this.close.bind(this)
+    this.handleOptimizerSelect = this.handleOptimizerSelect.bind(this)
+    this.handleClassifierSelect = this.handleClassifierSelect.bind(this)
+    this.handleSubmit = this.handleSubmit.bind(this)
+  }
+
+  close() {
+    ReactDOM.unmountComponentAtNode(document.getElementById('modalMount'))
+  }
+
+  handleOptimizerSelect(key, index){
+    this.setState({
+      optimizer: this.props.optimizer_options[index]
+    })
+  }
+
+  handleClassifierSelect(key, index){
+    this.setState({
+      classifier: this.props.classifier_options[index]
+    })
+  }
+
+  handleSubmit () {
+    var data = {
+      optimizer: this.state.optimizer,
+      classifier: this.state.classifier
+    }
+
+    api.editAlgorithm(this.props.data.ID, data)
+      .then((msg) => {
+        Alert(msg, 'success', 4 * 1000)
+        this.close()
+      })
+      .catch((err) => {
+        Alert(err, 'danger', 4 * 1000)
+      })
+  }
+
+  render() {
+    return (
+      <Modal ref='Modal' id='Modal' show>
+        <Modal.Header>
+          <Modal.Title>Edit Optimizer and Classifier</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          Optimizer:
+          <DropdownButton id={1} title={this.state.optimizer} onSelect={this.handleOptimizerSelect}>
+            {this.props.optimizer_options.map((d, i) => {
+              return <MenuItem key={i} eventKey={i}> {d} </MenuItem>
+            })}
+          </DropdownButton><br/>
+          Classifier:
+          <DropdownButton id={2} title={this.state.classifier} onSelect={this.handleClassifierSelect}>
+            {this.props.classifier_options.map((d, i) => {
+              return <MenuItem key={i} eventKey={i}> {d} </MenuItem>
+            })}
+          </DropdownButton>
+          <ButtonInput onClick={this.handleSubmit} type='submit' value='Save' bsStyle='primary' block/>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button onClick={this.close}>Close</Button>
+        </Modal.Footer>
+      </Modal>
+    );
+  }
+}
+
+AlgorithmModal.defaultProps = {
+  optimizer_options: config.Optimizers,
+  classifier_options: config.Classifiers
 }

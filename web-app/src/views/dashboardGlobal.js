@@ -1,6 +1,6 @@
 import React, { PropTypes } from 'react'
 import { connect } from 'react-redux'
-import { Well, Button, Grid, Col, Row } from 'react-bootstrap'
+import { Table, Well, Button, Grid, Col, Row } from 'react-bootstrap'
 import CollapsibleTable from '../partials/collapsibleTable.js'
 
 import api from '../api'
@@ -135,10 +135,36 @@ class HiddenRow extends React.Component {
     var status = objectByString(data, 'QuestionStatus.Status')
     var classifier = ''
     var accuracy = ''
+    var matrix = ''
     if (data.AIModels.length > 0) {
       var aiModel = data.AIModels[0]
       classifier = aiModel.Algorithm
       accuracy = aiModel.Accuracy
+
+      var confusionMatrix = JSON.parse(aiModel.ConfusionMatrix)
+      matrix = (
+        <Table condensed>
+          <thead>
+            <tr>
+              <th></th>
+              <th>+</th>
+              <th>-</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>+</td>
+              <td>{confusionMatrix[0][0]}</td>
+              <td>{confusionMatrix[0][1]}</td>
+            </tr>
+            <tr>
+              <td>-</td>
+              <td>{confusionMatrix[1][0]}</td>
+              <td>{confusionMatrix[1][1]}</td>
+            </tr>
+          </tbody>
+        </Table>
+      )
     }
 
     return (
@@ -160,6 +186,8 @@ class HiddenRow extends React.Component {
               <dd>{classifier}</dd>
               <dt>Accuracy: </dt>
               <dd>{accuracy}</dd>
+              <dt>Confusion Matrix: </dt>
+              <dd>{matrix}</dd>
             </dl>
           </Col>
         </Row>
