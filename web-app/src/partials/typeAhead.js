@@ -115,7 +115,7 @@ class TypeAhead extends React.Component {
         />
         {/* Suggestion listing */}
         <Suggestions
-          suggestions={Array.from(this.state.suggestions, (d) => d[this.props.value])}
+          suggestions={Array.from(this.state.suggestions, this.props.displayValue)}
           handleClick={this.handleClick}
           hidden={this.state.hidden}
         />
@@ -129,6 +129,7 @@ TypeAhead.propTypes = {
   engine: PropTypes.any,
   key: PropTypes.string,
   value: PropTypes.string,
+  displayValue: PropTypes.func,
   limit: PropTypes.number,
   handleToken: PropTypes.func
 }

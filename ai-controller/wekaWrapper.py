@@ -58,10 +58,10 @@ class WekaWrapper:
 		for mParam in self.modelParams:
 			mParam.AIModel = modelID
 			self.api.addAIModelParam(mParam)
-			
+
 	def uploadPrediction(self):
 		# Upload best classifier prediction to database
-		
+
 		if self.prediction is not None:
 			# Convert prediction to string
 			predStr = 'No prediction'
@@ -70,8 +70,8 @@ class WekaWrapper:
 			elif (self.prediction == 0.0):
 				predStr = "False"
 			print 'Writing ' + predStr
-			self.api.updatePrediction(self.questionID, predStr) 
-			
+			self.api.updatePrediction(self.questionID, predStr)
+
 	def addInstancesToDataset(self, source, dest):
 		# Align the instances of a source dataset to destination's header and add them to the destination dataset
 		i = 0
@@ -88,7 +88,7 @@ class WekaWrapper:
 				it.iternext()
 			dest.add_instance(Instance.create_instance(values))
 			i = i + 1
-			
+
 	def buildPatientObject(self):
 		# Build a patient to classify
 		patient = self.api.fetchPatientJSON(self.questionID)
@@ -105,7 +105,7 @@ class WekaWrapper:
 			return newPatient
 		else:
 			return None
-				
+
 	def addPatientNominals(self, patient, dataset):
 		# Add the nominal values for the patient to the master header, in case they aren't already there
 		# Loop and add patient's nominal values in case they aren't in masterDataset
@@ -119,7 +119,7 @@ class WekaWrapper:
 				atts.append(a)
 			else:
 				newValues = list(a.values)
-				#print a.name 
+				#print a.name
 				pvalue = patient[a.name]
 				if(pvalue not in newValues):
 					newValues.append(pvalue)
@@ -127,7 +127,7 @@ class WekaWrapper:
 		newDataset = Instances.create_instances("Dataset", atts, 0)
 		newDataset.class_is_last()
 		return newDataset
-		
+
 	def createPatientInstance(self, patient, dataset):
 		# Create a patient instance to classify
 		ignoreAttributes = ['readmitted']
@@ -142,9 +142,9 @@ class WekaWrapper:
 		#print values
 		newInst = Instance.create_instance(values)
 		return newInst
-		
-		
-		
+
+
+
 	def run(self):
 		# Attach JVM
 		javabridge.attach()
@@ -162,20 +162,20 @@ class WekaWrapper:
 		learnerData = self.retrieveData(self.questionID, "learner")
 		testData = self.retrieveData(self.questionID, 'test')
 		masterData = self.retrieveData(self.questionID, 'all')
-		
+
 		# Check if there is enough correct data to run
 		if (learnerData.num_instances < 1 or testData.num_instances < 1):
 			self.status = self.config.NOT_ENOUGH_DATA
 			return False
 
-		# If this is a prediction and there is a valid patient, change masterData header 
+		# If this is a prediction and there is a valid patient, change masterData header
 		patientObj = self.buildPatientObject()
 		patientInstance = None
 		if ((patientObj is not None) and (self.predict == 1)):
 			masterData = self.addPatientNominals(patientObj, masterData)
 			patientInstance = self.createPatientInstance(patientObj, masterData)
 			masterData.add_instance(patientInstance)
-		
+
 		elif (patientObj is None) and (self.predict == 1):
 			print 'No patient defined for prediction. Exiting'
 			return True
@@ -185,17 +185,17 @@ class WekaWrapper:
 		test = masterData.copy_instances(masterData, 0, 0)
 		self.addInstancesToDataset(learnerData, learner)
 		self.addInstancesToDataset(testData, test)
-		
+
 		# Comparison of data for testing purposes
 		# print 'learnerData'
 		# print learnerData
-		
+
 		# print 'learner'
 		# print learner
-		
+
 		# print 'testData'
 		# print testData
-		
+
 		# print 'test'
 		# print test
 
@@ -228,7 +228,7 @@ class WekaWrapper:
 		# print 'ID: ', self.questionID
 		# print 'ACC: ', self.acc
 		# print(evl.summary())
-		
+
 		# If this is a prediction... make the prediction
 		if ((patientObj is not None) and (self.predict == 1)):
 			masterData.add_instance(patientInstance)
@@ -258,21 +258,21 @@ def main():
 
 	# Instantiate api
 	API = nemoApi(CONFIG.HOST, CONFIG.PORT, CONFIG.USER, CONFIG.PASS, CONFIG.DB)
-	newWrapper = WekaWrapper(313, 'SMO', 'weka.classifiers.functions.SMO', [], [], '', predict=1)
-	masterData = newWrapper.retrieveData(313, 'all')
+	newWrapper = WekaWrapper(336, 'SMO', 'weka.classifiers.functions.SMO', [], [], '', predict=1)
+	masterData = newWrapper.retrieveData(336, 'all')
 	#learnerData = newWrapper.retrieveData(312, 'learner')
 	#testData = newWrapper.retrieveData(312, 'test')
-	masterData.delete()
-	patient = API.fetchPatientJSON(313)
-	patientObj = newWrapper.buildPatientObject()
-	
-	
-	print patientObj
-	newDataset = newWrapper.addPatientNominals(patientObj, masterData)
-	newWrapper.createPatientInstance(patientObj, newDataset)
-	newWrapper.run()
-	
-		
+	#masterData.delete()
+	#patient = API.fetchPatientJSON(313)
+	#patientObj = newWrapper.buildPatientObject()
+
+	pdb.set_trace()
+	#print patientObj
+	#newDataset = newWrapper.addPatientNominals(patientObj, masterData)
+	#newWrapper.createPatientInstance(patientObj, newDataset)
+	#newWrapper.run()
+
+
 	#newWrapper.addInstancesToDataset(learnerData, masterData)
 
 	# atts = []
@@ -283,7 +283,7 @@ def main():
 	# 		newValues = list(a.values)
 	# 		newValues.append("poop")
 	# 		atts.append(Attribute.create_nominal(a.name, newValues))
-	
+
 	# newDataset = Instances.create_instances("Dataset", atts, 0)
 	# newDataset.class_is_last()
 	#pdb.set_trace()

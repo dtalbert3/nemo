@@ -209,6 +209,10 @@ class QuestionCreator extends React.Component {
             engine={this.props.searchEngine}
             key='ID'
             value='concept_cd'
+            displayValue={(d) => {
+              console.log(d)
+              return d['concept_cd'] + ' (' + d['name_char'] +')'
+            }}
             limit={10}
             handleToken={this.updateParameter}
           />
@@ -220,8 +224,6 @@ class QuestionCreator extends React.Component {
               updateBounds={this.updateBounds} /> :
             undefined
           }
-
-
 
           <Button bsStyle='primary' onClick={this.addParameter}>Add</Button>
         </Row>

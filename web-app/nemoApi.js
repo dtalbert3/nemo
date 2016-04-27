@@ -326,7 +326,7 @@ exports.questionService = function(socket, hooks) {
     sequelize.transaction(function() {
       // return parameterTypeModel.findAll() OLD CODE
       return conceptModel.findAll({
-        attributes: ['concept_cd'],
+        attributes: ['concept_cd', 'name_char'],
         where: {
           concept_cd: {
             $or: [{

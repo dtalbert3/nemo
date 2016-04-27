@@ -73,7 +73,7 @@ class nemoApi():
         result =  cursor.fetchone()
         db.close()
         return result
-        
+
     # Get info on specific question
     def fetchPatientJSON(self, id):
         db = MySQLdb.connect(self.host, self.user, self.password, self.database)
@@ -90,7 +90,7 @@ class nemoApi():
             return None
         patientJSON = result['PatientJSON']
         patient = json.loads(patientJSON)
-        return patient   
+        return patient
 
     # Get AIModelParams on specific AIModel
     def fetchAIModelParams(self, aiModelId):
@@ -136,7 +136,7 @@ class nemoApi():
         result =  cursor.fetchone()
         db.close()
         return result
-        
+
     def fetchBestAIModelByQuestion(self, questionID):
         db = MySQLdb.connect(self.host, self.user, self.password, self.database)
         cursor = db.cursor(cursorclass=MySQLdb.cursors.DictCursor)
@@ -149,7 +149,7 @@ class nemoApi():
         result =  cursor.fetchone()
         db.close()
         return result
-        
+
     # Set prediction of given question
     def updatePrediction(self, questionID, predictionString):
         db = MySQLdb.connect(self.host, self.user, self.password, self.database)
@@ -227,7 +227,7 @@ class nemoApi():
         # o.concept_cd Like 'ICD9:427.9'
         # AND o2.concept_cd Like 'ICD9:382.9'
 
-        dataQuery = "Select DISTINCT "
+        dataQuery = "Select "
         # Add patient_dimension attributes to statement
         for attribute in patientAttributes:
             dataQuery += " p.{0}, ".format(attribute)
