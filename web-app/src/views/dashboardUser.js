@@ -8,7 +8,6 @@ import Alert from '../partials/alert'
 
 import api from '../api'
 import config from '../config'
-import { objectByString } from '../util'
 
 var refresh = null
 
@@ -21,6 +20,7 @@ class UserDashboard extends React.Component {
     this.handleSubmitQuestion = this.handleSubmitQuestion.bind(this)
   }
 
+  // Handler to api call to update user dashboard
   updateUserQuestions () {
     api.fetchUserData()
       .catch((err) => {
@@ -28,6 +28,7 @@ class UserDashboard extends React.Component {
       })
   }
 
+  // Handler to api call to add question
   handleSubmitQuestion (question) {
     api.addQuestion(question)
       .then((msg) => {
@@ -61,6 +62,7 @@ class UserDashboard extends React.Component {
 
   // Render user dashboard page
   render () {
+    // Get number of questions the person has asked and has left to ask
     var questionsLeft = this.props.questions.length + '/' +
       localStorage.getItem('MaxQuestions')
 
@@ -119,20 +121,24 @@ const mapStateToProps = (state) => ({
 
 export default connect((mapStateToProps), {})(UserDashboard)
 
-// Below are the generators for the html used by collapisble table
+/* Below are the generators for the html used by collapisble table */
+
 // Creates the headders used by table
 const Headers = () => {
   return ([
-    <td key={1} >Question</td>,
-    <td key={2} >Parameters</td>,
-    <td key={3} >Status</td>
+    <td key={1}>Question</td>,
+    <td key={2}>Parameters</td>,
+    <td key={3}>Status</td>
   ])
 }
 
 // Creates the minimal visible row used by table
 const MinimalRow = (data) => {
-  var question = objectByString(data, 'QuestionType.Type') + ' ' +
-    objectByString(data, 'QuestionEvent.Name')
+  // Create question name string
+  var question = data.QuestionType.Type + ' ' +
+    data.QuestionEvent.Name
+
+  // Display only 3 parameters at most to display
   var parameters = ''
   var numParams = Math.min(data['QuestionParameters'].length, 3)
   for (var i = 0; i < numParams; i++) {
@@ -141,7 +147,9 @@ const MinimalRow = (data) => {
       ? ', '
       : (numParams < data['QuestionParameters'].length) ? ' . . .' : ''
   }
-  var status = objectByString(data, 'QuestionStatus.Status')
+
+  // Get question status to display
+  var status = data.QuestionStatus.Status
   return ([
     <td key={1} >{question}</td>,
     <td key={2} >{parameters}</td>,
@@ -165,14 +173,17 @@ class HiddenRow extends React.Component {
 
   }
 
+  // Create modal to handle editing of question classifer and optimizer
   handleAlgorithm () {
     ReactDOM.render(<AlgorithmModal data={this.props.data} />, document.getElementById('modalMount'))
   }
 
+  // Create modal to handle editing of patient used for prediction
   handlePatient () {
     ReactDOM.render(<PatientModal data={this.props.data} />, document.getElementById('modalMount'))
   }
 
+  // Handler to api call to delete question
   handleDelete () {
     api.deleteQuestion(this.props.data.ID)
       .then((msg) => {
@@ -188,6 +199,7 @@ class HiddenRow extends React.Component {
       })
   }
 
+  // Handler to api call to give feedback to question
   handleFeedback () {
     var yes = this.refs.yes.checked
     var no = this.refs.no.checked
@@ -215,33 +227,27 @@ class HiddenRow extends React.Component {
     var data = this.props.data
 
     // Get Question realted info
-    var question = objectByString(data, 'QuestionType.Type') + ' ' +
-      objectByString(data, 'QuestionEvent.Name')
+    var question = data.QuestionType.Type + ' ' +
+      data.QuestionEvent.Name
     var paramsLong = ''
-    var paramsShort = ''
     var numParams = data['QuestionParameters'].length
     for (var i = 0; i < numParams; i++) {
       paramsLong += data['QuestionParameters'][i]['concept_cd']
       paramsLong += (i !== numParams - 1) ? ', ' : ''
-      if (i < 3) {
-        paramsShort += data['QuestionParameters'][i]['concept_cd']
-        paramsShort += (i !== 2 && i !== numParams - 1) ? ', ' : ''
-        if (i === 2 && numParams > 3) {
-          paramsShort += ' . . .'
-        }
-      }
     }
 
     // Get AI related info
     var currentOptimizer = ''
     var currentClassifier = ''
-    var status = objectByString(data, 'QuestionStatus.Status')
+    var status = data.QuestionStatus.Status
     var optimizer = ''
     var classifier = ''
     var accuracy = ''
     var matrix = ''
     var denyPredict = true
     var hasFeedback = data.StatusID === 3
+
+    // Get data related to most recent AI model if one exist
     if (data.AIModels.length > 0) {
       if (!data.MakePrediction || data.MakePrediction === null) {
         denyPredict = false
@@ -254,21 +260,12 @@ class HiddenRow extends React.Component {
       var confusionMatrix = JSON.parse(aiModel.ConfusionMatrix)
       matrix = (
         <Table condensed>
-          <thead>
-            <tr>
-              <th></th>
-              <th>+</th>
-              <th>-</th>
-            </tr>
-          </thead>
           <tbody>
             <tr>
-              <td>+</td>
               <td>{confusionMatrix[0][0]}</td>
               <td>{confusionMatrix[0][1]}</td>
             </tr>
             <tr>
-              <td>-</td>
               <td>{confusionMatrix[1][0]}</td>
               <td>{confusionMatrix[1][1]}</td>
             </tr>
@@ -367,6 +364,7 @@ class ObservationFactForm extends React.Component {
     this.getObservationFacts = this.getObservationFacts.bind(this)
   }
 
+  // Set nval num for observation fact
   handleNvalnum () {
     var x = this.refs['nval_num'].getValue()
     x = (x !== '') ? parseInt(x) : null
@@ -375,6 +373,7 @@ class ObservationFactForm extends React.Component {
     })
   }
 
+  // Set tval char for observation fact
   handleTvalchar () {
     var x = this.refs['tval_char'].getValue()
     this.setState({
@@ -382,6 +381,7 @@ class ObservationFactForm extends React.Component {
     })
   }
 
+  // Getter for grabbing nval, tval for observation fact
   getObservationFacts () {
     return {
       nval_num: this.state.nval_num,

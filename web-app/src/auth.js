@@ -42,7 +42,6 @@ export default {
     // Get and validate token against server
     localStorage.getItem('token')
     return !!localStorage.token
-  },
+  }
 
-  onChange () {}
 }

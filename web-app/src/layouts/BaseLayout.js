@@ -27,7 +27,7 @@ NavLink.propTypes = {
   hidden: PropTypes.string
 }
 
-// Render app with navbar/alert and container fluid for sub components
+// Render app with navbar, alert, and container fluid for sub components
 class BaseLayout extends React.Component {
   render () {
     return (

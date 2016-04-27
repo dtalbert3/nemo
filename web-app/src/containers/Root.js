@@ -2,6 +2,7 @@ import React, { PropTypes } from 'react'
 import { Provider } from 'react-redux'
 import { Router } from 'react-router'
 
+// Root container to help set up redux and router
 class Root extends React.Component {
   render () {
     return (

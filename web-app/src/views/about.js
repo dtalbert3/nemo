@@ -1,7 +1,7 @@
 import React from 'react'
 import { Link } from 'react-router'
 
-// 404 Page, contains redirect button to home
+// About page, contains informaiton about NEMO project
 class About extends React.Component {
 
   // Once page is mounted attach page title
@@ -9,7 +9,7 @@ class About extends React.Component {
     document.title = 'Nemo About'
   }
 
-  // Render 404 page
+  // Render about page
   render () {
     return (
       <div className='container'>
