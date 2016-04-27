@@ -355,8 +355,8 @@ class ObservationFactForm extends React.Component {
     super(props)
 
     this.state = {
-      nval_num: this.props.data.nval_num,
-      tval_char: this.props.data.tval_char
+      nval_num: (typeof this.props.data === 'undefined') ? '' : this.props.data.nval_num,
+      tval_char: (typeof this.props.data === 'undefined') ? '' : this.props.data.tval_char
     }
 
     this.handleNvalnum = this.handleNvalnum.bind(this)
@@ -419,15 +419,14 @@ class PatientModal extends React.Component {
     super(props)
 
     var patient = JSON.parse(this.props.data.PatientJSON)
-    console.log(patient)
+
     this.state = {
-      sex_cd: patient.sex_cd,
-      race_cd: patient.race_cd,
-      age_in_years: patient.age_in_years_num,
-      observation_facts: patient.observation_facts
+      sex_cd: (patient === null) ? '' : patient.sex_cd,
+      race_cd: (patient === null) ? '' : patient.race_cd,
+      age_in_years: (patient === null) ? '' : patient.age_in_years_num,
+      observation_facts: (patient === null) ? '' : patient.observation_facts
     }
 
-    console.log(this.state.observation_facts)
     this.close = this.close.bind(this)
     this.handleSexDropdownSelect = this.handleSexDropdownSelect.bind(this)
     this.handleRaceDropdownSelect = this.handleRaceDropdownSelect.bind(this)
