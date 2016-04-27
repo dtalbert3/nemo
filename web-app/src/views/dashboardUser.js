@@ -350,7 +350,7 @@ HiddenRow.propTypes = {
 }
 
 class ObservationFactForm extends React.Component {
-  constructor(props){
+  constructor (props){
     super(props)
 
     this.state = {
@@ -363,7 +363,7 @@ class ObservationFactForm extends React.Component {
     this.getObservationFacts = this.getObservationFacts.bind(this)
   }
 
-  handleNvalnum() {
+  handleNvalnum () {
     var x = this.refs['nval_num'].getValue()
     x = (x !== '') ? parseInt(x) : null
     this.setState({
@@ -371,7 +371,7 @@ class ObservationFactForm extends React.Component {
     })
   }
 
-  handleTvalchar() {
+  handleTvalchar () {
     var x = this.refs['tval_char'].getValue()
     this.setState({
       tval_char: x
@@ -385,7 +385,7 @@ class ObservationFactForm extends React.Component {
     }
   }
 
-  render() {
+  render () {
     return (
       <div>
         <h4>{this.props.concept_cd}</h4>
@@ -411,7 +411,7 @@ ObservationFactForm.defaultProps = {
 
 class PatientModal extends React.Component {
 
-  constructor(props){
+  constructor (props){
     super(props)
 
     this.state = {
@@ -428,25 +428,25 @@ class PatientModal extends React.Component {
     this.handleSubmit = this.handleSubmit.bind(this)
   }
 
-  close() {
+  close () {
     ReactDOM.unmountComponentAtNode(document.getElementById('modalMount'))
   }
 
-  handleSexDropdownSelect(key, object){
+  handleSexDropdownSelect (key, index){
     this.setState({
-      sex_cd: this.props.sex_cd_options[object],
-      sex_cd_title: this.props.sex_cd_options[object]
+      sex_cd: this.props.sex_cd_options[index],
+      sex_cd_title: this.props.sex_cd_options[index]
     })
   }
 
-  handleRaceDropdownSelect(key, object){
+  handleRaceDropdownSelect (key, index){
     this.setState({
-      race_cd: this.props.race_cd_options[object],
-      race_cd_title: this.props.race_cd_options[object],
+      race_cd: this.props.race_cd_options[index],
+      race_cd_title: this.props.race_cd_options[index],
     })
   }
 
-  handleAgeSelect(){
+  handleAgeSelect (){
     var age = this.refs.age.getValue()
     age = (age !== '') ? parseInt(age) : null
     if(age > 150){
@@ -488,7 +488,7 @@ class PatientModal extends React.Component {
       })
   }
 
-  render() {
+  render () {
     var data = this.props.data
 
     return (
