@@ -26,7 +26,7 @@ jvm.start(class_path=["mysql-connector-java-5.1.38-bin.jar"])
 
 class WekaWrapper:
 
-	def __init__(self, questionID, algorithm, classifier, parameters, modelParams, optimizer):
+	def __init__(self, questionID, algorithm, classifier, parameters, modelParams, optimizer, predict = 0):
 		self.questionID = questionID
 		self.algorithm = algorithm
 		self.classifier = classifier
@@ -35,6 +35,8 @@ class WekaWrapper:
 		self.api = nemoApi()
 		self.config = nemoConfig()
 		self.optimizer = optimizer
+		self.predict = predict
+		self.prediction = None
 
 
 	def retrieveData(self, id, dataset):
@@ -57,6 +59,19 @@ class WekaWrapper:
 			mParam.AIModel = modelID
 			self.api.addAIModelParam(mParam)
 			
+	def uploadPrediction(self):
+		# Upload best classifier prediction to database
+		
+		if self.prediction is not None:
+			# Convert prediction to string
+			predStr = 'No prediction'
+			if (self.prediction == 1.0):
+				predStr = "True"
+			elif (self.prediction == 0.0):
+				predStr = "False"
+			print 'Writing ' + predStr
+			self.api.updatePrediction(self.questionID, predStr) 
+			
 	def addInstancesToDataset(self, source, dest):
 		# Align the instances of a source dataset to destination's header and add them to the destination dataset
 		i = 0
@@ -74,19 +89,22 @@ class WekaWrapper:
 			dest.add_instance(Instance.create_instance(values))
 			i = i + 1
 			
-	def buildPatientObject(self, dataset):
-		# Build a patient instance to classify
+	def buildPatientObject(self):
+		# Build a patient to classify
 		patient = self.api.fetchPatientJSON(self.questionID)
-		newPatient = {}
-		demographics = ['race_cd', 'sex_cd', 'age_in_years_num']
-		observation_fact_features = ['tval_char', 'nval_num']
-		for demo in demographics:
-			newPatient[demo] = patient[demo]
-		for obs in patient['observation_facts']:
-			concept_cd = obs['concept_cd']
-			for feat in observation_fact_features:
-				newPatient[(concept_cd + feat)] = obs[feat]
-		return newPatient
+		if patient is not None:
+			newPatient = {}
+			demographics = ['race_cd', 'sex_cd', 'age_in_years_num']
+			observation_fact_features = ['tval_char', 'nval_num']
+			for demo in demographics:
+				newPatient[demo] = patient[demo]
+			for obs in patient['observation_facts']:
+				concept_cd = obs['concept_cd']
+				for feat in observation_fact_features:
+					newPatient[(concept_cd + feat)] = obs[feat]
+			return newPatient
+		else:
+			return None
 				
 	def addPatientNominals(self, patient, dataset):
 		# Add the nominal values for the patient to the master header, in case they aren't already there
@@ -144,14 +162,23 @@ class WekaWrapper:
 		learnerData = self.retrieveData(self.questionID, "learner")
 		testData = self.retrieveData(self.questionID, 'test')
 		masterData = self.retrieveData(self.questionID, 'all')
-
+		
 		# Check if there is enough correct data to run
 		if (learnerData.num_instances < 1 or testData.num_instances < 1):
 			self.status = self.config.NOT_ENOUGH_DATA
 			return False
 
+		# If this is a prediction and there is a valid patient, change masterData header 
+		patientObj = self.buildPatientObject()
+		patientInstance = None
+		if ((patientObj is not None) and (self.predict == 1)):
+			masterData = self.addPatientNominals(patientObj, masterData)
+			patientInstance = self.createPatientInstance(patientObj, masterData)
+			masterData.add_instance(patientInstance)
 		
-		
+		elif (patientObj is None) and (self.predict == 1):
+			print 'No patient defined for prediction. Exiting'
+			return True
 		# Fix dataset headers up to match and fix instances to match headers
 		masterData.delete()
 		learner = masterData.copy_instances(masterData, 0, 0)
@@ -201,6 +228,12 @@ class WekaWrapper:
 		# print 'ID: ', self.questionID
 		# print 'ACC: ', self.acc
 		# print(evl.summary())
+		
+		# If this is a prediction... make the prediction
+		if ((patientObj is not None) and (self.predict == 1)):
+			masterData.add_instance(patientInstance)
+			self.prediction = self.cls.classify_instance(masterData.get_instance(0))
+			self.uploadPrediction()
 
 		# Temporarily store file to serialize to
 		fileName = str(self.questionID) + self.algorithm + ".model"
@@ -225,18 +258,19 @@ def main():
 
 	# Instantiate api
 	API = nemoApi(CONFIG.HOST, CONFIG.PORT, CONFIG.USER, CONFIG.PASS, CONFIG.DB)
-	newWrapper = WekaWrapper(313, 'alg', 'classifier', 'parameters', 'modelParams', 'optimizer')
+	newWrapper = WekaWrapper(313, 'SMO', 'weka.classifiers.functions.SMO', [], [], '', predict=1)
 	masterData = newWrapper.retrieveData(313, 'all')
 	#learnerData = newWrapper.retrieveData(312, 'learner')
 	#testData = newWrapper.retrieveData(312, 'test')
 	masterData.delete()
 	patient = API.fetchPatientJSON(313)
-	patientObj = newWrapper.buildPatientObject(patient)
-	patientObj['age_in_years_num'] = 32
+	patientObj = newWrapper.buildPatientObject()
+	
+	
 	print patientObj
 	newDataset = newWrapper.addPatientNominals(patientObj, masterData)
 	newWrapper.createPatientInstance(patientObj, newDataset)
-			
+	newWrapper.run()
 	
 		
 	#newWrapper.addInstancesToDataset(learnerData, masterData)
@@ -252,7 +286,7 @@ def main():
 	
 	# newDataset = Instances.create_instances("Dataset", atts, 0)
 	# newDataset.class_is_last()
-	pdb.set_trace()
+	#pdb.set_trace()
 	#param = AIParam("238", "C", "1 4 4", "DefaultCVParams")
 	#instance = WekaWrapper(208, 'SMO', 'weka.classifiers.functions.SMO', ["-W", "weka.classifiers.functions.SMO", "-P", (param.Param + ' ' + param.Value)], None)
 	#instance.run()
