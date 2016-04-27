@@ -19,7 +19,7 @@
   "main": "index.js",
   "private": true,
   "dependencies": {
-    "bcrypt": "^0.8.5",
+    "bcrypt": "^0.8.6",
     "bloodhound-js": "^1.2.1",
     "body-parser": "~1.14.2",
     "bootstrap": "~3.3.6",
@@ -72,6 +72,7 @@
     "static-loader": "^0.1.8",
     "stats-webpack-plugin": "^0.3.1",
     "style-loader": "^0.13.1",
+    "stylus": "^0.54.2",
     "stylus-loader": "^2.0.0",
     "webpack": "^1.13.0",
     "webpack-dev-middleware": "^1.6.1",

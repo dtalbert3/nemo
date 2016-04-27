@@ -45,7 +45,7 @@ module.exports = {
       loader: 'babel'
     }, {
       test: /\.(css|styl)$/,
-      loader: 'style!css!stylus'
+      loader: 'style-loader!css-loader!stylus-loader'
     }, {
       test: /\.(ico)$/,
       loader: 'static-loader'

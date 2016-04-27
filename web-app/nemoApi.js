@@ -26,18 +26,6 @@ sequelize
       ' database: ', err)
   })
 
-// apiDoc usage more info at http://apidocjs.com/
-/**
- * @api {get} /user/:id Request User information
- * @apiName GetUser
- * @apiGroup User
- *
- * @apiParam {Number} id Users unique ID.
- *
- * @apiSuccess {String} firstname Firstname of the User.
- * @apiSuccess {String} lastname  Lastname of the User.
- */
-
 // Define models
 var userModel = require('./models/User')(sequelize)
 var userType = require('./models/UserType')(sequelize)
@@ -87,9 +75,9 @@ function sendEmailConfirmation(data) {
 			subject: 'NEMO confirmation',
 			// Message body of the automated email
 			text: data.name + ', \nWelcome to NEMO! An account has been'
-						+ ' created for you and must now be activated. Please '
-						+ 'click on the link below to verify your email and complete the signup process:'
-						+ '\n \n' + config.client.apiUrl + '/confirm?hash=' + data.confirmationHash
+  			+ ' created for you and must now be activated. Please '
+  			+ 'click on the link below to verify your email and complete the signup process:'
+  			+ '\n \n' + config.client.apiUrl + '/confirm?hash=' + data.confirmationHash
 
 			// HTML message to be delivered to the user
 			/*html: '<!DOCTYPE html><body><b> ' + data.name + ', </b> <br>'
@@ -842,6 +830,23 @@ exports.dashboardService = function(socket, hooks) {
     }).catch(function(d) {
       console.log(d)
       return callback('Error Editing Patient', null)
+    })
+  })
+
+  socket.on('editAlgorithm', function(id, data, callback) {
+    console.log(data)
+    questionModel.update({
+      Optimizer: data.optimizer,
+      Classifier: data.classifier
+    }, {
+      where: {
+        ID: id
+      }
+    }).then(function(d) {
+      return callback(null, 'Algorithm Edited!')
+    }).catch(function(d) {
+      console.log(d)
+      return callback('Error Editing Algorithm', null)
     })
   })
 }

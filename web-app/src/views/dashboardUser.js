@@ -158,14 +158,19 @@ class HiddenRow extends React.Component {
     this.handleDelete = this.handleDelete.bind(this)
     this.handleFeedback = this.handleFeedback.bind(this)
     this.handlePatient = this.handlePatient.bind(this)
+    this.handleAlgorithm = this.handleAlgorithm.bind(this)
   }
 
   handleEdit () {
 
   }
 
+  handleAlgorithm () {
+    ReactDOM.render(<AlgorithmModal data={this.props.data} />, document.getElementById('modalMount'))
+  }
+
   handlePatient () {
-    ReactDOM.render(<PatientModal data={this.props.data}/>, document.getElementById('modalMount'))
+    ReactDOM.render(<PatientModal data={this.props.data} />, document.getElementById('modalMount'))
   }
 
   handleDelete () {
@@ -228,6 +233,8 @@ class HiddenRow extends React.Component {
     }
 
     // Get AI related info
+    var currentOptimizer = ''
+    var currentClassifier = ''
     var status = objectByString(data, 'QuestionStatus.Status')
     var classifier = ''
     var accuracy = ''
@@ -270,9 +277,9 @@ class HiddenRow extends React.Component {
           <Col sm={6} md={6}>
             <dl className='dl-horizontal'>
               <dt>Question: </dt>
-              <dd>{question}</dd>
+              <dd>{question} </dd>
               <dt>Parameters: </dt>
-              <dd>{paramsLong}</dd>
+              <dd>{paramsLong} </dd>
             </dl>
           </Col>
           <Col sm={6} md={6}>
@@ -311,6 +318,9 @@ class HiddenRow extends React.Component {
           </Col>
           <Col sm={6} md={6}>
             <ButtonGroup className='pull-right'>
+              <Button bsSize='xsmall' bsStyle='info' onClick={this.handleAlgorithm}>
+                Edit Algorithm
+              </Button>
               <Button bsSize='xsmall' bsStyle='success' onClick={this.handlePatient}>
                 Edit Patient
               </Button>
@@ -476,7 +486,7 @@ class PatientModal extends React.Component {
 
     return (
       <Modal ref='Modal' id='Modal' show>
-        <Modal.Header closeButton>
+        <Modal.Header>
           <Modal.Title>Edit Patient</Modal.Title>
         </Modal.Header>
         <Modal.Body>
@@ -512,4 +522,87 @@ class PatientModal extends React.Component {
 PatientModal.defaultProps = {
   sex_cd_options: config.Demographics.sex_cd,
   race_cd_options: config.Demographics.race_cd
+}
+
+class AlgorithmModal extends React.Component {
+
+  constructor(props){
+    super(props)
+
+    var data = this.props.data
+    this.state = {
+      optimizer: (data.Optimizer === null) ? 'Optimizer' : data.Optimizer,
+      classifier: (data.Classifier === null) ? 'Classifier' : data.Classifier
+    }
+
+    this.close = this.close.bind(this)
+    this.handleOptimizerSelect = this.handleOptimizerSelect.bind(this)
+    this.handleClassifierSelect = this.handleClassifierSelect.bind(this)
+    this.handleSubmit = this.handleSubmit.bind(this)
+  }
+
+  close() {
+    ReactDOM.unmountComponentAtNode(document.getElementById('modalMount'))
+  }
+
+  handleOptimizerSelect(key, index){
+    this.setState({
+      optimizer: this.props.optimizer_options[index]
+    })
+  }
+
+  handleClassifierSelect(key, index){
+    this.setState({
+      classifier: this.props.classifier_options[index]
+    })
+  }
+
+  handleSubmit () {
+    var data = {
+      optimizer: this.state.optimizer,
+      classifier: this.state.classifier
+    }
+
+    api.editAlgorithm(this.props.data.ID, data)
+      .then((msg) => {
+        Alert(msg, 'success', 4 * 1000)
+        this.close()
+      })
+      .catch((err) => {
+        Alert(err, 'danger', 4 * 1000)
+      })
+  }
+
+  render() {
+    return (
+      <Modal ref='Modal' id='Modal' show>
+        <Modal.Header>
+          <Modal.Title>Edit Optimizer and Classifier</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          Optimizer:
+          <DropdownButton id={1} title={this.state.optimizer} onSelect={this.handleOptimizerSelect}>
+            {this.props.optimizer_options.map((d, i) => {
+              return <MenuItem key={i} eventKey={i}> {d} </MenuItem>
+            })}
+          </DropdownButton><br/>
+          Classifier:
+          <DropdownButton id={2} title={this.state.classifier} onSelect={this.handleClassifierSelect}>
+            {this.props.classifier_options.map((d, i) => {
+              return <MenuItem key={i} eventKey={i}> {d} </MenuItem>
+            })}
+          </DropdownButton>
+          <ButtonInput onClick={this.handleSubmit} type='submit' value='Save' bsStyle='primary' block/>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button onClick={this.close}>Close</Button>
+        </Modal.Footer>
+      </Modal>
+    );
+  }
+}
+
+AlgorithmModal.defaultProps = {
+  optimizer_options: config.Optimizers,
+  classifier_options: config.Classifiers
 }
