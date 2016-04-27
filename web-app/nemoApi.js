@@ -3,6 +3,7 @@ var bcrypt = require('bcrypt')
 var jwt = require('jsonwebtoken')
 var config = require('getconfig')
 var nodemailer = require('nodemailer')
+var validator = require('validator')
 
 // Create database connection
 var sequelize = new Sequelize(
@@ -165,9 +166,18 @@ exports.userService = function(socket, hooks) {
 
   // Sign user up
   socket.on('signup', function(data, callback) {
-    hooks.forEach(function(func) {
-      func(socket)
-    })
+    var valid = false
+    if (validator.matches(data.password, /\d/) &&
+      validator.matches(data.password, /[a-z]/) &&
+      validator.matches(data.password, /[A-Z]/) &&
+      data.password.length >= 6 &&
+      validator.isEmail(data.email)) {
+      valid = true
+    }
+
+    if (!valid) {
+      return callback('Invalid email/password', null)
+    }
 
     bcrypt.genSalt(10, function(err, salt) {
       bcrypt.hash(data.password, salt, function(err, hash) {
