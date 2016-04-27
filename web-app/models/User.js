@@ -38,12 +38,12 @@ module.exports = function(sequelize) {
     },
     Confirmed: {
       type: Sequelize.BOOLEAN,
-      allowNull: false
+      allowNull: true
     },
     ConfirmationHash: {
       type: Sequelize.STRING,
-      allowNull: false
-    },
+      allowNull: true
+    }
   }, {
     tableName: 'User',
     freezeTableName: true,

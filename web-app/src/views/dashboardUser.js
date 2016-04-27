@@ -239,8 +239,12 @@ class HiddenRow extends React.Component {
     var classifier = ''
     var accuracy = ''
     var matrix = ''
+    var denyPredict = true
     var hasFeedback = data.StatusID === 3
     if (data.AIModels.length > 0) {
+      if (!data.MakePrediction || data.MakePrediction === null) {
+        denyPredict = false
+      }
       var aiModel = data.AIModels[0]
       classifier = aiModel.Algorithm
       accuracy = aiModel.Accuracy
@@ -318,6 +322,9 @@ class HiddenRow extends React.Component {
           </Col>
           <Col sm={6} md={6}>
             <ButtonGroup className='pull-right'>
+              <Button bsSize='xsmall' disabled={denyPredict} bsStyle='primary' onClick={this.handlePredict}>
+                Make Prediction
+              </Button>
               <Button bsSize='xsmall' bsStyle='info' onClick={this.handleAlgorithm}>
                 Edit Algorithm
               </Button>
