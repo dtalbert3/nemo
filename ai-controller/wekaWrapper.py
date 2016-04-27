@@ -97,11 +97,26 @@ class WekaWrapper:
 			demographics = ['race_cd', 'sex_cd', 'age_in_years_num']
 			observation_fact_features = ['tval_char', 'nval_num']
 			for demo in demographics:
-				newPatient[demo] = patient[demo]
+				if demo not in patient:
+					print "Patient definition missing" + demo + "."
+					newPatient[demo] = float('nan')
+				else:
+					if patient[demo] is not None and patient[demo] != '':
+						newPatient[demo] = patient[demo]
+					else: 
+						print "Demographic " + demo +  " for patient is empty"
+						newPatient[demo] = float('nan')
 			for obs in patient['observation_facts']:
 				concept_cd = obs['concept_cd']
 				for feat in observation_fact_features:
-					newPatient[(concept_cd + feat)] = obs[feat]
+					if feat in obs:
+						if obs[feat] is not None:
+							newPatient[(concept_cd + feat)] = obs[feat]
+						else:
+							newPatient[(concept_cd + feat)] = float('nan')
+					else:
+						print "Feature " + concept_cd + feat + " missing from Patient definition, marking it None"
+						newPatient[(concept_cd + feat)] = float('nan')
 			return newPatient
 		else:
 			return None
@@ -232,8 +247,10 @@ class WekaWrapper:
 		# If this is a prediction... make the prediction
 		if ((patientObj is not None) and (self.predict == 1)):
 			masterData.add_instance(patientInstance)
+			print "Running prediction on patient: "
+			print masterData.get_instance(0)
 			self.prediction = self.cls.classify_instance(masterData.get_instance(0))
-			self.uploadPrediction()
+			#self.uploadPrediction()
 
 		# Temporarily store file to serialize to
 		fileName = str(self.questionID) + self.algorithm + ".model"
@@ -260,11 +277,11 @@ def main():
 	API = nemoApi(CONFIG.HOST, CONFIG.PORT, CONFIG.USER, CONFIG.PASS, CONFIG.DB)
 	newWrapper = WekaWrapper(336, 'SMO', 'weka.classifiers.functions.SMO', [], [], '', predict=1)
 	masterData = newWrapper.retrieveData(336, 'all')
-	#learnerData = newWrapper.retrieveData(312, 'learner')
+	learnerData = newWrapper.retrieveData(336, 'learner')
 	#testData = newWrapper.retrieveData(312, 'test')
 	#masterData.delete()
-	#patient = API.fetchPatientJSON(313)
-	#patientObj = newWrapper.buildPatientObject()
+	patient = API.fetchPatientJSON(336)
+	patientObj = newWrapper.buildPatientObject()
 
 	pdb.set_trace()
 	#print patientObj
