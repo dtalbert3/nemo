@@ -210,7 +210,6 @@ class QuestionCreator extends React.Component {
             key='ID'
             value='concept_cd'
             displayValue={(d) => {
-              console.log(d)
               return d['concept_cd'] + ' (' + d['name_char'] +')'
             }}
             limit={10}

@@ -993,15 +993,18 @@ exports.dashboardService = function(socket, hooks) {
     })
   })
 
-  socket.on('markPrediction', function(id) {
+  socket.on('markPrediction', function(id, mark, callback) {
     questionModel.update({
-      MakePrediction: true
+      MakePrediction: mark
     }, {
       where: {
         ID: id
       }
     }).then(function(d) {
-      return callback(null, 'Will run prediction using specified patient')
+      var msg = mark
+        ? 'Running predictions for this question'
+        : 'No longer running predictions for this question'
+      return callback(null, msg)
     }).catch(function(d) {
       console.log(d)
       return callback('Error marking for prediction', null)

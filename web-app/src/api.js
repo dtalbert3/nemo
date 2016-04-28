@@ -20,11 +20,11 @@ class NemoApi {
 
   signup (userData) {
     var promise = new Promise((resolve, reject) => {
-      this.user.emit('signup', userData, (err, msg) => {
-        if (!err) {
+      this.user.emit('signup', userData, (error, msg) => {
+        if (!error) {
           resolve(msg)
         } else {
-          reject(err)
+          reject(error)
         }
       })
     })
@@ -33,13 +33,13 @@ class NemoApi {
 
   fetchGlobalData () {
     var promise = new Promise((resolve, reject) => {
-      this.dash.emit('getGlobal', {}, (err, data) => {
-        if (!err) {
+      this.dash.emit('getGlobal', {}, (error, data) => {
+        if (!error) {
           data = JSON.parse(data)
           this.store.dispatch(questions.setGlobalQuestions(data))
           resolve('Fetched Global Questions')
         } else {
-          reject(err)
+          reject(error)
         }
       })
     })
@@ -48,13 +48,13 @@ class NemoApi {
 
   fetchUserData () {
     var promise = new Promise((resolve, reject) => {
-      this.dash.emit('getUser', localStorage.userID, {}, (err, data) => {
-        if (!err) {
+      this.dash.emit('getUser', localStorage.userID, {}, (error, data) => {
+        if (!error) {
           data = JSON.parse(data)
           this.store.dispatch(questions.setUserQuestions(data))
           resolve('Fetched User Questions')
         } else {
-          reject(err)
+          reject(error)
         }
       })
     })
@@ -63,11 +63,11 @@ class NemoApi {
 
   deleteQuestion (id) {
     var promise = new Promise((resolve, reject) => {
-      this.dash.emit('delete', id, (err) => {
-        if (!err) {
+      this.dash.emit('delete', id, (error) => {
+        if (!error) {
           resolve('Question Deleted')
         } else {
-          reject(err)
+          reject(error)
         }
       })
     })
@@ -76,11 +76,11 @@ class NemoApi {
 
   giveFeedback (params) {
     var promise = new Promise((resolve, reject) => {
-      this.dash.emit('feedback', params, (err) => {
-        if (!err) {
+      this.dash.emit('feedback', params, (error) => {
+        if (!error) {
           resolve('Feedback Received')
         } else {
-          reject(err)
+          reject(error)
         }
       })
     })
@@ -90,13 +90,13 @@ class NemoApi {
   getTypes () {
     var promise = new Promise((resolve, reject) => {
       if (sessionStorage.getItem('questionTypes') === null) {
-        this.qstn.emit('getTypes', (err, data) => {
-          if (!err) {
+        this.qstn.emit('getTypes', (error, data) => {
+          if (!error) {
             data = data.map((d) => d)
             this.store.dispatch(questionCreator.setQuestionTypes(data))
             resolve('Fetched Question Types')
           } else {
-            reject(err)
+            reject(error)
           }
         })
       } else {
@@ -109,13 +109,13 @@ class NemoApi {
   getEvents () {
     var promise = new Promise((resolve, reject) => {
       if (sessionStorage.getItem('questionEvents') === null) {
-        this.qstn.emit('getEvents', (err, data) => {
-          if (!err) {
+        this.qstn.emit('getEvents', (error, data) => {
+          if (!error) {
             data = data.map((d) => d)
             this.store.dispatch(questionCreator.setQuestionEvents(data))
             resolve('Fetched Question Events')
           } else {
-            reject(err)
+            reject(error)
           }
         })
       } else {
@@ -128,12 +128,12 @@ class NemoApi {
   getSuggestions () {
     var promise = new Promise((resolve, reject) => {
       if (sessionStorage.getItem('suggestions') === null) {
-        this.qstn.emit('getSuggestions', (err, data) => {
-          if (!err) {
+        this.qstn.emit('getSuggestions', (error, data) => {
+          if (!error) {
             this.store.dispatch(questionCreator.setQuestionSuggestions(data))
             resolve('Fetched Parameter Suggestions')
           } else {
-            reject(err)
+            reject(error)
           }
         })
       } else {
@@ -145,11 +145,11 @@ class NemoApi {
 
   addQuestion (data) {
     var promise = new Promise((resolve, reject) => {
-      this.qstn.emit('create', data, (err) => {
-        if (!err) {
+      this.qstn.emit('create', data, (error) => {
+        if (!error) {
           resolve('Question Submitted!')
         } else {
-          reject(err)
+          reject(error)
         }
       })
     })
@@ -158,11 +158,11 @@ class NemoApi {
 
   editPatient (id, data) {
     var promise = new Promise((resolve, reject) => {
-      this.dash.emit('editPatient', id, JSON.stringify(data), (err) => {
-        if (!err) {
+      this.dash.emit('editPatient', id, JSON.stringify(data), (error) => {
+        if (!error) {
           resolve('Patient Edited!')
         } else {
-          reject(err)
+          reject(error)
         }
       })
     })
@@ -171,24 +171,24 @@ class NemoApi {
 
   editAlgorithm (id, data) {
     var promise = new Promise((resolve, reject) => {
-      this.dash.emit('editAlgorithm', id, data, (err) => {
-        if (!err) {
+      this.dash.emit('editAlgorithm', id, data, (error) => {
+        if (!error) {
           resolve('Algorithm Edited!')
         } else {
-          reject(err)
+          reject(error)
         }
       })
     })
     return promise
   }
 
-  markPrediction (id) {
+  markPrediction (id, mark) {
     var promise = new Promise((resolve, reject) => {
-      this.dash.emit('markPrediction', id, (err) => {
-        if (!err) {
-          resolve('Will run prediction using specified patient')
+      this.dash.emit('markPrediction', id, mark, (error, success) => {
+        if (!error) {
+          resolve(success)
         } else {
-          reject(err)
+          reject(error)
         }
       })
     })

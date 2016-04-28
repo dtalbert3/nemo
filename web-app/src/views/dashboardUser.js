@@ -175,7 +175,9 @@ class HiddenRow extends React.Component {
   }
 
   handlePredict () {
-    api.markPrediction(this.props.data.ID)
+    var id = this.props.data.ID
+    var mark = this.refs['predict_yes' + id].checked
+    api.markPrediction(this.props.data.ID, mark)
       .then((msg) => {
         Alert(msg, 'success', 4 * 1000)
         api.fetchUserData()
@@ -216,8 +218,8 @@ class HiddenRow extends React.Component {
 
   // Handler to api call to give feedback to question
   handleFeedback () {
-    var yes = this.refs.yes.checked
-    var no = this.refs.no.checked
+    var yes = this.refs.satisfied_yes.checked
+    var no = this.refs.satisfied_no.checked
     var id = this.props.data.AIModels[0].ID
     if (yes || no) {
       var params = {}
@@ -246,6 +248,7 @@ class HiddenRow extends React.Component {
     var data = this.props.data
 
     // Get Question realted info
+    var id = this.props.data.ID
     var question = data.QuestionType.Type + ' ' +
       data.QuestionEvent.Name
     var paramsLong = ''
@@ -263,14 +266,14 @@ class HiddenRow extends React.Component {
     var classifier = ''
     var accuracy = ''
     var matrix = ''
-    var denyPredict = true
     var hasFeedback = data.StatusID === 3
+    var runningPredict = false
+    if (data.MakePrediction) {
+      runningPredict = true
+    }
 
     // Get data related to most recent AI model if one exist
     if (data.AIModels.length > 0) {
-      if (!data.MakePrediction || data.MakePrediction === null) {
-        denyPredict = false
-      }
       var aiModel = data.AIModels[0]
       optimizer = aiModel.Optimizer
       classifier = aiModel.Algorithm
@@ -295,69 +298,75 @@ class HiddenRow extends React.Component {
 
     return (
       <Well bsStyle='sm'>
-        <Row>
+        <Row className='hiddenRowWell'>
           <Col sm={6} md={6}>
-            <dl className='dl-horizontal'>
-              <dt>Question: </dt>
-              <dd>{question} </dd>
-              <dt>Parameters: </dt>
-              <dd>{paramsLong} </dd>
-            </dl>
-          </Col>
-          <Col sm={6} md={6}>
-            <dl className='dl-horizontal'>
-              <dt>Status: </dt>
-              <dd>{status}</dd>
-              <dt>Optimizer: </dt>
-              <dd>{optimizer}</dd>
-              <dt>Classifier: </dt>
-              <dd>{classifier}</dd>
-              <dt>Accuracy: </dt>
-              <dd>{accuracy}</dd>
-              <dt>Confusion Matrix: </dt>
-              <dd>{matrix}</dd>
-            </dl>
-          </Col>
-        </Row>
-        <Row>
-          <Col sm={12} md={12}>
+            <Row>
+              <dl className='dl-horizontal'>
+                <dt>Question: </dt>
+                <dd>{question} </dd>
+                <dt>Parameters: </dt>
+                <dd>{paramsLong} </dd>
+              </dl>
+            </Row>
+            <Row>
+              Run predictions on this question?
+              <span>{'  Yes'}</span>
+              <input onChange={this.handlePredict} ref={'predict_yes' + id}
+                type='radio' name={'predict' + id}
+                value={runningPredict} checked={runningPredict} />
+              <span>{'  No'}</span>
+              <input onChange={this.handlePredict} ref={'predict_no' + id}
+                type='radio' name={'predict' + id}
+                value={!runningPredict} checked={!runningPredict} />
+            </Row>
             {(hasFeedback && localStorage.getItem('userType') === '1') ?
-              <form>
-                Are you satisfied with the accuracy?
-                <span>{'  Yes'}</span>
-                <input ref='yes' type='radio' name='accFeedback' value={1} />
-                <span>{'  No'}</span>
-                <input ref='no' type='radio' name='accFeedback' value={0} />
-              </form>
+              <Row>
+                <br/>
+                Feedback Required:
+                <form>
+                  Are you satisfied with the accuracy?
+                  <span>{'  Yes'}</span>
+                  <input ref='satisfied_yes' type='radio' name='accFeedback' value={1} />
+                  <span>{'  No'}</span>
+                  <input ref='satisfied_no' type='radio' name='accFeedback' value={0} /><br/>
+                  <Button className='pull-left' bsSize='xsmall' bsStyle='primary' onClick={this.handleFeedback}>
+                    Submit Feedback
+                  </Button>
+                </form>
+              </Row>
               : undefined}
           </Col>
-        </Row>
-        <Row>
           <Col sm={6} md={6}>
-            {(hasFeedback && localStorage.getItem('userType') === '1') ?
-              <Button className='pull-left' bsSize='xsmall' bsStyle='primary' onClick={this.handleFeedback}>
-                Submit Feedback
-              </Button>
-            : undefined}
-          </Col>
-          <Col sm={6} md={6}>
-            <ButtonGroup className='pull-right'>
-              <Button bsSize='xsmall' disabled={denyPredict} bsStyle='primary' onClick={this.handlePredict}>
-                Make Prediction
-              </Button>
-              <Button bsSize='xsmall' bsStyle='info' onClick={this.handleAlgorithm}>
-                Edit Algorithm
-              </Button>
-              <Button bsSize='xsmall' bsStyle='success' onClick={this.handlePatient}>
-                Edit Patient
-              </Button>
-              <Button bsSize='xsmall' bsStyle='warning' onClick={this.handleEdit}>
-                Edit
-              </Button>
-              <Button bsSize='xsmall' bsStyle='danger' onClick={this.handleDelete}>
-                Delete
-              </Button>
-            </ButtonGroup>
+            <Row>
+              <dl className='dl-horizontal'>
+                <dt>Status: </dt>
+                <dd>{status}</dd>
+                <dt>Optimizer: </dt>
+                <dd>{optimizer}</dd>
+                <dt>Classifier: </dt>
+                <dd>{classifier}</dd>
+                <dt>Accuracy: </dt>
+                <dd>{accuracy}</dd>
+                <dt>Confusion Matrix: </dt>
+                <dd>{matrix}</dd>
+              </dl>
+            </Row>
+            <Row>
+              <ButtonGroup className='pull-right'>
+                <Button bsSize='xsmall' bsStyle='info' onClick={this.handleAlgorithm}>
+                  Edit Algorithm
+                </Button>
+                <Button bsSize='xsmall' bsStyle='success' onClick={this.handlePatient}>
+                  Edit Patient
+                </Button>
+                <Button bsSize='xsmall' bsStyle='warning' onClick={this.handleEdit}>
+                  Edit
+                </Button>
+                <Button bsSize='xsmall' bsStyle='danger' onClick={this.handleDelete}>
+                  Delete
+                </Button>
+              </ButtonGroup>
+            </Row>
           </Col>
         </Row>
       </Well>

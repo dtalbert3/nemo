@@ -26,9 +26,9 @@
         "logging": true
       }
     },
-		"nemoConfirmationEmail":{
-			"userName": "nemo.confirmation",
-			"password": "nemoconfirm"
-		}
+    "nemoConfirmationEmail":{
+      "userName": "nemo.confirmation",
+      "password": "nemoconfirm"
+    }
 
 }
