@@ -70,7 +70,7 @@ class UserDashboard extends React.Component {
 
     return (
       <Grid>
-        <h2>Create a question</h2>
+        <h3>Create a question</h3>
         <QuestionCreator
           ref='QuestionCreator'
           onClick={this.updateUserQuestions}
@@ -81,8 +81,10 @@ class UserDashboard extends React.Component {
           searchEngine={this.props.searchEngine}
           handleSubmit={this.handleSubmitQuestion} />
 
-        <h2>Your Questions <span className='pull-right'>{questionsLeft} Questions Asked</span>
-        </h2>
+        <h3> Questions Asked: {questionsLeft}
+          <span className='glyphicon glyphicon-refresh pull-right hover-icon'
+            onClick={this.updateUserQuestions} />
+        </h3>
         <CollapsibleTable
           data={this.props.questions}
           numCols={3}

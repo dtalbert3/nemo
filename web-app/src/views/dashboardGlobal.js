@@ -41,7 +41,7 @@ class GlobalDashboard extends React.Component {
   render () {
     return (
       <Grid>
-        <h2>Global Questions</h2>
+        <h3>Global Questions</h3>
         <CollapsibleTable
           data={this.props.questions}
           numCols={3}
