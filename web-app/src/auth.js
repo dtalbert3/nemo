@@ -32,10 +32,12 @@ export default {
   logout (callback) {
     delete localStorage.token
     delete localStorage.userType
+    delete localStorage.MaxQuestions
+    delete localStorage.userID
+
     if (callback) {
       callback()
     }
-    this.onChange(false)
   },
 
   loggedIn () {

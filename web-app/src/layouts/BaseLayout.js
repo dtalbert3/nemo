@@ -47,6 +47,9 @@ class BaseLayout extends React.Component {
               <NavLink path='/global' label='Global' hidden={Auth.loggedIn() ? '' : ' hidden'} />
               <NavLink path='/about' label='About' hidden='' />
             </Nav>
+            <Nav pullRight>
+              <NavLink path='/logout' label='Logout' hidden={Auth.loggedIn() ? '' : ' hidden'} />
+            </Nav>
           </Navbar.Collapse>
           <div id='alert'/>
         </Navbar>

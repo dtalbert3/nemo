@@ -37,10 +37,19 @@ const defaultPage = (nextState, replace) => {
   }
 }
 
+const logout = (nextState, replace) => {
+  Auth.logout()
+  replace({
+    pathname: '/login',
+    state: { nextPathname: nextState.location.pathname }
+  })
+}
+
 export default () => (
   <Router>
     <Route path='/' component={Base} onEnter={defaultPage} >
       <Route path='/login' component={Login} />
+      <Route path='/logout' onEnter={logout} />
       <Route path='/signup' component={Signup} />
       {/* <Route path='/forgotPassword' component={}> */}
       <Route path='/user' component={DashboardUser} onEnter={requireAuth} />
