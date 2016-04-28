@@ -226,7 +226,7 @@ class QuestionCreator extends React.Component {
 
           <Button bsStyle='primary' onClick={this.addParameter}>Add</Button>
         </Row>
-        <Row>
+        {/*<Row>
           <strong> with these demographics </strong>
         </Row>
         <Row>
@@ -260,7 +260,7 @@ class QuestionCreator extends React.Component {
           <Col xs={2} md={2}>
             <Button bsStyle='primary' onClick={this.addParameter}>Add</Button>
           </Col>
-        </Row>
+        </Row>*/}
 
         <Row>
           {/* Render parameters as tokens */}
