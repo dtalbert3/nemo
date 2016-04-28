@@ -123,6 +123,7 @@ class Signup extends React.Component {
     return (
       <Row>
         <Col sm={6} smOffset={3} md={6} mdOffset={3}>
+          <br/>
           <form onSubmit={this.handleSubmit} autoComplete='on'>
             <Input ref='firstName' type='text'
               label='First Name' placeholder='Enter First Name'
