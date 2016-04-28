@@ -35,7 +35,9 @@ class NemoApi {
     var promise = new Promise((resolve, reject) => {
       this.dash.emit('getGlobal', {}, (error, data) => {
         if (!error) {
-          data = JSON.parse(data)
+          data = JSON.parse(data).filter((d) => {
+            return parseInt(localStorage.getItem('userID')) !== d.UserID
+          })
           this.store.dispatch(questions.setGlobalQuestions(data))
           resolve('Fetched Global Questions')
         } else {

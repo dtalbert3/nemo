@@ -41,7 +41,10 @@ class GlobalDashboard extends React.Component {
   render () {
     return (
       <Grid>
-        <h3>Global Questions</h3>
+        <h3>Global Questions
+          <span className='glyphicon glyphicon-refresh pull-right hover-icon'
+            onClick={this.updateGlobalQuestions} />
+        </h3>
         <CollapsibleTable
           data={this.props.questions}
           numCols={3}
@@ -71,7 +74,6 @@ const Headers = () => {
   return ([
     <td key={1} >Question</td>,
     <td key={2} >Parameters</td>,
-    <td key={3} >Status</td>
   ])
 }
 
@@ -86,11 +88,10 @@ const MinimalRow = (data) => {
       ? ', '
       : (numParams < data['QuestionParameters'].length) ? ' . . .' : ''
   }
-  var status = data.QuestionStatus.Status
+
   return ([
     <td key={1} >{question}</td>,
     <td key={2} >{parameters}</td>,
-    <td key={3} >{status}</td>
   ])
 }
 
@@ -131,7 +132,6 @@ class HiddenRow extends React.Component {
     }
 
     // Get AI related info
-    var status = data.QuestionStatus.Status
     var classifier = ''
     var accuracy = ''
     var matrix = ''
@@ -170,8 +170,6 @@ class HiddenRow extends React.Component {
           </Col>
           <Col sm={6} md={6}>
             <dl className='dl-horizontal'>
-              <dt>Status: </dt>
-              <dd>{status}</dd>
               <dt>Classifier: </dt>
               <dd>{classifier}</dd>
               <dt>Accuracy: </dt>
