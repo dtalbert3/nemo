@@ -1,7 +1,9 @@
 import React, { PropTypes } from 'react'
 import ReactDOM from 'react-dom'
 import { connect } from 'react-redux'
-import { Input, Table, Well, ButtonGroup, Button, ButtonInput, DropdownButton, Grid, Col, Row, MenuItem, Modal, Popover, Tooltip, OverlayTrigger } from 'react-bootstrap'
+import { Table, Well, ButtonGroup, Button, DropdownButton,
+  Grid, Col, Row, MenuItem, Modal }
+  from 'react-bootstrap'
 import QuestionCreator from '../partials/questionCreator.js'
 import CollapsibleTable from '../partials/collapsibleTable.js'
 import Alert from '../partials/alert'
@@ -427,19 +429,26 @@ class ObservationFactForm extends React.Component {
 
   render () {
     return (
-      <div>
-        <h4>{this.props.concept_cd}</h4>
-        <Input type='number'
-          ref='nval_num'
-          placeholder='nval_num'
-          value={this.state.nval_num}
-          onChange={this.handleNvalnum} />
-
-        <Input type='text'
+      <div className='form-group'>
+        <label className='col-sm-2 control-label'>
+          {this.props.concept_cd}
+        </label>
+        <div className='col-sm-5'>
+          <input type='number'
+            ref='nval_num'
+            placeholder='nval_num'
+            className='form-control'
+            value={this.state.nval_num}
+            onChange={this.handleNvalnum} />
+        </div>
+        <div className='col-sm-5'>
+        <input type='text'
           ref='tval_char'
           placeholder='tval_char'
+          className='form-control'
           value={this.state.tval_char}
           onChange={this.handleTvalchar} />
+        </div>
      </div>
     )
   }
@@ -541,34 +550,50 @@ class PatientModal extends React.Component {
           <Modal.Title>Edit Patient</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          Sex:
-          <DropdownButton id={1} title={this.state.sex_cd} onSelect = {this.handleSexDropdownSelect}>
-            {this.props.sex_cd_options.map((d, i) => {
-              return <MenuItem key={i} eventKey={i}> {d} </MenuItem>
+          <form className='form-horizontal'>
+            <div className='form-group'>
+              <label className='col-sm-2 control-label'>Sex: </label>
+              <div className='col-sm-10'>
+                <DropdownButton id={1} title={this.state.sex_cd}
+                  onSelect={this.handleSexDropdownSelect}>
+                  {this.props.sex_cd_options.map((d, i) => {
+                    return <MenuItem key={i} eventKey={i}> {d} </MenuItem>
+                  })}
+                </DropdownButton>
+              </div>
+            </div>
+            <div className='form-group'>
+              <label className='col-sm-2 control-label'>Race: </label>
+              <div className='col-sm-10'>
+                <DropdownButton id={2} title={this.state.race_cd}
+                  onSelect={this.handleRaceDropdownSelect}>
+                  {this.props.race_cd_options.map((d, i) => {
+                    return <MenuItem key={i} eventKey={i}> {d} </MenuItem>
+                  })}
+                </DropdownButton>
+              </div>
+            </div>
+            <div className='form-group'>
+              <label className='col-sm-2 control-label'>Age: </label>
+              <div className='col-sm-10'>
+                <input type='number' ref='age' className='form-control'
+                  placeholder='Age'
+                  value={this.state.age_in_years}
+                  onChange={this.handleAgeSelect}
+                  min='0'
+                  max='150'/>
+              </div>
+            </div>
+            {this.props.data.QuestionParameters.map((d, i) => {
+              return <ObservationFactForm key={i}
+                ref={'observationFact' + i}
+                concept_cd={d.concept_cd}
+                data={this.state.observation_facts[i]}/>
             })}
-          </DropdownButton><br/>
-          Race:
-          <DropdownButton id={2} title={this.state.race_cd} onSelect = {this.handleRaceDropdownSelect}>
-            {this.props.race_cd_options.map((d, i) => {
-              return <MenuItem key={i} eventKey={i}> {d} </MenuItem>
-            })}
-          </DropdownButton><br/>
-          Age:
-          <Input type='number' ref='age'
-            placeholder='Age'
-            value={this.state.age_in_years}
-            onChange={this.handleAgeSelect}
-            min='0'
-            max='150'/><br/>
-          {this.props.data.QuestionParameters.map((d, i) => {
-            return <ObservationFactForm key={i}
-              ref={'observationFact' + i}
-              concept_cd={d.concept_cd}
-              data={this.state.observation_facts[i]}/>
-          })}
-          <ButtonInput onClick={this.handleSubmit} type='submit' value='Save' bsStyle='primary' block/>
+          </form>
         </Modal.Body>
         <Modal.Footer>
+          <Button className='pull-left' onClick={this.handleSubmit} bsStyle='primary'>Save</Button>
           <Button onClick={this.close}>Close</Button>
         </Modal.Footer>
       </Modal>
@@ -641,21 +666,31 @@ class AlgorithmModal extends React.Component {
           <Modal.Title>Edit Optimizer and Classifier</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          Optimizer:
-          <DropdownButton id={1} title={this.state.optimizer} onSelect={this.handleOptimizerSelect}>
-            {this.props.optimizer_options.map((d, i) => {
-              return <MenuItem key={i} eventKey={i}> {d} </MenuItem>
-            })}
-          </DropdownButton><br/>
-          Classifier:
-          <DropdownButton id={2} title={this.state.classifier} onSelect={this.handleClassifierSelect}>
-            {this.props.classifier_options.map((d, i) => {
-              return <MenuItem key={i} eventKey={i}> {d} </MenuItem>
-            })}
-          </DropdownButton>
-          <ButtonInput onClick={this.handleSubmit} type='submit' value='Save' bsStyle='primary' block/>
+          <form className='form-horizontal'>
+            <div className='form-group'>
+              <label className='col-sm-2 control-label'>Optimizer:</label>
+              <div className='col-sm-10'>
+                <DropdownButton id={1} title={this.state.optimizer} onSelect={this.handleOptimizerSelect}>
+                  {this.props.optimizer_options.map((d, i) => {
+                    return <MenuItem key={i} eventKey={i}> {d} </MenuItem>
+                  })}
+                </DropdownButton>
+              </div>
+            </div>
+            <div className='form-group'>
+              <label className='col-sm-2 control-label'>Classifier:</label>
+              <div className='col-sm-10'>
+                <DropdownButton id={2} title={this.state.classifier} onSelect={this.handleClassifierSelect}>
+                  {this.props.classifier_options.map((d, i) => {
+                    return <MenuItem key={i} eventKey={i}> {d} </MenuItem>
+                  })}
+                </DropdownButton>
+              </div>
+            </div>
+          </form>
         </Modal.Body>
         <Modal.Footer>
+          <Button className='pull-left' onClick={this.handleSubmit} bsStyle='primary'>Save</Button>
           <Button onClick={this.close}>Close</Button>
         </Modal.Footer>
       </Modal>
