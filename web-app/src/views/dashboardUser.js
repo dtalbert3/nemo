@@ -228,17 +228,18 @@ class HiddenRow extends React.Component {
 
   // Handler to api call to give feedback to question
   handleFeedback () {
-    var yes = this.refs.satisfied_yes.checked
-    var no = this.refs.satisfied_no.checked
+    var acc_yes = this.refs.satisfied_acc_yes.checked
+    var acc_no = this.refs.satisfied_acc_no.checked
     var id = this.props.data.AIModels[0].ID
-    if (yes || no) {
+    if (acc_yes || acc_no) {
       var params = {}
-      params.aiModelID = id
-      if (yes) {
+      params.aiModelID = i
+      if (acc_yes) {
         params.value = 1
       } else {
         params.value = 0
       }
+
       api.giveFeedback(params)
         .then((msg) => {
           Alert(msg, 'success', 4 * 1000)
@@ -268,6 +269,18 @@ class HiddenRow extends React.Component {
       paramsLong += (i !== numParams - 1) ? ', ' : ''
     }
 
+    // Get prediction related info
+    var runningPredict = false
+    if (data.MakePrediction) {
+      runningPredict = true
+    }
+    var hasPrediction = false
+    var prediction = ''
+    if (data.Prediction !== null) {
+      hasPrediction = true
+      prediction = data.Prediction ? 'true' : 'false'
+    }
+
     // Get AI related info
     var currentOptimizer = ''
     var currentClassifier = ''
@@ -277,10 +290,6 @@ class HiddenRow extends React.Component {
     var accuracy = ''
     var matrix = ''
     var hasFeedback = data.StatusID === 3
-    var runningPredict = false
-    if (data.MakePrediction) {
-      runningPredict = true
-    }
 
     // Get data related to most recent AI model if one exist
     if (data.AIModels.length > 0) {
@@ -327,18 +336,28 @@ class HiddenRow extends React.Component {
               <span>{'  No'}</span>
               <input onChange={this.handlePredict} ref={'predict_no' + id}
                 type='radio' name={'predict' + id}
-                value={!runningPredict} checked={!runningPredict} />
+                value={!runningPredict} checked={!runningPredict} /><br/>
+              {(hasPrediction) ?
+                <span>
+                  Latest prediction for the current patient is {prediction}.
+                </span>
+              : undefined}
             </Row>
             {(hasFeedback && localStorage.getItem('userType') === '1') ?
               <Row>
                 <br/>
-                Feedback Required:
+                <label>Feedback Required:</label>
                 <form>
                   Are you satisfied with the accuracy?
                   <span>{'  Yes'}</span>
-                  <input ref='satisfied_yes' type='radio' name='accFeedback' value={1} />
+                  <input ref='satisfied_acc_yes' type='radio' name='accFeedback' value={1} />
                   <span>{'  No'}</span>
-                  <input ref='satisfied_no' type='radio' name='accFeedback' value={0} /><br/>
+                  <input ref='satisfied_acc_no' type='radio' name='accFeedback' value={0} /><br/>
+                  {/*Are you satisfied with the prediction?
+                  <span>{'  Yes'}</span>
+                  <input ref='satisfied_predict_yes' type='radio' name='predictFeedback' value={1} />
+                  <span>{'  No'}</span>
+                  <input ref='satisfied_predict_no' type='radio' name='predictFeedback' value={0} /><br/>*/}
                   <Button className='pull-left' bsSize='xsmall' bsStyle='primary' onClick={this.handleFeedback}>
                     Submit Feedback
                   </Button>
