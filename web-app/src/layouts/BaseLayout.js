@@ -32,6 +32,7 @@ class BaseLayout extends React.Component {
   render () {
     return (
       <div id='base'>
+        <div id="modal"></div>
         <Navbar>
           <Navbar.Header>
             <Navbar.Brand>

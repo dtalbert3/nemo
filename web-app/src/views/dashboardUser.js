@@ -192,12 +192,20 @@ class HiddenRow extends React.Component {
 
   // Create modal to handle editing of question classifer and optimizer
   handleAlgorithm () {
-    ReactDOM.render(<AlgorithmModal data={this.props.data} />, document.getElementById('modalMount'))
+    var mountPoint = document.getElementById('modal')
+    ReactDOM.render(
+      <AlgorithmModal data={this.props.data} mountPoint={mountPoint} />,
+      mountPoint
+    )
   }
 
   // Create modal to handle editing of patient used for prediction
   handlePatient () {
-    ReactDOM.render(<PatientModal data={this.props.data} />, document.getElementById('modalMount'))
+    var mountPoint = document.getElementById('modal')
+    ReactDOM.render(
+      <PatientModal data={this.props.data} mountPoint={mountPoint} />,
+      mountPoint
+    )
   }
 
   // Handler to api call to delete question
@@ -463,7 +471,11 @@ class PatientModal extends React.Component {
   }
 
   close () {
-    ReactDOM.unmountComponentAtNode(document.getElementById('modalMount'))
+    // Dirty trick to prevent error logs
+    // Hopefully fixed in future versions of React
+    setTimeout(()=> {
+      ReactDOM.unmountComponentAtNode(this.props.mountPoint)
+    }, 100);
   }
 
   handleSexDropdownSelect (key, index){
@@ -586,8 +598,12 @@ class AlgorithmModal extends React.Component {
     this.handleSubmit = this.handleSubmit.bind(this)
   }
 
-  close() {
-    ReactDOM.unmountComponentAtNode(document.getElementById('modalMount'))
+  close () {
+    // Dirty trick to prevent error logs
+    // Hopefully fixed in future versions of React
+    setTimeout(()=> {
+      ReactDOM.unmountComponentAtNode(this.props.mountPoint)
+    }, 100);
   }
 
   handleOptimizerSelect(key, index){
