@@ -31,13 +31,25 @@ console.log("Dataloader will run on this minute: ", rule.minute);
 var client = new zerorpc.Client();
 client.connect("tcp://127.0.0.1:4242");
 
-client.invoke("hello", "RPC", function(error, res, more) {
-    console.log(res);
-});
 
-var j = schedule.scheduleJob(rule, function(){
+setTimeout(function() {
+	console.log("sending signal now");
+	client.invoke("dataLoad", "pendingDataLoad", function(error, res, more) {
+	    console.log(res);
+	});
+}, 10000);
+
+
+/*var j = schedule.scheduleJob(rule, function(){
+	client.invoke("dataLoad", "pendingDataLoad", function(error, res, more) {
+	    console.log(res);
+	});
   console.log("Running DataLoader\n");
   exec('node DataLoader.js', function callback(error, stdout, stderr){
       console.log(stdout);
+			client.invoke("dataLoad", "dataLoadDone", function(error, res, more) {
+				console.log(res);
+			});
   });
 });
+*/
