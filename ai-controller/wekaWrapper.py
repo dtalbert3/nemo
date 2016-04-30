@@ -275,14 +275,15 @@ def main():
 
 	# Instantiate api
 	API = nemoApi(CONFIG.HOST, CONFIG.PORT, CONFIG.USER, CONFIG.PASS, CONFIG.DB)
-	newWrapper = WekaWrapper(336, 'SMO', 'weka.classifiers.functions.SMO', [], [], '', predict=1)
-	masterData = newWrapper.retrieveData(336, 'all')
-	learnerData = newWrapper.retrieveData(336, 'learner')
+	#newWrapper = WekaWrapper(336, 'SMO', 'weka.classifiers.functions.SMO', [], [], '', predict=1)
+	#masterData = newWrapper.retrieveData(336, 'all')
+	#learnerData = newWrapper.retrieveData(336, 'learner')
 	#testData = newWrapper.retrieveData(312, 'test')
 	#masterData.delete()
-	patient = API.fetchPatientJSON(336)
-	patientObj = newWrapper.buildPatientObject()
+	#patient = API.fetchPatientJSON(336)
+	#patientObj = newWrapper.buildPatientObject()
 
+	x = API.getDataQuery(356, 'ALL')
 	pdb.set_trace()
 	#print patientObj
 	#newDataset = newWrapper.addPatientNominals(patientObj, masterData)

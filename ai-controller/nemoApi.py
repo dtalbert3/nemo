@@ -227,22 +227,27 @@ class nemoApi():
         # o.concept_cd Like 'ICD9:427.9'
         # AND o2.concept_cd Like 'ICD9:382.9'
 
+        observationParams = []
+        for param in question.params:
+            if(param.tableName != 'patient_dimension'):
+                observationParams.append(param)
         dataQuery = "Select "
         # Add patient_dimension attributes to statement
         for attribute in patientAttributes:
             dataQuery += " p.{0}, ".format(attribute)
         # Add each diagnosis/lab's data to statement
-        for i, param in enumerate(question.params):
+        for i, param in enumerate(observationParams):
             for j, attribute in enumerate(observationAttributes):
-                if(j == (len(observationAttributes) - 1) and i == (len(question.params) - 1)):
-                    dataQuery += "`{0}`.{1} as `{0}{1}` ".format(param.concept_cd, attribute)
-                else:
-                    dataQuery += "`{0}`.{1} as `{0}{1}`, ".format(param.concept_cd, attribute)
+                if(param.tableName != 'patient_dimension'):
+                    if(j == (len(observationAttributes) - 1) and i == (len(observationParams) - 1)):
+                        dataQuery += "`{0}`.{1} as `{0}{1}` ".format(param.concept_cd, attribute)
+                    else:
+                        dataQuery += "`{0}`.{1} as `{0}{1}`, ".format(param.concept_cd, attribute)
 
         dataQuery += " ,pr.readmitted"
         dataQuery += " from patient_dimension p"
         # Build query, add observation_fact joins for each parameter
-        for i, param in enumerate(question.params):
+        for i, param in enumerate(observationParams):
             dataQuery += " INNER JOIN observation_fact `{0}` on p.patient_num = `{0}`.patient_num ".format(param.concept_cd)
 
         # TODO: Add the left outer join when the ReadmittancePatients table is up
@@ -259,12 +264,18 @@ class nemoApi():
         if(len(question.params) > 0):
             dataQuery += " WHERE "
             for i, param in enumerate(question.params):
-                if(i == 0):
-                    dataQuery += " `{0}`.concept_cd = '{0}' ".format(param.concept_cd)
-                else:
-                    dataQuery += "AND `{0}`.concept_cd = '{0}' ".format(param.concept_cd)
-                if(param.min != None and param.max != None):
-                    dataQuery += " AND `{0}`.nval_num BETWEEN {1} AND {2} ".format(param.concept_cd, param.min, param.max)
+                if(i > 0):
+                    dataQuery += " AND "
+                if(param.tableName != 'patient_dimension'): # If this parameter is based on observation fact
+                    dataQuery += "`{0}`.concept_cd = '{0}' ".format(param.concept_cd)
+                    if(param.min != None and param.max != None):
+                        dataQuery += " AND `{0}`.nval_num BETWEEN {1} AND {2} ".format(param.concept_cd, param.min, param.max)
+                else: # If this parameter refers to a demographic
+                    dataQuery += "p.{0}".format(param.tableColumn)
+                    if(param.min != None and param.max != None): 
+                        dataQuery += " BETWEEN {0} AND {1} ".format(param.min, param.max)
+                    else:
+                        dataQuery += " = '{0}'".format(param.concept_cd)
         dataQuery += ";"
         # disconnect from server
         db.close()
