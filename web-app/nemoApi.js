@@ -916,7 +916,9 @@ exports.dashboardService = function(socket, hooks) {
   })
 
   socket.on('feedback', function(params, callback) {
-    var val = params.value
+    console.log(params.prdFeedback)
+    var accFeedback = params.accFeedback
+    var prdFeedback = params.prdFeedback
     var id = params.aiModelID
     sequelize.transaction(function(t) {
       return aiModelModel.findById(id)
@@ -926,8 +928,8 @@ exports.dashboardService = function(socket, hooks) {
           QuestionID: aiModel.QuestionID,
           Value: aiModel.Value,
           Accuracy: aiModel.Accuracy,
-          AIFeedback: val,
-          PredictionFeedback: aiModel.PredictionFeedback,
+          AIFeedback: accFeedback,
+          PredictionFeedback: prdFeedback,
           AI: aiModel.AI,
           Algorithm: aiModel.Algorithm,
           Active: aiModel.Active,

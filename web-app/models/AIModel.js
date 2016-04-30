@@ -28,7 +28,7 @@ module.exports = function(sequelize) {
       allowNull: true
     },
     PredictionFeedback: {
-      type: Sequelize.DECIMAL,
+      type: Sequelize.BOOLEAN,
       allowNull: true
     },
     Algorithm: {
