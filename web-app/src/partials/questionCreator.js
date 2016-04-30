@@ -124,8 +124,6 @@ class QuestionCreator extends React.Component {
     this.setState({
       parameters: this.state.parameters.concat(parameter)
     })
-
-    console.log(this.state.parameters)
   }
 
   // Handle updating of parameter from TypeAhead

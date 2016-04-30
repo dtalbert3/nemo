@@ -237,7 +237,7 @@ class HiddenRow extends React.Component {
       var params = {}
       params.aiModelID = id
       params.accFeedback = acc_yes
-      console.log(this.props.data.MakePrediction)
+
       if (this.props.data.Prediction !== null && this.props.data.MakePrediction) {
         var predict_yes = this.refs.satisfied_predict_yes.checked
         var predict_no = this.refs.satisfied_predict_no.checked
@@ -647,8 +647,8 @@ class AlgorithmModal extends React.Component {
 
     var data = this.props.data
     this.state = {
-      optimizer: (data.Optimizer === null) ? 'Optimizer' : data.Optimizer,
-      classifier: (data.Classifier === null) ? 'Classifier' : data.Classifier
+      optimizer: (data.Optimizer === null) ? 'Random' : data.Optimizer,
+      classifier: (data.Classifier === null) ? 'Random' : data.Classifier
     }
 
     this.close = this.close.bind(this)
@@ -679,8 +679,8 @@ class AlgorithmModal extends React.Component {
 
   handleSubmit () {
     var data = {
-      optimizer: this.state.optimizer,
-      classifier: this.state.classifier
+      optimizer: (this.state.optimizer === 'Random') ? null : this.state.optimizer,
+      classifier: (this.state.classifer === 'Random') ? null : this.state.classifier
     }
 
     api.editAlgorithm(this.props.data.ID, data)
