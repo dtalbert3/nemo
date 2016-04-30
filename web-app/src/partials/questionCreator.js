@@ -115,13 +115,17 @@ class QuestionCreator extends React.Component {
     parameter.valtype_cd = 'N'
     parameter.TableName = null
     parameter.TableColumn = null
-    parameter.min = this.state.bounds.min
-    parameter.max = this.state.bounds.max
+    if ((/LOINC.*/).test(parameter.concept_cd)) {
+      parameter.min = this.state.bounds.min
+      parameter.max = this.state.bounds.max
+    }
 
     // Update state of parameters listing
     this.setState({
       parameters: this.state.parameters.concat(parameter)
     })
+
+    console.log(this.state.parameters)
   }
 
   // Handle updating of parameter from TypeAhead

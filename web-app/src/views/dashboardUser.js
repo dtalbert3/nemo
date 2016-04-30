@@ -235,11 +235,20 @@ class HiddenRow extends React.Component {
     var id = this.props.data.AIModels[0].ID
     if (acc_yes || acc_no) {
       var params = {}
-      params.aiModelID = i
-      if (acc_yes) {
-        params.value = 1
+      params.aiModelID = id
+      params.accFeedback = acc_yes
+      console.log(this.props.data.MakePrediction)
+      if (this.props.data.Prediction !== null && this.props.data.MakePrediction) {
+        var predict_yes = this.refs.satisfied_predict_yes.checked
+        var predict_no = this.refs.satisfied_predict_no.checked
+        if (predict_yes || predict_no) {
+          params.prdFeedback = predict_yes
+        } else {
+          Alert('Missng prediction feedback', 'danger', 4 * 1000)
+          return
+        }
       } else {
-        params.value = 0
+        params.prdFeedback = null
       }
 
       api.giveFeedback(params)
@@ -261,7 +270,7 @@ class HiddenRow extends React.Component {
     var data = this.props.data
 
     // Get Question realted info
-    var id = this.props.data.ID
+    var id = data.ID
     var question = data.QuestionType.Type + ' ' +
       data.QuestionEvent.Name
     var paramsLong = ''
@@ -339,7 +348,7 @@ class HiddenRow extends React.Component {
               <input onChange={this.handlePredict} ref={'predict_no' + id}
                 type='radio' name={'predict' + id}
                 value={!runningPredict} checked={!runningPredict} /><br/>
-              {(hasPrediction) ?
+              {(hasPrediction && runningPredict) ?
                 <span>
                   Latest prediction for the current patient is {prediction}.
                 </span>
@@ -355,11 +364,15 @@ class HiddenRow extends React.Component {
                   <input ref='satisfied_acc_yes' type='radio' name='accFeedback' value={1} />
                   <span>{'  No'}</span>
                   <input ref='satisfied_acc_no' type='radio' name='accFeedback' value={0} /><br/>
-                  {/*Are you satisfied with the prediction?
-                  <span>{'  Yes'}</span>
-                  <input ref='satisfied_predict_yes' type='radio' name='predictFeedback' value={1} />
-                  <span>{'  No'}</span>
-                  <input ref='satisfied_predict_no' type='radio' name='predictFeedback' value={0} /><br/>*/}
+                  {(hasPrediction && runningPredict) ?
+                    <span>
+                      Are you satisfied with the prediction?
+                      <span>{'  Yes'}</span>
+                      <input ref='satisfied_predict_yes' type='radio' name='predictFeedback' value={1} />
+                      <span>{'  No'}</span>
+                      <input ref='satisfied_predict_no' type='radio' name='predictFeedback' value={0} /><br/>
+                    </span>
+                  : undefined}
                   <Button className='pull-left' bsSize='xsmall' bsStyle='primary' onClick={this.handleFeedback}>
                     Submit Feedback
                   </Button>
@@ -425,7 +438,7 @@ class ObservationFactForm extends React.Component {
 
   // Set nval num for observation fact
   handleNvalnum () {
-    var x = this.refs['nval_num'].getValue()
+    var x = this.refs['nval_num'].value
     x = (x !== '') ? parseInt(x) : null
     this.setState({
       nval_num: x,
@@ -434,7 +447,7 @@ class ObservationFactForm extends React.Component {
 
   // Set tval char for observation fact
   handleTvalchar () {
-    var x = this.refs['tval_char'].getValue()
+    var x = this.refs['tval_char'].value
     this.setState({
       tval_char: x
     })
@@ -520,8 +533,8 @@ class PatientModal extends React.Component {
     })
   }
 
-  handleAgeSelect (){
-    var age = this.refs.age.getValue()
+  handleAgeSelect () {
+    var age = this.refs.age.value
     age = (age !== '') ? parseInt(age) : null
     if(age > 150){
       age = 150
