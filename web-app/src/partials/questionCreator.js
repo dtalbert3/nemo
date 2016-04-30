@@ -115,13 +115,17 @@ class QuestionCreator extends React.Component {
     parameter.valtype_cd = 'N'
     parameter.TableName = null
     parameter.TableColumn = null
-    parameter.min = this.state.bounds.min
-    parameter.max = this.state.bounds.max
+    if ((/LOINC.*/).test(parameter.concept_cd)) {
+      parameter.min = this.state.bounds.min
+      parameter.max = this.state.bounds.max
+    }
 
     // Update state of parameters listing
     this.setState({
       parameters: this.state.parameters.concat(parameter)
     })
+
+    console.log(this.state.parameters)
   }
 
   // Handle updating of parameter from TypeAhead
@@ -209,6 +213,9 @@ class QuestionCreator extends React.Component {
             engine={this.props.searchEngine}
             key='ID'
             value='concept_cd'
+            displayValue={(d) => {
+              return d['concept_cd'] + ' (' + d['name_char'] +')'
+            }}
             limit={10}
             handleToken={this.updateParameter}
           />
@@ -221,11 +228,9 @@ class QuestionCreator extends React.Component {
             undefined
           }
 
-
-
           <Button bsStyle='primary' onClick={this.addParameter}>Add</Button>
         </Row>
-        <Row>
+        {/*<Row>
           <strong> with these demographics </strong>
         </Row>
         <Row>
@@ -259,7 +264,7 @@ class QuestionCreator extends React.Component {
           <Col xs={2} md={2}>
             <Button bsStyle='primary' onClick={this.addParameter}>Add</Button>
           </Col>
-        </Row>
+        </Row>*/}
 
         <Row>
           {/* Render parameters as tokens */}

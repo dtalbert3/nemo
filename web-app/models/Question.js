@@ -54,6 +54,14 @@ module.exports = function(sequelize) {
     Optimizer: {
       type: Sequelize.STRING,
       allowNull: true
+    },
+    Prediction: {
+      type: Sequelize.STRING,
+      allowNull: true
+    },
+    MakePrediction: {
+      type: Sequelize.BOOLEAN,
+      allowNull: true
     }
   }, {
     tableName: 'Question',

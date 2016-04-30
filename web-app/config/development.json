@@ -4,16 +4,12 @@
         "host": "localhost",
         "port": 6379,
         "db": 1,
-        "secret": "bang!",
+        "secret": "sshhh",
         "secure": false
     },
     "http": {
         "listen": "localhost",
         "port": 3030
-    },
-    "client": {
-        "apiUrl": "http://localhost:3030",
-        "debugMode": true
     },
     "server": {
       "ssl": {
@@ -27,12 +23,12 @@
         "password": "NEMO",
         "dialect": "mysql",
         "port": 3306,
-        "logging": true
+        "logging": false
       }
     },
-		"nemoConfirmationEmail":{
-			"userName": "nemo.confirmation",
-			"password": "nemoconfirm"
-		}
+    "nemoConfirmationEmail":{
+      "userName": "nemo.confirmation",
+      "password": "nemoconfirm"
+    }
 
 }

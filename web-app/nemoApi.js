@@ -3,6 +3,7 @@ var bcrypt = require('bcrypt')
 var jwt = require('jsonwebtoken')
 var config = require('getconfig')
 var nodemailer = require('nodemailer')
+var validator = require('validator')
 
 // Create database connection
 var sequelize = new Sequelize(
@@ -165,9 +166,18 @@ exports.userService = function(socket, hooks) {
 
   // Sign user up
   socket.on('signup', function(data, callback) {
-    hooks.forEach(function(func) {
-      func(socket)
-    })
+    var valid = false
+    if (validator.matches(data.password, /\d/) &&
+      validator.matches(data.password, /[a-z]/) &&
+      validator.matches(data.password, /[A-Z]/) &&
+      data.password.length >= 6 &&
+      validator.isEmail(data.email)) {
+      valid = true
+    }
+
+    if (!valid) {
+      return callback('Invalid email/password', null)
+    }
 
     bcrypt.genSalt(10, function(err, salt) {
       bcrypt.hash(data.password, salt, function(err, hash) {
@@ -316,7 +326,7 @@ exports.questionService = function(socket, hooks) {
     sequelize.transaction(function() {
       // return parameterTypeModel.findAll() OLD CODE
       return conceptModel.findAll({
-        attributes: ['concept_cd'],
+        attributes: ['concept_cd', 'name_char'],
         where: {
           concept_cd: {
             $or: [{
@@ -365,143 +375,141 @@ exports.questionService = function(socket, hooks) {
     })
   })
 
-  socket.on('editQuestion', function(callback) {
-		function editQuestion(params, callback) {
-			var deleteOld = params.deleteOld
-		  var questionID
-			var oldID = params.oldID
-			var count
-		  var max
-		  questionModel.count({where: {UserID: params.UserID}})
-		 		.then(function(c) {
-					count = c
-		     	userModel.findOne({
-		      	include: [userType],
-		       	where: { ID: params.UserID }
-		     	}).then(function(userData) {
-						max = userData.dataValues.UserType.dataValues.MaxQuestions
-		     		// Check to if user can ask more questions
-		      	console.log(count, max)
-		      	if (count >= max && !deleteOld) {
-							return callback('You are at your max number of questions!', null)
-		     		}
-				  	var questionAttributes = {
-				    	UserID: params.UserID,
-				    	StatusID: params.QuestionStatusID,
-				    	TypeID: params.QuestionTypeID,
-				    	EventID: params.QuestionEventID
+  socket.on('editQuestion', function(params, callback) {
+		var deleteOld = params.deleteOld
+	  var questionID
+		var oldID = params.oldID
+		var count
+	  var max
+	  questionModel.count({where: {UserID: params.UserID}})
+	 		.then(function(c) {
+				count = c
+	     	userModel.findOne({
+	      	include: [userType],
+	       	where: { ID: params.UserID }
+	     	}).then(function(userData) {
+					max = userData.dataValues.UserType.dataValues.MaxQuestions
+	     		// Check to if user can ask more questions
+	      	console.log(count, max)
+	      	if (count >= max && !deleteOld) {
+						return callback('You are at your max number of questions!', null)
+	     		}
+			  	var questionAttributes = {
+			    	UserID: params.UserID,
+			    	StatusID: params.QuestionStatusID,
+			    	TypeID: params.QuestionTypeID,
+			    	EventID: params.QuestionEventID
+			    }
+
+		   		// Initiate transaction, will be committed if things go smoothly or rolled back if there is an issue at any point
+					Sequelize.transaction(function(t) {
+
+						return questionModel.create(questionAttributes, {
+				    	transaction: t
+				    }).then(function(data) {
+				    	// QuestionID is needed as a foreign key for QuestionParameter
+				    	questionID = data.dataValues.ID
+							// Helper function to recursively chain questionParameter create promises
+				      var recurseParam = function(pArray, i) {
+				      // If the current parameter exists only, otherwise nothing is done and promise chain is ended
+				      if (pArray[i]) {
+				      	return questionParameterModel.create({
+				        	QuestionID: questionID,
+				          tval_char: pArray[i].tval_char,
+				          nval_num: pArray[i].nval_num,
+				          concept_path: pArray[i].concept_path,
+				          concept_cd: pArray[i].concept_cd,
+				          valtype_cd: pArray[i].valtype_cd,
+				          TableName: pArray[i].TableName,
+				          TableColumn: pArray[i].TableColumn,
+				          min: pArray[i].min,
+				          max: pArray[i].max
+				        }, {
+				        	transaction: t
+				        }).then(recurseParam(pArray, (i + 1)))
+				      }
 				    }
-			
-			   		// Initiate transaction, will be committed if things go smoothly or rolled back if there is an issue at any point
-						Sequelize.transaction(function(t) {
-			    
-							return questionModel.create(questionAttributes, {
-					    	transaction: t
-					    }).then(function(data) {
-					    	// QuestionID is needed as a foreign key for QuestionParameter
-					    	questionID = data.dataValues.ID
-								// Helper function to recursively chain questionParameter create promises
-					      var recurseParam = function(pArray, i) {
-					      // If the current parameter exists only, otherwise nothing is done and promise chain is ended
-					      if (pArray[i]) {
-					      	return questionParameterModel.create({
-					        	QuestionID: questionID,
-					          tval_char: pArray[i].tval_char,
-					          nval_num: pArray[i].nval_num,
-					          concept_path: pArray[i].concept_path,
-					          concept_cd: pArray[i].concept_cd,
-					          valtype_cd: pArray[i].valtype_cd,
-					          TableName: pArray[i].TableName,
-					          TableColumn: pArray[i].TableColumn,
-					          min: pArray[i].min,
-					          max: pArray[i].max
-					        }, {
-					        	transaction: t
-					        }).then(recurseParam(pArray, (i + 1)))
-					      }
-					    }
-					   	// Call helper function to insert Question Parameters
-					  	return recurseParam(params.QuestionParamsArray, 0)
-								.then(function() {
-									if (deleteOld) {
-							  		return questionParameterModel.destroy({
-							  			where: {
-							  				QuestionID: oldID
-							  			}
-							  		}).then(function() {
-							  			// Get list of AI Model IDs to destroy
-							  			return aiModelModel.findAll({
-							  				where: {
-							  					QuestionID: oldID
-							  				}
-							  			}).then(function(aiModelData) {
-							  				var aiModelDataIDList = aiModelData.map(function(a) {
-							  					return a.dataValues.ID
-							  				})
-							  				// Find all of the AI Model Parameters
-							  				return aiModelParamsModel.findAll({
-							  					where: {
-							  						AIModel: {
-							  							$in: aiModelDataIDList
-							  						}
-							  					}
-							  				}).then(function(aiModelParamsData) {
-							  					var aiModelParamsList = aiModelParamsData.map(function(b) {
-							  						return b.dataValues.AIModel
-							  					})
-							  					// Destroy all of the AI model parameters
-							  					return aiModelParamsModel.destroy({
-							  						where: {
-							  							AIModel: {
-							  								$in: aiModelParamsList
-							  							}
-							  						}
-							  					}).then(function() {
-							  						//Destroy the AI models
-							  						return aiModelModel.destroy({
-							  							where: {
-							  								ID: {
-							  									$in: aiModelDataIDList
-							  								}
-							  							}
-							  						}).then(function() {
-							  							//Finally delete the question itself
-							  							return questionModel.destroy({
-							  								where: {
-							  									ID: oldID,
-							  								}
-							  							})
-							  						})
-							  					})
-							  				})
-							  			}).then(function(d) {
-							  				// Return data to callback
-							  				return callback(null, d)
-							  			}).catch(function(error) {
-							  				// Return error to callback
-							  				return callback('Error deleting question', null)
-							  			})
-							  		})
-									}
-								})
+				   	// Call helper function to insert Question Parameters
+				  	return recurseParam(params.QuestionParamsArray, 0)
+							.then(function() {
+								if (deleteOld) {
+						  		return questionParameterModel.destroy({
+						  			where: {
+						  				QuestionID: oldID
+						  			}
+						  		}).then(function() {
+						  			// Get list of AI Model IDs to destroy
+						  			return aiModelModel.findAll({
+						  				where: {
+						  					QuestionID: oldID
+						  				}
+						  			}).then(function(aiModelData) {
+						  				var aiModelDataIDList = aiModelData.map(function(a) {
+						  					return a.dataValues.ID
+						  				})
+						  				// Find all of the AI Model Parameters
+						  				return aiModelParamsModel.findAll({
+						  					where: {
+						  						AIModel: {
+						  							$in: aiModelDataIDList
+						  						}
+						  					}
+						  				}).then(function(aiModelParamsData) {
+						  					var aiModelParamsList = aiModelParamsData.map(function(b) {
+						  						return b.dataValues.AIModel
+						  					})
+						  					// Destroy all of the AI model parameters
+						  					return aiModelParamsModel.destroy({
+						  						where: {
+						  							AIModel: {
+						  								$in: aiModelParamsList
+						  							}
+						  						}
+						  					}).then(function() {
+						  						//Destroy the AI models
+						  						return aiModelModel.destroy({
+						  							where: {
+						  								ID: {
+						  									$in: aiModelDataIDList
+						  								}
+						  							}
+						  						}).then(function() {
+						  							//Finally delete the question itself
+						  							return questionModel.destroy({
+						  								where: {
+						  									ID: oldID,
+						  								}
+						  							})
+						  						})
+						  					})
+						  				})
+						  			}).then(function(d) {
+						  				// Return data to callback
+						  				return callback(null, d)
+						  			}).catch(function(error) {
+						  				// Return error to callback
+						  				return callback('Error Editing question', null)
+						  			})
+						  		})
+								}
 							})
-						}).then(function() {
-				    	// Return the Question ID of the created question
-				      return callback(null, questionID)
-				    }).catch(function(error) {
-				    	return callback('Error Creating Question', null)
-				    })
-				  })
-					.catch(function(err) {
-				  	return callback('Error Creating Question', null)
-				  })
-				})
+						})
+					}).then(function() {
+			    	// Return the Question ID of the created question
+			      return callback(null, questionID)
+			    }).catch(function(error) {
+			    	return callback('Error Editing Question', null)
+			    })
+			  })
 				.catch(function(err) {
-					return callback('Error Creating Question', null)
-			 	})
-		}
+			  	return callback('Error Editing Question', null)
+			  })
+			})
+			.catch(function(err) {
+				return callback('Error Editing Question', null)
+		 	})
 	})
-	
+
 	socket.on('copyQuestion', function(params, callback) {
 		function copyQuestion(params, callback) {
 			Sequelize.transaction(function(t) {
@@ -908,7 +916,9 @@ exports.dashboardService = function(socket, hooks) {
   })
 
   socket.on('feedback', function(params, callback) {
-    var val = params.value
+    console.log(params.prdFeedback)
+    var accFeedback = params.accFeedback
+    var prdFeedback = params.prdFeedback
     var id = params.aiModelID
     sequelize.transaction(function(t) {
       return aiModelModel.findById(id)
@@ -918,8 +928,8 @@ exports.dashboardService = function(socket, hooks) {
           QuestionID: aiModel.QuestionID,
           Value: aiModel.Value,
           Accuracy: aiModel.Accuracy,
-          AIFeedback: val,
-          PredictionFeedback: aiModel.PredictionFeedback,
+          AIFeedback: accFeedback,
+          PredictionFeedback: prdFeedback,
           AI: aiModel.AI,
           Algorithm: aiModel.Algorithm,
           Active: aiModel.Active,
@@ -970,7 +980,6 @@ exports.dashboardService = function(socket, hooks) {
   })
 
   socket.on('editAlgorithm', function(id, data, callback) {
-    console.log(data)
     questionModel.update({
       Optimizer: data.optimizer,
       Classifier: data.classifier
@@ -983,6 +992,24 @@ exports.dashboardService = function(socket, hooks) {
     }).catch(function(d) {
       console.log(d)
       return callback('Error Editing Algorithm', null)
+    })
+  })
+
+  socket.on('markPrediction', function(id, mark, callback) {
+    questionModel.update({
+      MakePrediction: mark
+    }, {
+      where: {
+        ID: id
+      }
+    }).then(function(d) {
+      var msg = mark
+        ? 'Running predictions for this question'
+        : 'No longer running predictions for this question'
+      return callback(null, msg)
+    }).catch(function(d) {
+      console.log(d)
+      return callback('Error marking for prediction', null)
     })
   })
 }

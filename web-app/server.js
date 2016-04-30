@@ -1,7 +1,6 @@
 const helmet = require('helmet')
 const config = require('getconfig')
 const bodyParser = require('body-parser')
-const cookieParser = require('cookie-parser')
 const serveStatic = require('serve-static')
 const path = require('path')
 const fs = require('fs')
@@ -49,14 +48,9 @@ app
   .use(middleware)
   .use(webpackHotMiddleware(compiler))
   .use(helmet())
-  .use(serveStatic(__dirname + '/build'))
+  // .use(serveStatic(__dirname + '/build'))
   .use(bodyParser.json())
   .use(bodyParser.urlencoded({ extended: true }))
-  .use(cookieParser())
-  .use(function (req, res, next) {
-    res.cookie('config', JSON.stringify(config.client))
-    next()
-  })
 
 // Redirect requests back to /
 // Unless path equals /confirm?hash=

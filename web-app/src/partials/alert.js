@@ -2,7 +2,11 @@ import React from 'react'
 import ReactDom from 'react-dom'
 import { Alert } from 'react-bootstrap'
 
-// Creates alert for web app
+/* Creates alert for web app
+  message: text/html to display in alert
+  style: bootstrap style class name (http://getbootstrap.com/components/#alerts)
+  timer: optional length alert should exist (0 will make alert last until exited)
+*/
 const Notification = (message = '', style = 'info', timer = 0) => {
 
   // Point to attach alerts to
@@ -17,7 +21,6 @@ const Notification = (message = '', style = 'info', timer = 0) => {
   }
 
   // Create alert
-  // For style options see (http://getbootstrap.com/components/#alerts)
   const AlertPopup = (message, style) => {
     var absolute = {
       position: 'absolute',

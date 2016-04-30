@@ -1,5 +1,6 @@
 export default {
-  'UserDashRefreshRate': 1000 *  30,
+  'apiUrl': 'http://localhost:3030',
+  'UserDashRefreshRate': 1000 *  10,
   'Demographics': {
     'sex_cd': ['m', 'f'],
     'race_cd': ['american indian', 'asian', 'black', 'hispanic', 'white']
@@ -7,7 +8,7 @@ export default {
   'Optimizers': [
     'Ensemble',
     'FeatureSelection',
-    'ParameterOptimization'
+    'CVParams'
   ],
   'Classifiers': [
     'J48',

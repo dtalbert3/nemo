@@ -26,6 +26,7 @@ class Signup extends React.Component {
     this.inputStatus = this.inputStatus.bind(this)
   }
 
+  // Handles validation and makes call to api to create a new user
   handleSubmit (event) {
     event.preventDefault()
 
@@ -62,6 +63,8 @@ class Signup extends React.Component {
       })
   }
 
+  // Handle user input to set state
+  // This is done so that validation happens while user types
   handleChange () {
     this.setState({
       email: this.refs.email.getValue(),
@@ -70,6 +73,7 @@ class Signup extends React.Component {
     })
   }
 
+  // Helper to validate user password
   validatePassword () {
     var password = this.state.password
     var valid = false
@@ -82,14 +86,17 @@ class Signup extends React.Component {
     return valid
   }
 
+  // Helper to confirm user passwords match
   validateConfirmPassword () {
     return this.validatePassword() && (this.state.password === this.state.confirmPassword)
   }
 
+  // Helper to validate user email
   validateEmail () {
     return validator.isEmail(this.state.email)
   }
 
+  // Helper to
   inputStatus (valid) {
     if (valid) {
       return 'success'
@@ -103,10 +110,12 @@ class Signup extends React.Component {
   }
 
   render () {
+    // Tooltip for information about user email
     const emailTooltip = (
       <Tooltip id='emailTip'> .edu emails will recieve higher privileges!</Tooltip>
     )
 
+    // Tooltip to display what passwords are allowed
     const passwordTooltip = (
       <Tooltip id='passwordTip'>Password must contain one number, one uppercase letter, one lowercase letter, and be at least 6 characters!</Tooltip>
     )
@@ -114,6 +123,7 @@ class Signup extends React.Component {
     return (
       <Row>
         <Col sm={6} smOffset={3} md={6} mdOffset={3}>
+          <br/>
           <form onSubmit={this.handleSubmit} autoComplete='on'>
             <Input ref='firstName' type='text'
               label='First Name' placeholder='Enter First Name'

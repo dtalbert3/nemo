@@ -4,6 +4,7 @@ import { Link } from 'react-router'
 import Alert from '../partials/alert'
 import Auth from '../auth'
 
+// Login page for nemo
 class Login extends React.Component {
   constructor (props, context) {
     super(props)
@@ -13,6 +14,7 @@ class Login extends React.Component {
     this.handleSubmit = this.handleSubmit.bind(this)
   }
 
+  // Handle login via auth api call
   handleSubmit (event) {
     event.preventDefault()
 
@@ -28,10 +30,12 @@ class Login extends React.Component {
     })
   }
 
+  // Once mounted set page title
   componentDidMount () {
     document.title = 'Nemo Login'
   }
 
+  // Render login page
   render () {
     return (
       <Row>

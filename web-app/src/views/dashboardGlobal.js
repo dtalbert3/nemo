@@ -5,7 +5,6 @@ import CollapsibleTable from '../partials/collapsibleTable.js'
 
 import api from '../api'
 import config from '../config'
-import { objectByString } from '../util'
 
 var refresh = null
 
@@ -42,7 +41,10 @@ class GlobalDashboard extends React.Component {
   render () {
     return (
       <Grid>
-        <h2>Global Questions</h2>
+        <h3>Global Questions
+          <span className='glyphicon glyphicon-refresh pull-right hover-icon'
+            onClick={this.updateGlobalQuestions} />
+        </h3>
         <CollapsibleTable
           data={this.props.questions}
           numCols={3}
@@ -72,13 +74,12 @@ const Headers = () => {
   return ([
     <td key={1} >Question</td>,
     <td key={2} >Parameters</td>,
-    <td key={3} >Status</td>
   ])
 }
 
 const MinimalRow = (data) => {
-  var question = objectByString(data, 'QuestionType.Type') + ' ' +
-    objectByString(data, 'QuestionEvent.Name')
+  var question = data.QuestionType.Type + ' ' +
+    data.QuestionEvent.Name
   var parameters = ''
   var numParams = Math.min(data['QuestionParameters'].length, 3)
   for (var i = 0; i < numParams; i++) {
@@ -87,11 +88,10 @@ const MinimalRow = (data) => {
       ? ', '
       : (numParams < data['QuestionParameters'].length) ? ' . . .' : ''
   }
-  var status = objectByString(data, 'QuestionStatus.Status')
+
   return ([
     <td key={1} >{question}</td>,
     <td key={2} >{parameters}</td>,
-    <td key={3} >{status}</td>
   ])
 }
 
@@ -114,8 +114,8 @@ class HiddenRow extends React.Component {
     var data = this.props.data
 
     // Get Question realted info
-    var question = objectByString(data, 'QuestionType.Type') + ' ' +
-      objectByString(data, 'QuestionEvent.Name')
+    var question = data.QuestionType.Type + ' ' +
+      data.QuestionEvent.Name
     var paramsLong = ''
     var paramsShort = ''
     var numParams = data['QuestionParameters'].length
@@ -132,7 +132,6 @@ class HiddenRow extends React.Component {
     }
 
     // Get AI related info
-    var status = objectByString(data, 'QuestionStatus.Status')
     var classifier = ''
     var accuracy = ''
     var matrix = ''
@@ -144,21 +143,12 @@ class HiddenRow extends React.Component {
       var confusionMatrix = JSON.parse(aiModel.ConfusionMatrix)
       matrix = (
         <Table condensed>
-          <thead>
-            <tr>
-              <th></th>
-              <th>+</th>
-              <th>-</th>
-            </tr>
-          </thead>
           <tbody>
             <tr>
-              <td>+</td>
               <td>{confusionMatrix[0][0]}</td>
               <td>{confusionMatrix[0][1]}</td>
             </tr>
             <tr>
-              <td>-</td>
               <td>{confusionMatrix[1][0]}</td>
               <td>{confusionMatrix[1][1]}</td>
             </tr>
@@ -180,8 +170,6 @@ class HiddenRow extends React.Component {
           </Col>
           <Col sm={6} md={6}>
             <dl className='dl-horizontal'>
-              <dt>Status: </dt>
-              <dd>{status}</dd>
               <dt>Classifier: </dt>
               <dd>{classifier}</dd>
               <dt>Accuracy: </dt>

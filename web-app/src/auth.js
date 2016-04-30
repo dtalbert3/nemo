@@ -1,4 +1,4 @@
-import config from 'clientconfig'
+import config from './config'
 import io from 'socket.io-client'
 import jwt from 'jsonwebtoken'
 
@@ -32,17 +32,18 @@ export default {
   logout (callback) {
     delete localStorage.token
     delete localStorage.userType
+    delete localStorage.MaxQuestions
+    delete localStorage.userID
+
     if (callback) {
       callback()
     }
-    this.onChange(false)
   },
 
   loggedIn () {
     // Get and validate token against server
     localStorage.getItem('token')
     return !!localStorage.token
-  },
+  }
 
-  onChange () {}
 }
