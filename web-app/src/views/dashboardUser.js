@@ -237,9 +237,8 @@ class HiddenRow extends React.Component {
       var params = {}
       params.aiModelID = id
       params.accFeedback = acc_yes
-
-      if (this.props.data.Prediction !== null) {
-        console.log('what')
+      console.log(this.props.data.MakePrediction)
+      if (this.props.data.Prediction !== null && this.props.data.MakePrediction) {
         var predict_yes = this.refs.satisfied_predict_yes.checked
         var predict_no = this.refs.satisfied_predict_no.checked
         if (predict_yes || predict_no) {
@@ -349,7 +348,7 @@ class HiddenRow extends React.Component {
               <input onChange={this.handlePredict} ref={'predict_no' + id}
                 type='radio' name={'predict' + id}
                 value={!runningPredict} checked={!runningPredict} /><br/>
-              {(hasPrediction) ?
+              {(hasPrediction && runningPredict) ?
                 <span>
                   Latest prediction for the current patient is {prediction}.
                 </span>
@@ -365,7 +364,7 @@ class HiddenRow extends React.Component {
                   <input ref='satisfied_acc_yes' type='radio' name='accFeedback' value={1} />
                   <span>{'  No'}</span>
                   <input ref='satisfied_acc_no' type='radio' name='accFeedback' value={0} /><br/>
-                  {(hasPrediction) ?
+                  {(hasPrediction && runningPredict) ?
                     <span>
                       Are you satisfied with the prediction?
                       <span>{'  Yes'}</span>
