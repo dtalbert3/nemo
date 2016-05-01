@@ -62,6 +62,13 @@ class UserDashboard extends React.Component {
     }
   }
 
+  componentWillReceiveProps(nextProps) {
+    if (localStorage.getItem('copiedQuestion') !== null) {
+      this.refs.QuestionCreator.updateState()
+      Alert('Edit question', 'info', 4 * 1000)
+    }
+  }
+
   // Render user dashboard page
   render () {
     // Get number of questions the person has asked and has left to ask
@@ -163,8 +170,10 @@ const MinimalRow = (data) => {
 
 // Creates the hidden row used by the table filled with functionality for nemo
 class HiddenRow extends React.Component {
-  constructor (props) {
+  constructor (props, context) {
     super(props)
+
+    context.router
 
     this.handleEdit = this.handleEdit.bind(this)
     this.handleDelete = this.handleDelete.bind(this)
@@ -175,7 +184,11 @@ class HiddenRow extends React.Component {
   }
 
   handleEdit () {
+    // Store data to be copied into question creator
+    localStorage.setItem('copiedQuestion', JSON.stringify(this.props.data))
 
+    // Redirect to question user dashboard (Triggers prop update)
+    this.context.router.replace('/user')
   }
 
   handlePredict () {
@@ -404,7 +417,7 @@ class HiddenRow extends React.Component {
                   Edit Patient
                 </Button>
                 <Button bsSize='xsmall' bsStyle='warning' onClick={this.handleEdit}>
-                  Edit
+                  Edit Question
                 </Button>
                 <Button bsSize='xsmall' bsStyle='danger' onClick={this.handleDelete}>
                   Delete
@@ -416,6 +429,10 @@ class HiddenRow extends React.Component {
       </Well>
     )
   }
+}
+
+HiddenRow.contextTypes = {
+  router: PropTypes.object.isRequired
 }
 
 HiddenRow.propTypes = {

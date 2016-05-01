@@ -9,9 +9,30 @@ class QuestionCreator extends React.Component {
   constructor (props) {
     super(props)
 
+    this.state = {
+      selectedTypeIndex: null,
+      selectedEventIndex: null,
+      bounds: { min: null, max: null },
+      parameters: [],
+      parameter: {}
+    }
+
+    this.updateState = this.updateState.bind(this)
+    this.submitQuestion = this.submitQuestion.bind(this)
+    this.clearQuestion = this.clearQuestion.bind(this)
+    this.addParameter = this.addParameter.bind(this)
+    this.updateParameter = this.updateParameter.bind(this)
+    this.removeParameter = this.removeParameter.bind(this)
+    this.handleSelectedType = this.handleSelectedType.bind(this)
+    this.handleSelectedEvent = this.handleSelectedEvent.bind(this)
+    this.updateBounds = this.updateBounds.bind(this)
+
+    this.updateState()
+  }
+
+  updateState () {
     // Check if a copy is being asked for to populate with
     var copy = JSON.parse(localStorage.getItem('copiedQuestion'))
-    console.log(copy)
     if (copy !== null) {
       this.state = {
         selectedTypeIndex: copy.QuestionType.ID - 1,
@@ -21,24 +42,7 @@ class QuestionCreator extends React.Component {
         parameter: {}
       }
       localStorage.removeItem('copiedQuestion')
-    } else {
-      this.state = {
-        selectedTypeIndex: null,
-        selectedEventIndex: null,
-        bounds: { min: null, max: null },
-        parameters: [],
-        parameter: {}
-      }
     }
-
-    this.submitQuestion = this.submitQuestion.bind(this)
-    this.clearQuestion = this.clearQuestion.bind(this)
-    this.addParameter = this.addParameter.bind(this)
-    this.updateParameter = this.updateParameter.bind(this)
-    this.removeParameter = this.removeParameter.bind(this)
-    this.handleSelectedType = this.handleSelectedType.bind(this)
-    this.handleSelectedEvent = this.handleSelectedEvent.bind(this)
-    this.updateBounds = this.updateBounds.bind(this)
   }
 
   // Submit question formed by user
@@ -173,7 +177,6 @@ class QuestionCreator extends React.Component {
 
   // Render question creator form
   render () {
-    console.log(this.state)
     return (
       <Grid>
         <Row>
