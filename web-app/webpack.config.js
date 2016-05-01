@@ -2,6 +2,8 @@ const path = require('path')
 
 const webpack = require('webpack')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
+const CleanPlugin = require('clean-webpack-plugin')
+const merge = require('webpack-merge')
 const autoprefixer = require('autoprefixer')
 
 const PATHS = {
@@ -12,13 +14,9 @@ const PATHS = {
 const env = process.env.NODE_ENV || 'development'
 const isDev = env === 'development'
 
-module.exports = {
+const common = {
   devtool: isDev ? 'eval-source-map' : false,
   debug: isDev,
-  entry: [
-    'webpack-hot-middleware/client?reload=true',
-    PATHS.app
-  ],
   output: {
     path: PATHS.build,
     filename: 'bundle.js',
@@ -30,8 +28,6 @@ module.exports = {
       inject: 'body',
       filename: 'index.html'
     }),
-    new webpack.optimize.OccurenceOrderPlugin(),
-    new webpack.HotModuleReplacementPlugin(),
     new webpack.NoErrorsPlugin(),
     new webpack.DefinePlugin({
       'process.env.NODE_ENV': JSON.stringify(env),
@@ -54,4 +50,36 @@ module.exports = {
   postcss: function () {
     return [autoprefixer]
   }
+}
+
+if (isDev) {
+  module.exports = merge(common, {
+    entry: [
+      'webpack-hot-middleware/client?reload=true',
+      PATHS.app
+    ],
+    plugins: [
+      new webpack.HotModuleReplacementPlugin()
+    ]
+  })
+} else {
+  module.exports = merge(common, {
+    entry: [
+      PATHS.app
+    ],
+    plugins: [
+      new CleanPlugin(PATHS.build),
+      new webpack.optimize.DedupePlugin(),
+      new webpack.optimize.OccurenceOrderPlugin(),
+      new webpack.optimize.MinChunkSizePlugin({
+        minChunkSize: 51200, // ~50kb
+      }),
+      new webpack.optimize.UglifyJsPlugin({
+        mangle: true,
+        compress: {
+          warnings: false,
+        },
+      })
+    ]
+  })
 }

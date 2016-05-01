@@ -144,7 +144,7 @@ exports.authService = function(socket) {
           }
           error = null
           result = jwt.sign(user, config.session.secret, {
-            expiresIn: 24 * 60 * 60 * 1000
+            expiresIn: config.session.length
           })
         }
       }
