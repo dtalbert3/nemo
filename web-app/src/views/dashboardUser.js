@@ -19,7 +19,8 @@ class UserDashboard extends React.Component {
     super(props)
 
     this.updateUserQuestions = this.updateUserQuestions.bind(this)
-    this.handleSubmitQuestion = this.handleSubmitQuestion.bind(this)
+    this.handleAddQuestion = this.handleAddQuestion.bind(this)
+    this.handleEditQuestion = this.handleEditQuestion.bind(this)
   }
 
   // Handler to api call to update user dashboard
@@ -31,11 +32,25 @@ class UserDashboard extends React.Component {
   }
 
   // Handler to api call to add question
-  handleSubmitQuestion (question) {
+  handleAddQuestion (question) {
     api.addQuestion(question)
       .then((msg) => {
         Alert(msg, 'success', 4 * 1000)
         this.updateUserQuestions()
+        this.refs.QuestionCreator.clearQuestion()
+      })
+      .catch((err) => {
+        Alert(err, 'danger', 4 * 1000)
+      })
+  }
+
+  handleEditQuestion (question) {
+    console.log(question)
+    api.editQuestion(question)
+      .then((msg) => {
+        Alert(msg, 'success', 4 * 1000)
+        this.updateUserQuestions()
+        this.refs.QuestionCreator.clearQuestion()
       })
       .catch((err) => {
         Alert(err, 'danger', 4 * 1000)
@@ -63,7 +78,7 @@ class UserDashboard extends React.Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    if (localStorage.getItem('copiedQuestion') !== null) {
+    if (localStorage.getItem('question') !== null) {
       this.refs.QuestionCreator.updateState()
       Alert('Edit question', 'info', 4 * 1000)
     }
@@ -86,7 +101,8 @@ class UserDashboard extends React.Component {
           suggestions={this.props.suggestions}
           demographics={this.props.demographics}
           searchEngine={this.props.searchEngine}
-          handleSubmit={this.handleSubmitQuestion} />
+          handleAdd={this.handleAddQuestion}
+          handleEdit={this.handleEditQuestion} />
 
         <h3> Questions Asked: {questionsLeft}
           <span className='glyphicon glyphicon-refresh pull-right hover-icon'
@@ -185,7 +201,7 @@ class HiddenRow extends React.Component {
 
   handleEdit () {
     // Store data to be copied into question creator
-    localStorage.setItem('copiedQuestion', JSON.stringify(this.props.data))
+    localStorage.setItem('question', JSON.stringify(this.props.data))
 
     // Redirect to question user dashboard (Triggers prop update)
     this.context.router.replace('/user')

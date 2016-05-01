@@ -122,7 +122,7 @@ exports.confirmEmail = function(hash, callback) {
   })
 }
 
-exports.authService = function(socket, hooks) {
+exports.authService = function(socket) {
   // Authenticate user
   socket.on('local', function(params, callback) {
     var error = 'Invalid Password/Username'
@@ -156,9 +156,7 @@ exports.authService = function(socket, hooks) {
 
 }
 
-exports.userService = function(socket, hooks) {
-  hooks = (typeof hooks !== 'undefined') ? hooks : []
-
+exports.userService = function(socket) {
   // Sign user up
   socket.on('signup', function(data, callback) {
     var valid = false
@@ -205,7 +203,7 @@ exports.userService = function(socket, hooks) {
 	})
 }
 
-exports.questionService = function(socket, hooks) {
+exports.questionService = function(socket) {
 
   /* Create Question:
   	Takes attributes of question and parameters of question in object format
@@ -230,10 +228,6 @@ exports.questionService = function(socket, hooks) {
   	}
   */
   socket.on('create', function(params, callback) {
-    hooks.forEach(function(func) {
-      func(socket)
-    })
-
     // Find out how many questions a user has already asked
     var count
     var max
@@ -468,7 +462,7 @@ exports.questionService = function(socket, hooks) {
 						  				})
 						  			}).then(function(d) {
 						  				// Return data to callback
-						  				return callback(null, d)
+						  				return callback(null, 'Question Edited')
 						  			}).catch(function(error) {
 						  				// Return error to callback
 						  				return callback('Error Editing question', null)
@@ -479,7 +473,7 @@ exports.questionService = function(socket, hooks) {
 						})
 					}).then(function() {
 			    	// Return the Question ID of the created question
-			      return callback(null, questionID)
+			      return callback(null, 'Question Edited')
 			    }).catch(function(error) {
 			    	return callback('Error Editing Question', null)
 			    })
@@ -494,7 +488,7 @@ exports.questionService = function(socket, hooks) {
 	})
 }
 
-exports.dashboardService = function(socket, hooks) {
+exports.dashboardService = function(socket) {
   /* Get Dashboard for global:
   		Get a list of all the Questions in the NEMO Datamart
   		query the question database for all corresponding questions.
@@ -995,7 +989,6 @@ exports.dashboardService = function(socket, hooks) {
        // Return the Question ID of the created question
        return callback(null, 'Question copied to your dashboard')
      }).catch(function(error) {
-       console.log(1);
        return callback("Error: An error has occurred when copying question", null)
      }) })
 				.catch(function(err) {
@@ -1004,7 +997,6 @@ exports.dashboardService = function(socket, hooks) {
 			  })
 			})
 			.catch(function(err) {
-        console.log(3);
 				return callback('Error: An error has occurred when copying question', null)
 		 	})
   })
