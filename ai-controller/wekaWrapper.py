@@ -232,7 +232,7 @@ class WekaWrapper:
 		# print 'test'
 		# print test
 
-		pdb.set_trace()
+		# pdb.set_trace()
 		# Instantiate classifier
 		self.cls = Classifier(classname=self.classifier, options=self.parameters)
 
