@@ -33,11 +33,11 @@
   },
   "tablesToCopy": {
     "observation_fact": true,
-    "code_lookup": false,
-    "concept_dimension": false,
+    "code_lookup": true,
+    "concept_dimension": true,
     "patient_dimension": true,
-    "provider_dimension": false,
-    "visit_dimension": false
+    "provider_dimension": true,
+    "visit_dimension": true
   },
   "dividePatients": true,
   "findReadmittance": true,
@@ -48,17 +48,6 @@
   },
   "patientWhereClause": {
     "language_cd": "english"
-  },
-    "server": {
-      "db": {
-        "host": "codyemoffitt.com",
-        "name": "NEMO_DEV",
-        "username": "NEMO_WEB",
-        "password": "NEMO",
-        "dialect": "mysql",
-        "port": 3306,
-        "logging": true
-      }
-    }
+  }
 
 }
