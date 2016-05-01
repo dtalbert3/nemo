@@ -144,7 +144,7 @@ exports.authService = function(socket) {
           }
           error = null
           result = jwt.sign(user, config.session.secret, {
-            expiresIn: 24 * 60 * 60 * 1000
+            expiresIn: config.session.length
           })
         }
       }
@@ -704,70 +704,83 @@ exports.dashboardService = function(socket) {
   		Change from initial requirements, AI Model data is no longer kept
   */
   socket.on('delete', function(id, callback) {
-    sequelize.transaction(function(t) {
-  		// Destroy parameters of question then
-  		// Destroy parameters of AI models then
-  		// Destroy AI models of question then
-  		// Destroy the question itself
-  		return questionParameterModel.destroy({
-  			where: {
-  				QuestionID: id
-  			}
-  		}).then(function() {
-  			// Get list of AI Model IDs to destroy
-  			return aiModelModel.findAll({
-  				where: {
-  					QuestionID: id
-  				}
-  			}).then(function(aiModelData) {
-  				var aiModelDataIDList = aiModelData.map(function(a) {
-  					return a.dataValues.ID
-  				})
-  				// Find all of the AI Model Parameters
-  				return aiModelParamsModel.findAll({
-  					where: {
-  						AIModel: {
-  							$in: aiModelDataIDList
-  						}
-  					}
-  				}).then(function(aiModelParamsData) {
-  					var aiModelParamsList = aiModelParamsData.map(function(b) {
-  						return b.dataValues.AIModel
-  					})
-  					// Destroy all of the AI model parameters
-  					return aiModelParamsModel.destroy({
-  						where: {
-  							AIModel: {
-  								$in: aiModelParamsList
-  							}
-  						}
-  					}).then(function() {
-  						//Destroy the AI models
-  						return aiModelModel.destroy({
-  							where: {
-  								ID: {
-  									$in: aiModelDataIDList
-  								}
-  							}
-  						}).then(function() {
-  							//Finally delete the question itself
-  							return questionModel.destroy({
-  								where: {
-  									ID: id,
-  								}
-  							})
-  						})
-  					})
-  				})
-  			}).then(function(d) {
-  				// Return data to callback
-  				return callback(null, d)
-  			}).catch(function(error) {
-  				// Return error to callback
-  				return callback('Error deleting question', null)
-  			})
-  		})
-  	})
+    // Delete questions that are not running
+    questionModel.findOne({
+      where: {
+        ID: id
+      }
+    }).then(function(d) {
+      if (d.StatusID === 2) {
+        return callback('Can\'t delete questions that are running', null)
+      } else {
+        sequelize.transaction(function(t) {
+      		// Destroy parameters of question then
+      		// Destroy parameters of AI models then
+      		// Destroy AI models of question then
+      		// Destroy the question itself
+      		return questionParameterModel.destroy({
+      			where: {
+      				QuestionID: id
+      			}
+      		}).then(function() {
+      			// Get list of AI Model IDs to destroy
+      			return aiModelModel.findAll({
+      				where: {
+      					QuestionID: id
+      				}
+      			}).then(function(aiModelData) {
+      				var aiModelDataIDList = aiModelData.map(function(a) {
+      					return a.dataValues.ID
+      				})
+      				// Find all of the AI Model Parameters
+      				return aiModelParamsModel.findAll({
+      					where: {
+      						AIModel: {
+      							$in: aiModelDataIDList
+      						}
+      					}
+      				}).then(function(aiModelParamsData) {
+      					var aiModelParamsList = aiModelParamsData.map(function(b) {
+      						return b.dataValues.AIModel
+      					})
+      					// Destroy all of the AI model parameters
+      					return aiModelParamsModel.destroy({
+      						where: {
+      							AIModel: {
+      								$in: aiModelParamsList
+      							}
+      						}
+      					}).then(function() {
+      						//Destroy the AI models
+      						return aiModelModel.destroy({
+      							where: {
+      								ID: {
+      									$in: aiModelDataIDList
+      								}
+      							}
+      						}).then(function() {
+      							//Finally delete the question itself
+      							return questionModel.destroy({
+      								where: {
+      									ID: id,
+      								}
+      							})
+      						})
+      					})
+      				})
+      			}).then(function(d) {
+      				// Return data to callback
+      				return callback(null, d)
+      			}).catch(function(error) {
+      				// Return error to callback
+      				return callback('Error deleting question', null)
+      			})
+      		})
+      	})
+      }
+    }).catch(function(d) {
+      return callback('Error deleting question', null)
+    })
   })
 
   socket.on('feedback', function(params, callback) {

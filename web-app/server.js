@@ -43,10 +43,14 @@ const middleware = webpackMiddleware(compiler, {
   }
 })
 
+if (config.isDev) {
+  app
+    .use(webpackHotMiddleware(compiler))
+}
+
 // Setup express app
 app
   .use(middleware)
-  .use(webpackHotMiddleware(compiler))
   .use(helmet())
   // .use(serveStatic(__dirname + '/build'))
   .use(bodyParser.json())
