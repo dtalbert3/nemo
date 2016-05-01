@@ -45,7 +45,6 @@ class UserDashboard extends React.Component {
   }
 
   handleEditQuestion (question) {
-    console.log(question)
     api.editQuestion(question)
       .then((msg) => {
         Alert(msg, 'success', 4 * 1000)
