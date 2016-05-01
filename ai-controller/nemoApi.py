@@ -39,7 +39,7 @@ class nemoApi():
         db = MySQLdb.connect(self.host, self.user, self.password, self.database)
         cursor = db.cursor(cursorclass=MySQLdb.cursors.DictCursor)
         cursor.execute(
-            "SELECT ID, MakePrediction " +
+            "SELECT ID, MakePrediction, Optimizer, Classifier " +
             "FROM Question " +
             "WHERE StatusID = " + str(status) + " " +
             "ORDER BY DateModified DESC " +
@@ -272,7 +272,7 @@ class nemoApi():
                         dataQuery += " AND `{0}`.nval_num BETWEEN {1} AND {2} ".format(param.concept_cd, param.min, param.max)
                 else: # If this parameter refers to a demographic
                     dataQuery += "p.{0}".format(param.tableColumn)
-                    if(param.min != None and param.max != None): 
+                    if(param.min != None and param.max != None):
                         dataQuery += " BETWEEN {0} AND {1} ".format(param.min, param.max)
                     else:
                         dataQuery += " = '{0}'".format(param.concept_cd)

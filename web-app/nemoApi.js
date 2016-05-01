@@ -87,11 +87,11 @@ function sendEmailConfirmation(data) {
 						+	'<a href="' + hostUrl + '/' + data.confirmationHash + '">Activate your account Here</a> </body></html>' */
 	}
 	// send mail with defined transport object
-	transporter.sendMail(mailOptions, function(error, info){
+	transporter.sendMail(mailOptions, function(error, info) {
 		if(error){
-			console.log(error)
+			// console.log(error)
 		}
-		console.log('Message sent: ' + info.response)
+		// console.log('Message sent: ' + info.response)
 	})
 }
 
@@ -123,13 +123,8 @@ exports.confirmEmail = function(hash, callback) {
 }
 
 exports.authService = function(socket, hooks) {
-  hooks = (typeof hooks !== 'undefined') ? hooks : []
-
   // Authenticate user
   socket.on('local', function(params, callback) {
-    hooks.forEach(function(func) {
-      func(socket)
-    })
     var error = 'Invalid Password/Username'
     var result = null
     userModel.findOne({
@@ -255,7 +250,6 @@ exports.questionService = function(socket, hooks) {
           max = userData.dataValues.UserType.dataValues.MaxQuestions
 
           // Check to if user can ask more questions
-          console.log(count, max)
           if (count >= max) {
             return callback('You are at your max number of questions!', null)
           }
@@ -390,7 +384,6 @@ exports.questionService = function(socket, hooks) {
 	     	}).then(function(userData) {
 					max = userData.dataValues.UserType.dataValues.MaxQuestions
 	     		// Check to if user can ask more questions
-	      	console.log(count, max)
 	      	if (count >= max && !deleteOld) {
 						return callback('You are at your max number of questions!', null)
 	     		}
@@ -916,7 +909,6 @@ exports.dashboardService = function(socket, hooks) {
   })
 
   socket.on('feedback', function(params, callback) {
-    console.log(params.prdFeedback)
     var accFeedback = params.accFeedback
     var prdFeedback = params.prdFeedback
     var id = params.aiModelID
@@ -974,7 +966,6 @@ exports.dashboardService = function(socket, hooks) {
     }).then(function(d) {
       return callback(null, 'Patient Edited!')
     }).catch(function(d) {
-      console.log(d)
       return callback('Error Editing Patient', null)
     })
   })
@@ -990,7 +981,6 @@ exports.dashboardService = function(socket, hooks) {
     }).then(function(d) {
       return callback(null, 'Algorithm Edited!')
     }).catch(function(d) {
-      console.log(d)
       return callback('Error Editing Algorithm', null)
     })
   })
@@ -1008,7 +998,6 @@ exports.dashboardService = function(socket, hooks) {
         : 'No longer running predictions for this question'
       return callback(null, msg)
     }).catch(function(d) {
-      console.log(d)
       return callback('Error marking for prediction', null)
     })
   })

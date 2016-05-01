@@ -679,8 +679,8 @@ class AlgorithmModal extends React.Component {
 
   handleSubmit () {
     var data = {
-      optimizer: (this.state.optimizer === 'Random') ? null : this.state.optimizer,
-      classifier: (this.state.classifer === 'Random') ? null : this.state.classifier
+      optimizer: this.state.optimizer === 'Random' ? null : this.state.optimizer,
+      classifier:this.state.classifier === 'Random' ? null : this.state.classifier
     }
 
     api.editAlgorithm(this.props.data.ID, data)

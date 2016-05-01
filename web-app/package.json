@@ -48,7 +48,6 @@
     "validator": "^4.5.2"
   },
   "devDependencies": {
-    "apidoc": "^0.16.1",
     "autoprefixer": "^6.3.6",
     "babel-cli": "^6.7.7",
     "babel-core": "^6.7.7",
@@ -84,7 +83,6 @@
     "development": "NODE_ENV=development node server",
     "production": "NODE_ENV=production node server",
     "lint": "eslint .",
-    "apidoc": "apidoc -i ./ -f \".*Api\\.js\"  -o public/apidoc",
     "stats": "webpack --profile --json > stats.json && echo 'Open https://webpack.github.io/analyse/ to see stats.'"
   }
 }
