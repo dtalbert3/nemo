@@ -97,20 +97,26 @@ const MinimalRow = (data) => {
 
 // Helper to create well with extra information on submitted questions
 class HiddenRow extends React.Component {
-  constructor (props, context) {
+  constructor (props) {
     super(props)
-
-    context.router
 
     this.handleCopy = this.handleCopy.bind(this)
   }
 
   handleCopy () {
-    // Store data to be copied into question creator
-    localStorage.setItem('copiedQuestion', JSON.stringify(this.props.data))
+    var params = {
+      ID: this.props.data.ID,
+      UserID: localStorage.getItem('userID'),
+      useAiModels: false
+    }
 
-    // Redirect to question user dashboard
-    this.context.router.replace('/user')
+    api.copyQuestion(params)
+      .then((msg) => {
+        Alert(msg, 'success', 4 * 1000)
+      })
+      .catch((err) => {
+        Alert(err, 'danger', 4 * 1000)
+      })
   }
 
   // Render well
@@ -193,10 +199,6 @@ class HiddenRow extends React.Component {
       </Well>
     )
   }
-}
-
-HiddenRow.contextTypes = {
-  router: PropTypes.object.isRequired
 }
 
 HiddenRow.propTypes = {

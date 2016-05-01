@@ -158,9 +158,9 @@ class NemoApi {
     return promise
   }
 
-  copyQuestion (data) {
+  copyQuestion (params) {
     var promise = new Promise((resolve, reject) => {
-      this.dash.emit('copyQuestion', id, JSON.stringify(data), (error) => {
+      this.dash.emit('copyQuestion',  params, (error) => {
         if (!error) {
           resolve('Patient Edited!')
         } else {
