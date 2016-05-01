@@ -58,7 +58,6 @@
       "Active": true,
       "Optimizers": {
         "Options": {
-          "CV_K": {"param":"-K", "value":true},
           "CV_D": {"param":"-D", "value":true}
         },
         "FeatureSelection": {},
