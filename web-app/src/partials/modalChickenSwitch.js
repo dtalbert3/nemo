@@ -5,8 +5,7 @@ import { Table, Well, ButtonGroup, Button, DropdownButton,
   Grid, Col, Row, MenuItem, Modal }
   from 'react-bootstrap'
 
-// Creates a table with rows that can be clicked to
-// expand hidden rows with supplied html
+// Modal window for a chicken switch
 class ModalChickenSwitch extends React.Component {
 
   constructor(props){
