@@ -5,7 +5,7 @@ from nemoApi import AIParam
 from nemoConfig import nemoConfig
 from wekaWrapper import WekaWrapper
 
-def run(id):
+def run(id, optimizer, algorithm):
     api = nemoApi()
     config = nemoConfig()
 
@@ -13,33 +13,33 @@ def run(id):
     info = api.fetchQuestionInfo(id)
 
     # Declare vars to collect
-    algorithm = None
     parameters = []
     options = None
-    optimizer = None
     tweak = None
     tweakParam = None
     tweakValue = None
 
     # Determine which algorithm to use based on feedback
     print "Running algorithm analyzer on QuestionID " + str(id)
-    if info is None:
-        # If this is the first time running, choose one at random
-        print "Picking algorithm for the first time"
-        algorithms = {k: v for k, v in config.ALGORITHMS.iteritems() if v['Active'] is True}
-        algorithm = random.choice(algorithms.keys())
-    else:
-        # Need to check if algorithm picked is currently active in config file
-        # IF we need to switch algs based on info of ai model
-        if info['AIFeedback'] == '\x01': #If AIFeedback is true
-            print "AIFeedback is true"
-            algorithm = info['Algorithm']
-        else:
-            print info['AIFeedback']
-            print "AIFeedback is false, picking new algorithm"
-            algorithms = {k: v for k, v in config.ALGORITHMS.iteritems() if v['Active'] is True and k != info['Algorithm']}
+    if algorithm is None:
+        if info is None:
+            # If this is the first time running, choose one at random
+            print "Picking algorithm for the first time"
+            algorithms = {k: v for k, v in config.ALGORITHMS.iteritems() if v['Active'] is True}
             algorithm = random.choice(algorithms.keys())
-            print "Algorithm chosen: " + algorithm
+        else:
+            # Need to check if algorithm picked is currently active in config file
+            # IF we need to switch algs based on info of ai model
+            if info['AIFeedback'] == '\x01': #If AIFeedback is true
+                print "AIFeedback is true"
+                algorithm = info['Algorithm']
+            else:
+                print info['AIFeedback']
+                print "AIFeedback is false, picking new algorithm"
+                algorithms = {k: v for k, v in config.ALGORITHMS.iteritems() if v['Active'] is True and k != info['Algorithm']}
+                algorithm = random.choice(algorithms.keys())
+                print "Algorithm chosen: " + algorithm
+
     # Get parameters
     latestAIModel = api.fetchLatestAIModelByAlgorithm(id, algorithm)
     modelParams = []
@@ -51,17 +51,16 @@ def run(id):
         print modelParams
     # else:
 
-
-
-    # Pick an optimizer
-    optimizers = {k: v for k, v in config.ALGORITHMS[algorithm]['Optimizers'].iteritems()}
-    if len(optimizers) > 0: 
-        optimizer = random.choice(optimizers.keys())
-    print optimizer
+    # Pick an optimizer if none was passed
+    if optimizer is None:
+        optimizers = {k: v for k, v in config.ALGORITHMS[algorithm]['Optimizers'].iteritems()}
+        if len(optimizers) > 0:
+            optimizer = random.choice(optimizers.keys())
+    print 'Optimizer chosen: ' + optimizer
 
     # Pick a parameter from that optimizer
     tweaks = {k: v for k, v in config.ALGORITHMS[algorithm]['Optimizers'][optimizer].iteritems()}
-    if len(tweaks) > 0: 
+    if len(tweaks) > 0:
         tweak = random.choice(tweaks.keys())
 
     if tweak is not None:
@@ -99,8 +98,6 @@ def run(id):
             if mParam.param_use == 'Ensemble' and mParam.Value is not None:
                 modelParamsToSave.append(mParam)
                 parameters = parameters + [mParam.Param, mParam.Value]
-    
-
 
     # Run
     instance = None
@@ -111,9 +108,9 @@ def run(id):
             instance = WekaWrapper(id, algorithm, 'weka.classifiers.trees.RandomForest', parameters, modelParamsToSave, optimizer)
         elif algorithm == "NaiveBayes":
             instance = WekaWrapper(id, algorithm, 'weka.classifiers.bayes.NaiveBayes', parameters, modelParamsToSave, optimizer)
-        elif algorithm == "J48": 
+        elif algorithm == "J48":
             instance = WekaWrapper(id, algorithm, 'weka.classifiers.trees.J48', parameters, modelParamsToSave, optimizer)
-        elif algorithm == "Perceptron": 
+        elif algorithm == "Perceptron":
             instance = WekaWrapper(id, algorithm, 'weka.classifiers.functions.MultilayerPerceptron', parameters, modelParamsToSave, optimizer)
     elif optimizer == 'CVParams':
         if algorithm == "SMO":
@@ -125,10 +122,10 @@ def run(id):
         elif algorithm == "NaiveBayes":
             parameters = parameters + ["-W", "weka.classifiers.bayes.NaiveBayes"]
             instance = WekaWrapper(id, algorithm, 'weka.classifiers.meta.CVParameterSelection', parameters, modelParamsToSave, optimizer)
-        elif algorithm == "J48": 
+        elif algorithm == "J48":
             parameters = parameters + ["-W", "weka.classifiers.trees.J48"]
             instance = WekaWrapper(id, algorithm, 'weka.classifiers.meta.CVParameterSelection', parameters, modelParamsToSave, optimizer)
-        elif algorithm == "Perceptron": 
+        elif algorithm == "Perceptron":
             parameters = parameters + ["-W", "weka.classifiers.functions.MultilayerPerceptron"]
             instance = WekaWrapper(id, algorithm, 'weka.classifiers.meta.CVParameterSelection', parameters, modelParamsToSave, optimizer)
     elif optimizer == 'FeatureSelection':
@@ -141,12 +138,12 @@ def run(id):
         elif algorithm == "NaiveBayes":
             parameters = parameters + ["-W", "weka.classifiers.bayes.NaiveBayes", "-E", "weka.attributeSelection.CfsSubsetEval -M", "-S", "weka.attributeSelection.BestFirst -D 1 -N 5"]
             instance = WekaWrapper(id, algorithm, 'weka.classifiers.meta.AttributeSelectedClassifier', parameters, modelParamsToSave, optimizer)
-        elif algorithm == "J48": 
+        elif algorithm == "J48":
             parameters = parameters + ["-W", "weka.classifiers.trees.J48", "-E", "weka.attributeSelection.CfsSubsetEval -M", "-S", "weka.attributeSelection.BestFirst -D 1 -N 5"]
             instance = WekaWrapper(id, algorithm, 'weka.classifiers.meta.AttributeSelectedClassifier', parameters, modelParamsToSave, optimizer)
-        elif algorithm == "Perceptron": 
+        elif algorithm == "Perceptron":
             parameters = parameters + ["-W", "weka.classifiers.functions.MultilayerPerceptron", "-E", "weka.attributeSelection.CfsSubsetEval -M", "-S", "weka.attributeSelection.BestFirst -D 1 -N 5"]
-            instance = WekaWrapper(id, algorithm, 'weka.classifiers.meta.AttributeSelectedClassifier', parameters, modelParamsToSave, optimizer)      
+            instance = WekaWrapper(id, algorithm, 'weka.classifiers.meta.AttributeSelectedClassifier', parameters, modelParamsToSave, optimizer)
     elif optimizer == 'Ensemble':
         if algorithm == "SMO":
             parameters = parameters + ["-B", "weka.classifiers.functions.SMO"]
@@ -157,10 +154,10 @@ def run(id):
         elif algorithm == "NaiveBayes":
             parameters = parameters + ["-B", "weka.classifiers.bayes.NaiveBayes"]
             instance = WekaWrapper(id, algorithm, 'weka.classifiers.meta.Stacking', parameters, modelParamsToSave, optimizer)
-        elif algorithm == "J48": 
+        elif algorithm == "J48":
             parameters = parameters + ["-B", "weka.classifiers.trees.J48"]
             instance = WekaWrapper(id, algorithm, 'weka.classifiers.meta.Stacking', parameters, modelParamsToSave, optimizer)
-        elif algorithm == "Perceptron": 
+        elif algorithm == "Perceptron":
             parameters = parameters + ["-B", "weka.classifiers.functions.MultilayerPerceptron"]
             instance = WekaWrapper(id, algorithm, 'weka.classifiers.meta.Stacking', parameters, modelParamsToSave, optimizer)
     return instance
@@ -168,7 +165,7 @@ def run(id):
 def predict(id):
 
     print "Running prediction on QuestionID " + str(id)
-    
+
     api = nemoApi()
     config = nemoConfig()
 
@@ -193,7 +190,7 @@ def predict(id):
 
         algorithm = latestAIModel['Algorithm']
         optimizer = latestAIModel['Optimizer']
-        
+
         # If we are using options, only pass options to classifier
         if optimizer == 'Options':
             for mParam in modelParams:
@@ -226,9 +223,9 @@ def predict(id):
                 instance = WekaWrapper(id, algorithm, 'weka.classifiers.trees.RandomForest', parameters, modelParamsToSave, optimizer, predict=1)
             elif algorithm == "NaiveBayes":
                 instance = WekaWrapper(id, algorithm, 'weka.classifiers.bayes.NaiveBayes', parameters, modelParamsToSave, optimizer, predict=1)
-            elif algorithm == "J48": 
+            elif algorithm == "J48":
                 instance = WekaWrapper(id, algorithm, 'weka.classifiers.trees.J48', parameters, modelParamsToSave, optimizer, predict=1)
-            elif algorithm == "Perceptron": 
+            elif algorithm == "Perceptron":
                 instance = WekaWrapper(id, algorithm, 'weka.classifiers.functions.MultilayerPerceptron', parameters, modelParamsToSave, optimizer, predict=1)
         elif optimizer == 'CVParams':
             if algorithm == "SMO":
@@ -240,10 +237,10 @@ def predict(id):
             elif algorithm == "NaiveBayes":
                 parameters = parameters + ["-W", "weka.classifiers.bayes.NaiveBayes"]
                 instance = WekaWrapper(id, algorithm, 'weka.classifiers.meta.CVParameterSelection', parameters, modelParamsToSave, optimizer, predict=1)
-            elif algorithm == "J48": 
+            elif algorithm == "J48":
                 parameters = parameters + ["-W", "weka.classifiers.trees.J48"]
                 instance = WekaWrapper(id, algorithm, 'weka.classifiers.meta.CVParameterSelection', parameters, modelParamsToSave, optimizer, predict=1)
-            elif algorithm == "Perceptron": 
+            elif algorithm == "Perceptron":
                 parameters = parameters + ["-W", "weka.classifiers.functions.MultilayerPerceptron"]
                 instance = WekaWrapper(id, algorithm, 'weka.classifiers.meta.CVParameterSelection', parameters, modelParamsToSave, optimizer, predict=1)
         elif optimizer == 'FeatureSelection':
@@ -256,10 +253,10 @@ def predict(id):
             elif algorithm == "NaiveBayes":
                 parameters = parameters + ["-W", "weka.classifiers.bayes.NaiveBayes", "-E", "weka.attributeSelection.CfsSubsetEval -M", "-S", "weka.attributeSelection.BestFirst -D 1 -N 5"]
                 instance = WekaWrapper(id, algorithm, 'weka.classifiers.meta.AttributeSelectedClassifier', parameters, modelParamsToSave, optimizer, predict=1)
-            elif algorithm == "J48": 
+            elif algorithm == "J48":
                 parameters = parameters + ["-W", "weka.classifiers.trees.J48", "-E", "weka.attributeSelection.CfsSubsetEval -M", "-S", "weka.attributeSelection.BestFirst -D 1 -N 5"]
                 instance = WekaWrapper(id, algorithm, 'weka.classifiers.meta.AttributeSelectedClassifier', parameters, modelParamsToSave, optimizer, predict=1)
-            elif algorithm == "Perceptron": 
+            elif algorithm == "Perceptron":
                 parameters = parameters + ["-W", "weka.classifiers.functions.MultilayerPerceptron", "-E", "weka.attributeSelection.CfsSubsetEval -M", "-S", "weka.attributeSelection.BestFirst -D 1 -N 5"]
                 instance = WekaWrapper(id, algorithm, 'weka.classifiers.meta.AttributeSelectedClassifier', parameters, modelParamsToSave, optimizer, predict=1)
         elif optimizer == 'Ensemble':
@@ -272,10 +269,10 @@ def predict(id):
             elif algorithm == "NaiveBayes":
                 parameters = parameters + ["-B", "weka.classifiers.bayes.NaiveBayes"]
                 instance = WekaWrapper(id, algorithm, 'weka.classifiers.meta.Stacking', parameters, modelParamsToSave, optimizer, predict=1)
-            elif algorithm == "J48": 
+            elif algorithm == "J48":
                 parameters = parameters + ["-B", "weka.classifiers.trees.J48"]
                 instance = WekaWrapper(id, algorithm, 'weka.classifiers.meta.Stacking', parameters, modelParamsToSave, optimizer, predict=1)
-            elif algorithm == "Perceptron": 
+            elif algorithm == "Perceptron":
                 parameters = parameters + ["-B", "weka.classifiers.functions.MultilayerPerceptron"]
                 instance = WekaWrapper(id, algorithm, 'weka.classifiers.meta.Stacking', parameters, modelParamsToSave, optimizer, predict=1)
         return instance

@@ -10,30 +10,79 @@ class QuestionCreator extends React.Component {
     super(props)
 
     this.state = {
+      editMode: false,
+      editID: null,
       selectedTypeIndex: null,
       selectedEventIndex: null,
-      selectedDemographicIndex: null,
-      selectedDemographicValueIndex: null,
       bounds: { min: null, max: null },
       parameters: [],
       parameter: {}
     }
 
-    this.submitQuestion = this.submitQuestion.bind(this)
+    this.updateState = this.updateState.bind(this)
+    this.addQuestion = this.addQuestion.bind(this)
+    this.editQuestion = this.editQuestion.bind(this)
     this.clearQuestion = this.clearQuestion.bind(this)
     this.addParameter = this.addParameter.bind(this)
     this.updateParameter = this.updateParameter.bind(this)
     this.removeParameter = this.removeParameter.bind(this)
     this.handleSelectedType = this.handleSelectedType.bind(this)
     this.handleSelectedEvent = this.handleSelectedEvent.bind(this)
-    this.handleSelectedDemographic = this.handleSelectedDemographic.bind(this)
-    this.handleSelectedDemographicValue = this.handleSelectedDemographicValue.bind(this)
     this.updateBounds = this.updateBounds.bind(this)
+
+    this.updateState()
+  }
+
+  updateState () {
+    // Check if a copy is being asked for to populate with
+    var copy = JSON.parse(localStorage.getItem('question'))
+    if (copy !== null) {
+      this.state = {
+        editMode: true,
+        editID: copy.ID,
+        selectedTypeIndex: copy.QuestionType.ID - 1,
+        selectedEventIndex: copy.QuestionEvent.ID - 1,
+        bounds: { min: null, max: null },
+        parameters: copy.QuestionParameters,
+        parameter: {}
+      }
+      localStorage.removeItem('question')
+    }
+  }
+
+  editQuestion () {
+    // Validate to ensure all parameters have been bound
+    // Alert pops up if invalid input was given
+    if (this.state.parameters.length < 1) {
+      Alert('No Parameters Added', 'danger', 4 * 1000)
+      return
+    } else if (this.state.selectedTypeIndex === null) {
+      Alert('Missing Question Type', 'danger', 4 * 1000)
+      return
+    } else if (this.state.selectedEventIndex === null) {
+      Alert('Missing Question Event', 'danger', 4 * 1000)
+      return
+    } else {
+
+      // If valid bind type/event/parameters to data
+      var deleteOld = confirm('Delete old question (OK) or keep old question (Cancel)')
+      var data = {
+        UserID: parseInt(localStorage.userID), // Currently testing with hard-coded UserID
+        QuestionStatusID: 1,
+        QuestionTypeID: this.props.questionTypes[this.state.selectedTypeIndex].ID,
+        QuestionEventID: this.props.questionEvents[this.state.selectedEventIndex].ID,
+        QuestionParamsArray: this.state.parameters,
+        deleteOld: deleteOld,
+        oldID: this.state.editID
+      }
+
+      // Send question to database
+      this.props.handleEdit(data)
+    }
   }
 
   // Submit question formed by user
-  submitQuestion () {
-
+  addQuestion () {
     // Validate to ensure all parameters have been bound
     // Alert pops up if invalid input was given
     if (this.state.parameters.length < 1) {
@@ -57,17 +106,17 @@ class QuestionCreator extends React.Component {
       }
 
       // Send question to database
-      this.props.handleSubmit(data)
+      this.props.handleAdd(data)
     }
   }
 
   // Clear all form fields and tokens
   clearQuestion () {
     this.setState({
+      editMode: false,
+      editID: null,
       selectedTypeIndex: null,
       selectedEventIndex: null,
-      selectedDemographicIndex: null,
-      selectedDemographicValueIndex: null,
       bounds: { min: null, max: null },
       parameters: [],
       parameter: {},
@@ -124,8 +173,6 @@ class QuestionCreator extends React.Component {
     this.setState({
       parameters: this.state.parameters.concat(parameter)
     })
-
-    console.log(this.state.parameters)
   }
 
   // Handle updating of parameter from TypeAhead
@@ -155,22 +202,6 @@ class QuestionCreator extends React.Component {
   handleSelectedEvent (index) {
     this.setState({
       selectedEventIndex: index
-    })
-  }
-
-  // Handle updating of selected question event
-  handleSelectedDemographic (index) {
-    this.setState({
-      selectedDemographicIndex: index,
-      selectedDemographicValueIndex: null
-    })
-
-  }
-
-  // Handle updating of selected question event
-  handleSelectedDemographicValue (index) {
-    this.setState({
-      selectedDemographicValueIndex: index
     })
   }
 
@@ -230,42 +261,6 @@ class QuestionCreator extends React.Component {
 
           <Button bsStyle='primary' onClick={this.addParameter}>Add</Button>
         </Row>
-        {/*<Row>
-          <strong> with these demographics </strong>
-        </Row>
-        <Row>
-          <Col xs={2} md={2}>
-            <QuestionDropdown
-            items={this.props.demographics}
-            selectedIndex={this.state.selectedDemographicIndex}
-            handleSelect={this.handleSelectedDemographic}
-            defaultTitle={'Demographic'}
-            objectParam={'Name'}
-            id={2} />
-          </Col>
-          <Col xs={2} md={2}>
-          { this.props.demographics[this.state.selectedDemographicIndex] !== null &&
-            this.state.selectedDemographicIndex !== null ?
-              (this.props.demographics[this.state.selectedDemographicIndex].Name !== 'Age' ?
-                <QuestionDropdown
-                items={this.props.demographics[this.state.selectedDemographicIndex] === null || this.state.selectedDemographicIndex === null ?
-                  [] :  this.props.demographics[this.state.selectedDemographicIndex].items }
-                selectedIndex={this.state.selectedDemographicValueIndex}
-                handleSelect={this.handleSelectedDemographicValue}
-                defaultTitle={'Value'}
-                objectParam={'Name'}
-                id={2} /> :
-                <RangeInput
-                  bounds={this.state.bounds}
-                  updateBounds={this.updateBounds}/>) :
-              (<span/>)
-          }
-          </Col>
-          <Col xs={2} md={2}>
-            <Button bsStyle='primary' onClick={this.addParameter}>Add</Button>
-          </Col>
-        </Row>*/}
-
         <Row>
           {/* Render parameters as tokens */}
           {this.state.parameters.map((parameter, i) => {
@@ -279,7 +274,10 @@ class QuestionCreator extends React.Component {
         <Row>
           {/* Create buttons for submitting/clearing question*/}
           <ButtonGroup>
-            <Button bsStyle='success' onClick={this.submitQuestion}>Submit</Button>
+            {this.state.editMode
+              ? <Button bsStyle='success' onClick={this.editQuestion}>Edit</Button>
+              : <Button bsStyle='success' onClick={this.addQuestion}>Submit</Button>
+            }
             <Button bsStyle='danger' onClick={this.clearQuestion}>Clear</Button>
           </ButtonGroup>
         </Row>
@@ -291,19 +289,19 @@ class QuestionCreator extends React.Component {
 QuestionCreator.propTypes = {
   questionTypes: PropTypes.array,
   questionEvents: PropTypes.array,
-  demographics: PropTypes.array,
   suggestions: PropTypes.array,
   searchEngine: PropTypes.any,
-  handleSubmit: PropTypes.func
+  handleAdd: PropTypes.func,
+  handleEdit: PropTypes.func
 }
 
 QuestionCreator.defaultProps = {
   questionTypes: [],
   questionEvents: [],
   suggestions: [],
-  demographics: [],
   searchEngine: {},
-  handleSubmit: () => {}
+  handleAdd: () => {},
+  handleEdit: () => {}
 }
 
 // Whitelist which parameters are bounded

@@ -104,9 +104,19 @@ class HiddenRow extends React.Component {
   }
 
   handleCopy () {
-    // Insert question into local storage
-    // Load user dashboard
-    // Load up question creator
+    var params = {
+      ID: this.props.data.ID,
+      UserID: localStorage.getItem('userID'),
+      useAiModels: false
+    }
+
+    api.copyQuestion(params)
+      .then((msg) => {
+        Alert(msg, 'success', 4 * 1000)
+      })
+      .catch((err) => {
+        Alert(err, 'danger', 4 * 1000)
+      })
   }
 
   // Render well

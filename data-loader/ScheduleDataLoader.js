@@ -62,7 +62,7 @@ console.log("done")
 */
 
 
-
+/*
 setTimeout(function() {
 	console.log("sending signal now");
 	client.invoke("dataLoad", "pendingDataLoad", function(error, res, more) {
@@ -83,9 +83,9 @@ setTimeout(function() {
 				console.log(res);
 			});
 }, 5000);
+*/
 
 
-/*
 var aiRunFinished = false
 var j = schedule.scheduleJob(rule, function(){
 	client.invoke("dataLoad", "pendingDataLoad", function(error, res, more) {
@@ -106,4 +106,4 @@ var j = schedule.scheduleJob(rule, function(){
 			});
   });
 });
-*/
+

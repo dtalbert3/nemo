@@ -158,6 +158,32 @@ class NemoApi {
     return promise
   }
 
+  editQuestion (data) {
+    var promise = new Promise((resolve, reject) => {
+      this.qstn.emit('create', data, (error) => {
+        if (!error) {
+          resolve('Question Edited!')
+        } else {
+          reject(error)
+        }
+      })
+    })
+    return promise
+  }
+
+  copyQuestion (params) {
+    var promise = new Promise((resolve, reject) => {
+      this.dash.emit('copyQuestion',  params, (error) => {
+        if (!error) {
+          resolve('Question copied to your dashboard!')
+        } else {
+          reject(error)
+        }
+      })
+    })
+    return promise
+  }
+
   editPatient (id, data) {
     var promise = new Promise((resolve, reject) => {
       this.dash.emit('editPatient', id, JSON.stringify(data), (error) => {

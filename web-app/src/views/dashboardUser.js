@@ -19,7 +19,8 @@ class UserDashboard extends React.Component {
     super(props)
 
     this.updateUserQuestions = this.updateUserQuestions.bind(this)
-    this.handleSubmitQuestion = this.handleSubmitQuestion.bind(this)
+    this.handleAddQuestion = this.handleAddQuestion.bind(this)
+    this.handleEditQuestion = this.handleEditQuestion.bind(this)
   }
 
   // Handler to api call to update user dashboard
@@ -31,11 +32,25 @@ class UserDashboard extends React.Component {
   }
 
   // Handler to api call to add question
-  handleSubmitQuestion (question) {
+  handleAddQuestion (question) {
     api.addQuestion(question)
       .then((msg) => {
         Alert(msg, 'success', 4 * 1000)
         this.updateUserQuestions()
+        this.refs.QuestionCreator.clearQuestion()
+      })
+      .catch((err) => {
+        Alert(err, 'danger', 4 * 1000)
+      })
+  }
+
+  handleEditQuestion (question) {
+    console.log(question)
+    api.editQuestion(question)
+      .then((msg) => {
+        Alert(msg, 'success', 4 * 1000)
+        this.updateUserQuestions()
+        this.refs.QuestionCreator.clearQuestion()
       })
       .catch((err) => {
         Alert(err, 'danger', 4 * 1000)
@@ -62,6 +77,13 @@ class UserDashboard extends React.Component {
     }
   }
 
+  componentWillReceiveProps(nextProps) {
+    if (localStorage.getItem('question') !== null) {
+      this.refs.QuestionCreator.updateState()
+      Alert('Edit question', 'info', 4 * 1000)
+    }
+  }
+
   // Render user dashboard page
   render () {
     // Get number of questions the person has asked and has left to ask
@@ -79,7 +101,8 @@ class UserDashboard extends React.Component {
           suggestions={this.props.suggestions}
           demographics={this.props.demographics}
           searchEngine={this.props.searchEngine}
-          handleSubmit={this.handleSubmitQuestion} />
+          handleAdd={this.handleAddQuestion}
+          handleEdit={this.handleEditQuestion} />
 
         <h3> Questions Asked: {questionsLeft}
           <span className='glyphicon glyphicon-refresh pull-right hover-icon'
@@ -163,8 +186,10 @@ const MinimalRow = (data) => {
 
 // Creates the hidden row used by the table filled with functionality for nemo
 class HiddenRow extends React.Component {
-  constructor (props) {
+  constructor (props, context) {
     super(props)
+
+    context.router
 
     this.handleEdit = this.handleEdit.bind(this)
     this.handleDelete = this.handleDelete.bind(this)
@@ -175,7 +200,11 @@ class HiddenRow extends React.Component {
   }
 
   handleEdit () {
+    // Store data to be copied into question creator
+    localStorage.setItem('question', JSON.stringify(this.props.data))
 
+    // Redirect to question user dashboard (Triggers prop update)
+    this.context.router.replace('/user')
   }
 
   handlePredict () {
@@ -237,7 +266,7 @@ class HiddenRow extends React.Component {
       var params = {}
       params.aiModelID = id
       params.accFeedback = acc_yes
-      console.log(this.props.data.MakePrediction)
+
       if (this.props.data.Prediction !== null && this.props.data.MakePrediction) {
         var predict_yes = this.refs.satisfied_predict_yes.checked
         var predict_no = this.refs.satisfied_predict_no.checked
@@ -404,7 +433,7 @@ class HiddenRow extends React.Component {
                   Edit Patient
                 </Button>
                 <Button bsSize='xsmall' bsStyle='warning' onClick={this.handleEdit}>
-                  Edit
+                  Edit Question
                 </Button>
                 <Button bsSize='xsmall' bsStyle='danger' onClick={this.handleDelete}>
                   Delete
@@ -416,6 +445,10 @@ class HiddenRow extends React.Component {
       </Well>
     )
   }
+}
+
+HiddenRow.contextTypes = {
+  router: PropTypes.object.isRequired
 }
 
 HiddenRow.propTypes = {
@@ -647,8 +680,8 @@ class AlgorithmModal extends React.Component {
 
     var data = this.props.data
     this.state = {
-      optimizer: (data.Optimizer === null) ? 'Optimizer' : data.Optimizer,
-      classifier: (data.Classifier === null) ? 'Classifier' : data.Classifier
+      optimizer: (data.Optimizer === null) ? 'Random' : data.Optimizer,
+      classifier: (data.Classifier === null) ? 'Random' : data.Classifier
     }
 
     this.close = this.close.bind(this)
@@ -679,8 +712,8 @@ class AlgorithmModal extends React.Component {
 
   handleSubmit () {
     var data = {
-      optimizer: this.state.optimizer,
-      classifier: this.state.classifier
+      optimizer: this.state.optimizer === 'Random' ? null : this.state.optimizer,
+      classifier:this.state.classifier === 'Random' ? null : this.state.classifier
     }
 
     api.editAlgorithm(this.props.data.ID, data)

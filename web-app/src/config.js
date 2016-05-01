@@ -6,11 +6,13 @@ export default {
     'race_cd': ['american indian', 'asian', 'black', 'hispanic', 'white']
   },
   'Optimizers': [
+    'Random',
     'Ensemble',
     'FeatureSelection',
     'CVParams'
   ],
   'Classifiers': [
+    'Random',
     'J48',
     'Perceptron',
     'NaiveBayes',
