@@ -8,8 +8,15 @@ run npm i to install node packages
 
 # To run
 
-To force the dataloader to run immediately: node DataLoader.js
-To run the dataloader on schedule: node ScheduleDataLoader.js
+To force the dataloader to run immediately: 
+
+node DataLoader.js
+
+To run the dataloader on schedule, in background: 
+
+node ScheduleDataLoader.js
+press ctrl-z to suspend the process
+enter bg to run in the background
 
 #Explanation of configuration:
 
