@@ -580,7 +580,7 @@ UNLOCK TABLES;
 
 LOCK TABLES `QuestionStatus` WRITE;
 /*!40000 ALTER TABLE `QuestionStatus` DISABLE KEYS */;
-INSERT INTO `QuestionStatus` VALUES (3,'Awaiting Feedback'),(4,'Not Enough Data'),(1,'Queued'),(2,'Running');
+INSERT INTO `QuestionStatus` VALUES (3,'Awaiting Feedback'),(4,'Not Enough Data'),(1,'Queued'),(2,'Running'), (5, 'Error');
 /*!40000 ALTER TABLE `QuestionStatus` ENABLE KEYS */;
 UNLOCK TABLES;
 

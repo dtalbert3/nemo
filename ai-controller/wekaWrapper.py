@@ -143,6 +143,23 @@ class WekaWrapper:
 		newDataset.class_is_last()
 		return newDataset
 
+	def addNominals(self, dataset):
+		# Add the nominal values for all columns, in case a column has none
+		ignoreAttributes = ['readmitted']
+		atts = []
+		for a in dataset.attributes():
+			if (not (a.is_nominal)) or (a.name in ignoreAttributes) :
+				atts.append(a)
+			else:
+				newValues = list(a.values)
+				pvalue = 'DefaultNominal'
+				if(pvalue not in newValues):
+					newValues.append(pvalue)
+				atts.append(Attribute.create_nominal(a.name, newValues))
+		newDataset = Instances.create_instances("Dataset", atts, 0)
+		newDataset.class_is_last()
+		return newDataset
+		
 	def createPatientInstance(self, patient, dataset):
 		# Create a patient instance to classify
 		ignoreAttributes = ['readmitted']
@@ -177,6 +194,7 @@ class WekaWrapper:
 		learnerData = self.retrieveData(self.questionID, "learner")
 		testData = self.retrieveData(self.questionID, 'test')
 		masterData = self.retrieveData(self.questionID, 'all')
+		masterData = self.addNominals(masterData)
 
 		# Check if there is enough correct data to run
 		if (learnerData.num_instances < 1 or testData.num_instances < 1):
@@ -214,6 +232,7 @@ class WekaWrapper:
 		# print 'test'
 		# print test
 
+		pdb.set_trace()
 		# Instantiate classifier
 		self.cls = Classifier(classname=self.classifier, options=self.parameters)
 
@@ -239,6 +258,7 @@ class WekaWrapper:
 		# Convert matrix into json format
 		self.matrix = json.dumps(confusionMatrix)
 
+		
 		# print 'Classifier: ', self.classifier
 		# print 'ID: ', self.questionID
 		# print 'ACC: ', self.acc
@@ -275,7 +295,8 @@ def main():
 
 	# Instantiate api
 	API = nemoApi(CONFIG.HOST, CONFIG.PORT, CONFIG.USER, CONFIG.PASS, CONFIG.DB)
-	#newWrapper = WekaWrapper(336, 'SMO', 'weka.classifiers.functions.SMO', [], [], '', predict=1)
+	newWrapper = WekaWrapper(411, 'RandomForest', 'weka.classifiers.meta.CVParameterSelection', ["-W", "weka.classifiers.trees.RandomForest", "-P", "K 1 3 3"], [], '', predict=0)
+	newWrapper.run()
 	#masterData = newWrapper.retrieveData(336, 'all')
 	#learnerData = newWrapper.retrieveData(336, 'learner')
 	#testData = newWrapper.retrieveData(312, 'test')
@@ -283,7 +304,7 @@ def main():
 	#patient = API.fetchPatientJSON(336)
 	#patientObj = newWrapper.buildPatientObject()
 
-	x = API.getDataQuery(356, 'ALL')
+	x = API.getDataQuery(411, 'ALL')
 	pdb.set_trace()
 	#print patientObj
 	#newDataset = newWrapper.addPatientNominals(patientObj, masterData)
