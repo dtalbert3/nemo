@@ -9,14 +9,26 @@ class QuestionCreator extends React.Component {
   constructor (props) {
     super(props)
 
-    this.state = {
-      selectedTypeIndex: null,
-      selectedEventIndex: null,
-      selectedDemographicIndex: null,
-      selectedDemographicValueIndex: null,
-      bounds: { min: null, max: null },
-      parameters: [],
-      parameter: {}
+    // Check if a copy is being asked for to populate with
+    var copy = JSON.parse(localStorage.getItem('copiedQuestion'))
+    console.log(copy)
+    if (copy !== null) {
+      this.state = {
+        selectedTypeIndex: copy.QuestionType.ID - 1,
+        selectedEventIndex: copy.QuestionEvent.ID - 1,
+        bounds: { min: null, max: null },
+        parameters: copy.QuestionParameters,
+        parameter: {}
+      }
+      localStorage.removeItem('copiedQuestion')
+    } else {
+      this.state = {
+        selectedTypeIndex: null,
+        selectedEventIndex: null,
+        bounds: { min: null, max: null },
+        parameters: [],
+        parameter: {}
+      }
     }
 
     this.submitQuestion = this.submitQuestion.bind(this)
@@ -26,8 +38,6 @@ class QuestionCreator extends React.Component {
     this.removeParameter = this.removeParameter.bind(this)
     this.handleSelectedType = this.handleSelectedType.bind(this)
     this.handleSelectedEvent = this.handleSelectedEvent.bind(this)
-    this.handleSelectedDemographic = this.handleSelectedDemographic.bind(this)
-    this.handleSelectedDemographicValue = this.handleSelectedDemographicValue.bind(this)
     this.updateBounds = this.updateBounds.bind(this)
   }
 
@@ -66,8 +76,6 @@ class QuestionCreator extends React.Component {
     this.setState({
       selectedTypeIndex: null,
       selectedEventIndex: null,
-      selectedDemographicIndex: null,
-      selectedDemographicValueIndex: null,
       bounds: { min: null, max: null },
       parameters: [],
       parameter: {},
@@ -156,22 +164,6 @@ class QuestionCreator extends React.Component {
     })
   }
 
-  // Handle updating of selected question event
-  handleSelectedDemographic (index) {
-    this.setState({
-      selectedDemographicIndex: index,
-      selectedDemographicValueIndex: null
-    })
-
-  }
-
-  // Handle updating of selected question event
-  handleSelectedDemographicValue (index) {
-    this.setState({
-      selectedDemographicValueIndex: index
-    })
-  }
-
   // Handle updating of question bounds
   updateBounds (bounds) {
     this.setState({
@@ -181,6 +173,7 @@ class QuestionCreator extends React.Component {
 
   // Render question creator form
   render () {
+    console.log(this.state)
     return (
       <Grid>
         <Row>
@@ -228,42 +221,6 @@ class QuestionCreator extends React.Component {
 
           <Button bsStyle='primary' onClick={this.addParameter}>Add</Button>
         </Row>
-        {/*<Row>
-          <strong> with these demographics </strong>
-        </Row>
-        <Row>
-          <Col xs={2} md={2}>
-            <QuestionDropdown
-            items={this.props.demographics}
-            selectedIndex={this.state.selectedDemographicIndex}
-            handleSelect={this.handleSelectedDemographic}
-            defaultTitle={'Demographic'}
-            objectParam={'Name'}
-            id={2} />
-          </Col>
-          <Col xs={2} md={2}>
-          { this.props.demographics[this.state.selectedDemographicIndex] !== null &&
-            this.state.selectedDemographicIndex !== null ?
-              (this.props.demographics[this.state.selectedDemographicIndex].Name !== 'Age' ?
-                <QuestionDropdown
-                items={this.props.demographics[this.state.selectedDemographicIndex] === null || this.state.selectedDemographicIndex === null ?
-                  [] :  this.props.demographics[this.state.selectedDemographicIndex].items }
-                selectedIndex={this.state.selectedDemographicValueIndex}
-                handleSelect={this.handleSelectedDemographicValue}
-                defaultTitle={'Value'}
-                objectParam={'Name'}
-                id={2} /> :
-                <RangeInput
-                  bounds={this.state.bounds}
-                  updateBounds={this.updateBounds}/>) :
-              (<span/>)
-          }
-          </Col>
-          <Col xs={2} md={2}>
-            <Button bsStyle='primary' onClick={this.addParameter}>Add</Button>
-          </Col>
-        </Row>*/}
-
         <Row>
           {/* Render parameters as tokens */}
           {this.state.parameters.map((parameter, i) => {
@@ -289,7 +246,6 @@ class QuestionCreator extends React.Component {
 QuestionCreator.propTypes = {
   questionTypes: PropTypes.array,
   questionEvents: PropTypes.array,
-  demographics: PropTypes.array,
   suggestions: PropTypes.array,
   searchEngine: PropTypes.any,
   handleSubmit: PropTypes.func
@@ -299,7 +255,6 @@ QuestionCreator.defaultProps = {
   questionTypes: [],
   questionEvents: [],
   suggestions: [],
-  demographics: [],
   searchEngine: {},
   handleSubmit: () => {}
 }
