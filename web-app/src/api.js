@@ -158,6 +158,19 @@ class NemoApi {
     return promise
   }
 
+  copyQuestion (data) {
+    var promise = new Promise((resolve, reject) => {
+      this.dash.emit('copyQuestion', id, JSON.stringify(data), (error) => {
+        if (!error) {
+          resolve('Patient Edited!')
+        } else {
+          reject(error)
+        }
+      })
+    })
+    return promise
+  }
+
   editPatient (id, data) {
     var promise = new Promise((resolve, reject) => {
       this.dash.emit('editPatient', id, JSON.stringify(data), (error) => {
