@@ -162,7 +162,7 @@ class NemoApi {
     var promise = new Promise((resolve, reject) => {
       this.dash.emit('copyQuestion',  params, (error) => {
         if (!error) {
-          resolve('Patient Edited!')
+          resolve('Question copied to your dashboard!')
         } else {
           reject(error)
         }
