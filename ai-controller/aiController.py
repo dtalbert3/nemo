@@ -15,7 +15,7 @@ CONFIG = None
 QUEUE = None
 
 dataLoad = False
-finishedRun = False
+finishedRun = True
 
 class HelloRPC(object):
 	def dataLoad(self, event):
@@ -23,14 +23,27 @@ class HelloRPC(object):
 		if event == "pendingDataLoad":
 			print "inside pending"
 			dataLoad = True
-			while finishedRun == False:
-				#busyWait
-				pass
-			return "aiController ready"
+			return "pendingAck"
 		elif event == "dataLoadDone":
 			print "inside load done"
 			dataLoad = False
-			return "aiController ack"
+			return "doneAck"
+		elif event == "isAiDone":
+			print "finished run:"
+			print finishedRun
+			if finishedRun == False:
+				return "notReady"
+			else:
+				print "returning ready"
+				return "ready"
+
+
+def server():
+    global dataLoad, finishedRun
+    s = zerorpc.Server(HelloRPC())
+    s.bind("tcp://0.0.0.0:4242")
+    s.run()
+	
 
 # Create worker to process question
 def worker(questionObj, s):
@@ -96,11 +109,13 @@ def main():
     if CONFIG.CONFIG is None:
         print 'Could not load config file on . . .'
         return
-
+		
     # Start zerorpc server for remote control
-    s = zerorpc.Server(HelloRPC())
-    s.bind("tcp://0.0.0.0:4242")
-    s.run()
+    t = threading.Thread(target=server)
+    t.start()
+    #c = zerorpc.Client()
+    #c.connect("tcp://0.0.0.0:4242")
+
 
     # Set semaphore
     SEMAPHORE = threading.BoundedSemaphore(CONFIG.MAX_NUM_THREADS)
@@ -111,7 +126,6 @@ def main():
     QUEUE = Queue.Queue()
     # Run indefinitely
     while True:
-#<<<<<<< HEAD
 			finishedRun = False
 			RESULTS = API.fetchQuestions(CONFIG.MAX_QUEUE_SIZE, CONFIG.QUEUED_STATUS)
 			for ROW in RESULTS:
@@ -128,7 +142,7 @@ def main():
 			finishedRun = True
 			
 			while dataLoad:
-				pass
+				print "waiting"
 #=======
 #				RESULTS = API.fetchQuestions(CONFIG.MAX_QUEUE_SIZE, CONFIG.QUEUED_STATUS)
 #        for ROW in RESULTS:
