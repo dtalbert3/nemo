@@ -385,7 +385,7 @@ exports.questionService = function(socket, hooks) {
 			    }
 
 		   		// Initiate transaction, will be committed if things go smoothly or rolled back if there is an issue at any point
-					Sequelize.transaction(function(t) {
+					sequelize.transaction(function(t) {
 
 						return questionModel.create(questionAttributes, {
 				    	transaction: t
@@ -871,7 +871,27 @@ exports.dashboardService = function(socket, hooks) {
   })
 
   socket.on('copyQuestion', function(params, callback) {
-    Sequelize.transaction(function(t) {
+    var count
+	  var max
+	  questionModel.count({where: {UserID: params.UserID}})
+	 		.then(function(c) {
+				count = c
+	     	userModel.findOne({
+	      	include: [userType],
+	       	where: { ID: params.UserID }
+	     	}).then(function(userData) {
+					max = userData.dataValues.UserType.dataValues.MaxQuestions
+	     		// Check to if user can ask more questions
+	      	if (count >= max) {
+						return callback('You are at your max number of questions!', null)
+	     		}
+			  	var questionAttributes = {
+			    	UserID: params.UserID,
+			    	StatusID: params.QuestionStatusID,
+			    	TypeID: params.QuestionTypeID,
+			    	EventID: params.QuestionEventID
+			    }
+    sequelize.transaction(function(t) {
       var id = params.ID
       var useAiModels = params.useAiModels
       var newQuestion
@@ -975,7 +995,17 @@ exports.dashboardService = function(socket, hooks) {
        // Return the Question ID of the created question
        return callback(null, 'Question copied to your dashboard')
      }).catch(function(error) {
+       console.log(1);
        return callback("Error: An error has occurred when copying question", null)
-     })
+     }) })
+				.catch(function(err) {
+          console.log(err);
+			  	return callback('Error: An error has occurred when copying question', null)
+			  })
+			})
+			.catch(function(err) {
+        console.log(3);
+				return callback('Error: An error has occurred when copying question', null)
+		 	})
   })
 }
