@@ -65,7 +65,7 @@ class QuestionCreator extends React.Component {
     } else {
 
       // If valid bind type/event/parameters to data
-      var deleteOld = confirm('Delete old question?')
+      var deleteOld = confirm('Delete old question (OK) or keep old question (Cancel)')
       var data = {
         UserID: parseInt(localStorage.userID), // Currently testing with hard-coded UserID
         QuestionStatusID: 1,
