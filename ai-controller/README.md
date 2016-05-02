@@ -17,7 +17,7 @@
 ## Installing Packages
 The following can be installed using "apt-get install"
 
-`sudo apt-get default-jdk python-dev python-pip python-numpy libmysqlclient-dev libzmq-dev libevent`
+`sudo apt-get install default-jdk python-dev python-pip python-numpy libmysqlclient-dev libzmq-dev libevent`
 
 The following can be installed using "pip install"
 
