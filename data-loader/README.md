@@ -15,9 +15,9 @@ node DataLoader.js
 
 To run the dataloader on schedule, in background: 
 
-1. node ScheduleDataLoader.js
-2. press ctrl-z to suspend the process
-3. enter bg to run in the background
+1. run `node ScheduleDataLoader.js`
+2. press `ctrl-z` to suspend the process
+3. enter `bg` to run in the background
 
 # Explanation of configuration:
 ```
