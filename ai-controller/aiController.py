@@ -17,11 +17,11 @@ QUEUE = None
 dataLoad = False
 finishedRun = True
 
-class HelloRPC(object):
+class DataLoaderListener(object):
 	def dataLoad(self, event):
-		print "received signal from data loader: " + event
+		global dataLoad, finishedRun
+		print "Received signal from data loader: " + event
 		if event == "pendingDataLoad":
-			print "dataLoad is true"
 			dataLoad = True
 			return "pendingAck"
 		elif event == "dataLoadDone":
@@ -29,16 +29,14 @@ class HelloRPC(object):
 			return "doneAck"
 		elif event == "isAiDone":
 			if finishedRun == False:
-				print "sending back notReady"
 				return "notReady"
 			else:
-				print "returning ready"
 				return "ready"
 
 
 def server():
     global dataLoad, finishedRun
-    s = zerorpc.Server(HelloRPC())
+    s = zerorpc.Server(DataLoaderListener())
     s.bind("tcp://0.0.0.0:4242")
     s.run()
 	
@@ -93,12 +91,8 @@ def worker(questionObj, s):
 			API.updateQuestionStatus(id, CONFIG.QUEUED_STATUS)
 			print e
 			# Need to log exception
-
 	# Set question status
-	try:
-		API.updateQuestionStatus(id, instance.status)
-	except:
-		API.updateQuestionStatus(id, 1) # If errors set back to queued
+	API.updateQuestionStatus(id, instance.status)
 
 	# Release thread
 	QUEUE.task_done()
@@ -130,8 +124,6 @@ def main():
 	# Run indefinitely
 	while True:
 		RESULTS = API.fetchQuestions(CONFIG.MAX_QUEUE_SIZE, CONFIG.QUEUED_STATUS)
-		print "Dataload:"
-		print dataLoad
 		for ROW in RESULTS:
    			QUEUE.put({
 				'id': ROW['ID'],
@@ -140,26 +132,19 @@ def main():
 				'Classifier': ROW['Classifier']
 			})
 		if QUEUE.empty():
-			 print "Dataload:"
-			 print dataLoad
 			 finishedRun = True
 			 time.sleep(CONFIG.TIMEOUT)
 		else:
-		   print "Dataload:"
-		   print dataLoad
 		   finishedRun = False
 		   while not QUEUE.empty():
 		       SEMAPHORE.acquire()
 		       t = threading.Thread(target=worker, args=(QUEUE.get(), SEMAPHORE))
 		       t.start()
 		QUEUE.join()
-		print "Dataload:"
-		print dataLoad
 		finishedRun = True						
 		while dataLoad:
-				time.sleep(5);
-				print "waiting"
-				#pass
+				time.sleep(30)
+				print "Waiting on data load"
 		
 
 if  __name__ =='__main__':

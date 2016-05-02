@@ -35,98 +35,35 @@ client.connect("tcp://127.0.0.1:4242");
 
 var aiRunFinished = false
 
-/*
-	client.invoke("dataLoad", "isAiDone", function(error, res, more) {
-	    console.log(res);
-	});
-*/
-
 function checkRun(callback) {
 	client.invoke("dataLoad", "isAiDone", function(error, res, more) {
-		console.log(res)
+		console.log("Response - " + res)
 		if (res == "ready") {
 			aiRunFinished = true
-			console.log("set finished to true")
+			console.log("AI controller ready")
 			return callback(error)
 		} else {
-			console.log("ai not ready. Waiting")
-			sleep.sleep(1)
-			return checkRun()
+			console.log("AI controller not ready. Waiting")
+			sleep.sleep(10)
+			return checkRun(callback)
 		}
 	})
 }
 
-//var j = schedule.scheduleJob(rule, function(){
+var j = schedule.scheduleJob(rule, function(){
 	client.invoke("dataLoad", "pendingDataLoad", function(error, res, more) {
-		console.log(res)
-		//while (!aiRunFinished) {
-		//sleep.sleep(5);
-		
-		console.log("polling")
+		console.log("Response - " + res)
 		return checkRun(function(error) {
-  		if (error) {
-				console.log(error)
-			}
-			console.log("waiting")
-			sleep.sleep(30)
-			console.log("run dataloader")
+			console.log("Now running data loader")
 			return exec('node DataLoader.js', function callback(error, stdout, stderr){
       	console.log(stdout)
 				return client.invoke("dataLoad", "dataLoadDone", function(error, res, more) {
-					console.log(res)
-					console.log("done, exiting")
+					console.log("Response - " + res)
+					console.log("Done.")
 				})
   		})
 				
 		})
-		//client.invoke("dataLoad", "isAiDone", checkRun) 
-		//console.log("finished - " + aiRunFinished)
-	//}
 	})
-//})
+})
 
-/*
-setTimeout(function() {
-	console.log("sending signal now");
-	client.invoke("dataLoad", "pendingDataLoad", function(error, res, more) {
-	    console.log(res);
-	});
-}, 5000);
-
-setTimeout(function() {
-	console.log("sending second signal now");
-			client.invoke("dataLoad", "dataLoadDone", function(error, res, more) {
-				console.log(res);
-			});
-}, 5000);
-
-setTimeout(function() {
-	console.log("sending third signal now");
-			client.invoke("dataLoad", "isAiDone", function(error, res, more) {
-				console.log(res);
-			});
-}, 5000);
-*/
-
-/*
-var aiRunFinished = false
-var j = schedule.scheduleJob(rule, function(){
-	client.invoke("dataLoad", "pendingDataLoad", function(error, res, more) {
-	    console.log(res);
-	});
-	while (!aiRunFinished) {
-		client.invoke("dataLoad", "isAiDone", function(error, res, more) {
-			if (res = "ready") {
-				aiRunFinished = true
-			}
-		})
-	}
-  console.log("Running DataLoader\n");
-  exec('node DataLoader.js', function callback(error, stdout, stderr){
-      console.log(stdout);
-			client.invoke("dataLoad", "dataLoadDone", function(error, res, more) {
-				console.log(res);
-			});
-  });
-});
-*/
