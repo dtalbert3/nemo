@@ -26,6 +26,9 @@ The following can be installed using "pip install"
 Alternatively the install_ai_packages script can be run.
 The Script for this is located in nemo/ai-controller/ folder
 
+## Running
+run `./aicontroller`
+
 ## Configuration
 
 The configuration of the ai-controller is outlined below.
