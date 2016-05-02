@@ -5,6 +5,7 @@
       "secret": "sshhh",
       "secure": false
     },
+    "url": "localhost:3030",
     "http": {
       "useHttps": true,
       "listen": "localhost",

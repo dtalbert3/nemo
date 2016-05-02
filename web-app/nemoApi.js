@@ -73,9 +73,7 @@ function sendEmailConfirmation(data) {
 		+ senderPassword
 		+ '@smtp.gmail.com')
 
-  var url = (config.http.userHttps ? 'https://' : 'http://') +
-    config.http.listen + ':' +
-    config.http.port
+  var url = (config.http.userHttps ? 'https://' : 'http://') + config.url
 	var mailOptions = {
 			from: '"No Reply" <' + senderUsername + '@gmail.com>',
 			to: data.receiverEmail,
