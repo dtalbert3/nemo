@@ -6,7 +6,7 @@
       "secure": false
     },
     "http": {
-      "useHttps": false,
+      "useHttps": true,
       "listen": "localhost",
       "port": 3030
     },

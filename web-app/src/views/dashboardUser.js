@@ -160,8 +160,7 @@ UserDashboard.defaultProps = {
 const mapStateToProps = (state) => ({
   questions: state.nemoQuestions.userQuestions,
   otherQuestions: state.nemoQuestions.globalQuestions.filter((d) => {
-    console.log(d)
-    return true
+    return d.User.UserType.ID === 2
   }),
   questionTypes: state.questionCreator.questionTypes,
   questionEvents: state.questionCreator.questionEvents,
@@ -517,7 +516,7 @@ class OthersHiddenRow extends React.Component {
       api.giveFeedback(params)
         .then((msg) => {
           Alert(msg, 'success', 4 * 1000)
-          api.fetchUserData()
+          api.fetchGlobalData()
             .catch((err) => {
               Alert(err, 'danger', 4 * 1000)
             })

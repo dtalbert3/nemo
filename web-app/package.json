@@ -41,7 +41,6 @@
     "react-router-redux": "^4.0.2",
     "redux": "^3.4.0",
     "sequelize": "^3.19.3",
-    "serve-static": "^1.10.2",
     "socket.io": "~1.4.5 ",
     "socket.io-client": "~1.4.5",
     "socketio-jwt": "^4.3.4",

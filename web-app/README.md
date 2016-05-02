@@ -21,8 +21,13 @@ This should set your default node version for future use, if it does not you wil
 
 ## Configuration
 
-NOTE: src/config.js must have apiUrl correctly set
+ - src/config.js must have apiUrl correctly set (Was issues setting up cookies for initial page load)
+ - https can be used via the `useHttps` in the config, ssl certs/keys must be provided
+ - `nemoConfirmationEmail` can be setup using an email accounts username/password (We used a gmail account)
+ - `session` contains info used to setup json web token
 
 ## Usage
 
 The application can be started via `npm start`. The application will start using the settings defined in `config/dev.json`. To access the web app open a page in your browser pointing at `localhost:3030`.
+
+To start the application in production use 'npm run production'
