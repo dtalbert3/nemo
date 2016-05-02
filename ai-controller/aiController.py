@@ -15,22 +15,31 @@ CONFIG = None
 QUEUE = None
 
 dataLoad = False
-finishedRun = False
+finishedRun = True
 
-class HelloRPC(object):
+class DataLoaderListener(object):
 	def dataLoad(self, event):
-		print "received a signal - " + event
+		global dataLoad, finishedRun
+		print "Received signal from data loader: " + event
 		if event == "pendingDataLoad":
-			print "inside pending"
 			dataLoad = True
-			while finishedRun == False:
-				#busyWait
-				pass
-			return "aiController ready"
+			return "pendingAck"
 		elif event == "dataLoadDone":
-			print "inside load done"
 			dataLoad = False
-			return "aiController ack"
+			return "doneAck"
+		elif event == "isAiDone":
+			if finishedRun == False:
+				return "notReady"
+			else:
+				return "ready"
+
+
+def server():
+    global dataLoad, finishedRun
+    s = zerorpc.Server(DataLoaderListener())
+    s.bind("tcp://0.0.0.0:4242")
+    s.run()
+	
 
 # Create worker to process question
 def worker(questionObj, s):
@@ -82,19 +91,15 @@ def worker(questionObj, s):
 			API.updateQuestionStatus(id, CONFIG.QUEUED_STATUS)
 			print e
 			# Need to log exception
-
 	# Set question status
-	try:
-		API.updateQuestionStatus(id, instance.status)
-	except:
-		API.updateQuestionStatus(id, 1) # If errors set back to queued
+	API.updateQuestionStatus(id, instance.status)
 
 	# Release thread
 	QUEUE.task_done()
 	s.release()
 
 def main():
-	global API, CONFIG, QUEUE
+	global API, CONFIG, QUEUE, finishedRun, dataLoad
 
 	# Creating logger for logging to MAsterLog.log and console
 	# logger = createLogger()
@@ -106,10 +111,9 @@ def main():
 		return
 
 	# Start zerorpc server for remote control
-	# s = zerorpc.Server(HelloRPC())
-	# s.bind("tcp://0.0.0.0:4242")
-	# s.run()
-
+	t = threading.Thread(target=server)
+	t.start()
+	
 	# Set semaphore
 	SEMAPHORE = threading.BoundedSemaphore(CONFIG.MAX_NUM_THREADS)
 
@@ -119,23 +123,6 @@ def main():
 	QUEUE = Queue.Queue()
 	# Run indefinitely
 	while True:
-		# finishedRun = False
-		# RESULTS = API.fetchQuestions(CONFIG.MAX_QUEUE_SIZE, CONFIG.QUEUED_STATUS)
-		# for ROW in RESULTS:
-		#     QUEUE.put({'id': ROW['ID'], 'makePrediction':ROW['MakePrediction']})
-		# if QUEUE.empty():
-		#     time.sleep(CONFIG.TIMEOUT)
-		# else:
-		#     while not QUEUE.empty():
-		#         SEMAPHORE.acquire()
-		#         t = threading.Thread(target=worker, args=(QUEUE.get(), SEMAPHORE))
-		#         t.start()
-		# QUEUE.join()
-		#
-		# finishedRun = True
-		#
-		# while dataLoad:
-		# 	pass
 		RESULTS = API.fetchQuestions(CONFIG.MAX_QUEUE_SIZE, CONFIG.QUEUED_STATUS)
 		for ROW in RESULTS:
    			QUEUE.put({
@@ -145,14 +132,20 @@ def main():
 				'Classifier': ROW['Classifier']
 			})
 		if QUEUE.empty():
-		   time.sleep(CONFIG.TIMEOUT)
+			 finishedRun = True
+			 time.sleep(CONFIG.TIMEOUT)
 		else:
+		   finishedRun = False
 		   while not QUEUE.empty():
 		       SEMAPHORE.acquire()
 		       t = threading.Thread(target=worker, args=(QUEUE.get(), SEMAPHORE))
 		       t.start()
 		QUEUE.join()
-
+		finishedRun = True						
+		while dataLoad:
+				time.sleep(30)
+				print "Waiting on data load"
+		
 
 if  __name__ =='__main__':
     main()
