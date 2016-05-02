@@ -30,38 +30,54 @@ The Script for this is located in nemo/ai-controller/ folder
 
 The configuration of the ai-controller is outlined below.
 
+```
 {
   "CONTROLLER": {
-    "MAX_QUEUE_SIZE": 20, // This is the maximum amount of questions the AI controller will pull at a given time
-    "MAX_NUM_THREADS": 1, // This is the maximum number of questions the AI controller will work on at once
-    "TIMEOUT": 3 // This is the amount of time the AI controller sleeps before polling for new questions, in seconds
+    // This is the maximum amount of questions the AI controller will pull at a given time
+    "MAX_QUEUE_SIZE": 20,
+    // This is the maximum number of questions the AI controller will work on at once
+    "MAX_NUM_THREADS": 1, 
+    // This is the amount of time the AI controller sleeps before polling for new questions, in seconds
+    "TIMEOUT": 3 
   },
-  "DATABASE": { // This is the database login information
+  // This is the database login information
+  "DATABASE": { 
     "HOST": "codyemoffitt.com",
     "PORT": 3306,
     "USER": "NEMO_WEB",
     "PASS": "NEMO",
     "DB": "NEMO_DEV",
-    "QUEUED_STATUS": 1, // This is the integer defining queued status for a question, it is 1 in the database as well
-    "RUNNING_STATUS": 2, // Integer defining running status of a question
-    "AWAITING_FEEDBACK_STATUS": 3, // Integer defining the Waiting on Feedback status for a question
-    "NOT_ENOUGH_DATA": 4 // Integer defining the Not Enough Data status for a question
+    // This is the integer defining queued status for a question, it is 1 in the database as well
+    "QUEUED_STATUS": 1, 
+    // Integer defining running status of a question
+    "RUNNING_STATUS": 2, 
+    // Integer defining the Waiting on Feedback status for a question
+    "AWAITING_FEEDBACK_STATUS": 3, 
+    // Integer defining the Not Enough Data status for a question
+    "NOT_ENOUGH_DATA": 4 
   },
-  "ALGORITHMS": { // This is a list of algorithms the ai-controller will use, and which optimizers can be used with them
+  // This is a list of algorithms the ai-controller will use, and which optimizers can be used with them
+  "ALGORITHMS": { 
     "RandomForest": {
-      "Active": true, // Active denotes that the AI can choose to run this algorithm
+      // Active denotes that the AI can choose to run this algorithm
+      "Active": true, 
+      // This is a list of optimizers that can be used for this algorithm
       "Optimizers": {
-        "CVParams": { // These are parameters the AI Analyzer can choose to add when the CV Parameter Optimizer is chosen
+        // These are parameters the AI Analyzer can choose to add when the CV Parameter Optimizer is chosen
+        "CVParams": { 
           "CV_I": {"param":"I", "value":"1 10 10"},
           "CV_K": {"param":"K", "value": "1 10 10"},
           "CV_S": {"param":"S", "value": "1 10 10"}
         },
-        "Options": { // These are parameters the AI Analyzer can choose to add when the no Optimizer is chosen
+        // These are parameters the AI Analyzer can choose to add when the no Optimizer is chosen
+        "Options": { 
           "CV_O": {"param":"-O", "value":true},
           "CV_B": {"param":"-B", "value":true}
         },
-        "FeatureSelection": {}, // Feature selection has no parameters specified
-        "Ensemble": { // These are classifiers that can be chosen to be used with this algorithm when ensemble learning is chosen as the Optimizer
+        // Feature selection has no parameters specified
+        "FeatureSelection": {}, 
+        // These are classifiers that can be chosen to be used with this algorithm when ensemble learning is chosen as the Optimizer
+        "Ensemble": { 
           "SMO": {"param":"-B", "value":"weka.classifiers.functions.SMO"},
           "NaiveBayes": {"param":"-B", "value":"weka.classifiers.bayes.NaiveBayes"},
           "J48": {"param":"-B", "value":"weka.classifiers.trees.J48"},
@@ -141,3 +157,4 @@ The configuration of the ai-controller is outlined below.
     }
   }
 }
+```
