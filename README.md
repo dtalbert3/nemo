@@ -8,3 +8,7 @@
 
 
 &nbsp;&nbsp;&nbsp;&nbsp;The purpose of this document is to provide a high level design perspective for the NEMO system, which includes outlines for the system’s architecture as well as how each of the system’s components interact with each other. This document also demonstrates how users are expected to interact with core components of the web application. An overview of features available to users and administrators is also included. Finally, the document concludes with a description of how data is stored within the data mart.
+
+# Issues
+1. NodeJS server seems to run out of memory and crash on our production server (with 1 gig ram).
+2. MySQL connection needs to be checked in ai-controller.
