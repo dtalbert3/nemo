@@ -123,7 +123,7 @@ class UserDashboard extends React.Component {
         { localStorage.getItem('userType') === '1' ? ([
           <h3 key={1}> Offer feedback for others
             <span className='glyphicon glyphicon-refresh pull-right hover-icon'
-              onClick={this.updateOtherQuestions} />
+              onClick={this.updateGlobalQuestions} />
           </h3>,
           <CollapsibleTable key={2}
             data={this.props.otherQuestions}
@@ -160,7 +160,9 @@ UserDashboard.defaultProps = {
 const mapStateToProps = (state) => ({
   questions: state.nemoQuestions.userQuestions,
   otherQuestions: state.nemoQuestions.globalQuestions.filter((d) => {
-    return d.User.UserType.ID === 2
+    return d.User.UserType.ID === 2 &&
+      d.StatusID === 3 &&
+      d.AIModels.length > 0
   }),
   questionTypes: state.questionCreator.questionTypes,
   questionEvents: state.questionCreator.questionEvents,
@@ -516,6 +518,7 @@ class OthersHiddenRow extends React.Component {
       api.giveFeedback(params)
         .then((msg) => {
           Alert(msg, 'success', 4 * 1000)
+          this.props.collapsibleTableCloseAll()
           api.fetchGlobalData()
             .catch((err) => {
               Alert(err, 'danger', 4 * 1000)
