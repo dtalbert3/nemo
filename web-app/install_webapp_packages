@@ -11,7 +11,4 @@ reset
 source ~/.bashrc
 sleep 2
 npm i
-reset
-npm run build
-sleep 2
-npm start
+
