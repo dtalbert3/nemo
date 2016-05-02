@@ -12,16 +12,19 @@ const webpackConfig = require('./webpack.config.js')
 
 // Setup our express app
 const app = require('express')()
+var server = null
 
-// Start HTTPS Server
-// const credentials = {
-//   key: fs.readFileSync(__dirname + config.server.ssl.keyPath, 'utf8'),
-//   cert: fs.readFileSync(__dirname + config.server.ssl.certPath, 'utf8')
-// }
-// const server = require('https').createServer(credentials, app)
-
-// Start HTTP Server
-const server = require('http').createServer(app)
+if (config.http.userHttps) {
+  // Start HTTPS Server
+  const credentials = {
+    key: fs.readFileSync(__dirname + config.server.ssl.keyPath, 'utf8'),
+    cert: fs.readFileSync(__dirname + config.server.ssl.certPath, 'utf8')
+  }
+  server = require('https').createServer(credentials, app)
+} else {
+  // Start HTTP Server
+  server = require('http').createServer(app)
+}
 
 // Create Socket
 const io = require('socket.io')(server)
@@ -52,7 +55,6 @@ if (config.isDev) {
 app
   .use(middleware)
   .use(helmet())
-  // .use(serveStatic(__dirname + '/build'))
   .use(bodyParser.json())
   .use(bodyParser.urlencoded({ extended: true }))
 
