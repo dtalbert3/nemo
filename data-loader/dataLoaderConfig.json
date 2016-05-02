@@ -42,11 +42,12 @@
   "dividePatients": true,
   "findReadmittance": true,
   "schedule": {
-    "dayOfMonth": 11,
-    "hour": 8,
-    "minute": 39
+    "dayOfMonth": 1,
+    "hour": 23,
+    "minute": 40
   },
-  "patientWhereClause": {
+  "aiControllerConnection": "tcp://127.0.0.1:4242",
+	"patientWhereClause": {
   }
 
 }
