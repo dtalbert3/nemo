@@ -1,12 +1,15 @@
-# Required Packages
+# Prerequisites
 
-apt-get
-	libzmq-dev
-	libevent # Might not be necessary, might fail (for zerorpc package)
+1. libzmq-dev
+2. libevent 
 
-run npm i to install node packages
+# Installing
 
-# To run
+run `sudo spt-get install libzmq-dev libevent`
+
+run `npm i` to install node packages
+
+# Running
 
 To force the dataloader to run immediately: 
 
@@ -14,12 +17,12 @@ node DataLoader.js
 
 To run the dataloader on schedule, in background: 
 
-node ScheduleDataLoader.js
-press ctrl-z to suspend the process
-enter bg to run in the background
+1. run `node ScheduleDataLoader.js`
+2. press `ctrl-z` to suspend the process
+3. enter `bg` to run in the background
 
-#Explanation of configuration:
-
+# Explanation of configuration:
+```
 {
   // This is the configuration for the nemo datamart connection
   "nemoConnection": {
@@ -92,4 +95,4 @@ enter bg to run in the background
     }
 
 }
-
+```

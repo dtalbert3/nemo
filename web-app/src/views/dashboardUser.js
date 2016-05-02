@@ -143,7 +143,7 @@ UserDashboard.propTypes = {
   questionTypes: PropTypes.array,
   questionEvents: PropTypes.array,
   suggestions: PropTypes.array,
-  demographics: PropTypes.array,
+  demographics: PropTypes.object,
   searchEngine: PropTypes.any
 }
 
@@ -153,7 +153,7 @@ UserDashboard.defaultProps = {
   questionTypes: [],
   questionEvents: [],
   suggestions: [],
-  demographics: [],
+  demographics: config.Demographics,
   searchEngine: {}
 }
 
@@ -167,7 +167,6 @@ const mapStateToProps = (state) => ({
   questionTypes: state.questionCreator.questionTypes,
   questionEvents: state.questionCreator.questionEvents,
   suggestions: state.questionCreator.suggestions,
-  demographics: state.questionCreator.demographics,
   searchEngine: state.questionCreator.searchEngine
 })
 
