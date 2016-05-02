@@ -19,6 +19,11 @@ NVM is a helpful tool for managing node version on linux
 
 This should set your default node version for future use, if it does not you will have to set the command in your bash profile.
 
+Alternatively the install_webapp_packages script can be run to install automatically. This is located in nemo/web-app/ folder.
+
+## Running
+run `npm start`
+
 ## Configuration
 
  - src/config.js must have apiUrl correctly set (Was issues setting up cookies for initial page load)
