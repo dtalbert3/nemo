@@ -791,13 +791,15 @@ class PatientModal extends React.Component {
     }
 
     this.props.data.QuestionParameters.forEach((d, i) => {
-      var observations = this.refs['observationFact' + i].getObservationFacts()
-      var fact = {
-        concept_cd: d.concept_cd,
-        tval_char:  observations.tval_char,
-        nval_num: observations.nval_num
+      if (d.TableName !== 'patient_dimension') {
+        var observations = this.refs['observationFact' + i].getObservationFacts()
+        var fact = {
+          concept_cd: d.concept_cd,
+          tval_char:  observations.tval_char,
+          nval_num: observations.nval_num
+        }
+        patient.observation_facts.push(fact)
       }
-      patient.observation_facts.push(fact)
     })
 
     api.editPatient(this.props.data.ID, patient)
@@ -854,6 +856,9 @@ class PatientModal extends React.Component {
               </div>
             </div>
             {this.props.data.QuestionParameters.map((d, i) => {
+              if (d.TableName === 'patient_dimension') {
+                return undefined
+              }
               return <ObservationFactForm key={i}
                 ref={'observationFact' + i}
                 concept_cd={d.concept_cd}
