@@ -50,6 +50,9 @@ aiModelModel.hasMany(aiParameterModel)
 userModel.belongsTo(userType, {
   foreignKey: 'UserTypeID'
 })
+questionModel.belongsTo(userModel, {
+  foreignKey: 'UserID'
+})
 questionModel.belongsTo(questionStatusModel, {
   foreignKey: 'StatusID'
 })
@@ -525,6 +528,11 @@ exports.dashboardService = function(socket) {
         }, {
           model: questionEventModel,
           required: true //Inner join
+        },{
+          model: userModel,
+          attributes: ['ID'],
+          required: true, // Inner join
+          include: [{model: userType, required: true}]
         }],
         offset: params.start,
         limit: params.chunk,
