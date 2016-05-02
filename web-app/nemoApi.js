@@ -970,7 +970,9 @@ exports.dashboardService = function(socket) {
                       PredictionFeedback: mArray[i].dataValues.PredictionFeedback,
                       AI: mArray[i].dataValues.AI,
                       Active: mArray[i].dataValues.Active,
-                      ConfusionMatrix: mArray[i].dataValues.ConfusionMatrix
+                      ConfusionMatrix: mArray[i].dataValues.ConfusionMatrix,
+                      Algorithm: mArray[i].dataValues.Algorithm,
+                      Optimizer: mArray[i].dataValues.Optimizer
                     }, {
                       transaction: t
                     }).then(function(newAiModel) {
