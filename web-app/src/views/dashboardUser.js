@@ -350,8 +350,6 @@ class UserHiddenRow extends React.Component {
     }
 
     // Get AI related info
-    var currentOptimizer = ''
-    var currentClassifier = ''
     var status = data.QuestionStatus.Status
     var optimizer = ''
     var classifier = ''
@@ -558,8 +556,6 @@ class OthersHiddenRow extends React.Component {
     }
 
     // Get AI related info
-    var currentOptimizer = ''
-    var currentClassifier = ''
     var status = data.QuestionStatus.Status
     var optimizer = ''
     var classifier = ''
