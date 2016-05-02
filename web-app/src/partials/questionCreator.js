@@ -42,27 +42,37 @@ class QuestionCreator extends React.Component {
   }
 
   addDemographic () {
-    console.log(this.state.selectedDemographic)
-    console.log(this.props.demographics[this.state.selectedDemographic][this.state.selectedDemographicAttributeIndex])
-    console.log(this.state.demographicBounds)
+    // console.log(this.state.selectedDemographic)
+    // console.log(this.props.demographics[this.state.selectedDemographic][this.state.selectedDemographicAttributeIndex])
+    // console.log(this.state.demographicBounds)
+    var parameter = {
+      TableColumn: null,
+      TableName: null,
+      concept_cd: null,
+      concept_path: null,
+      name_char: null,
+      nval_num: null,
+      tval_char: null,
+      valtype_cd: 'N'
+    }
+    var bounded = this.props.demographics[this.state.selectedDemographic] === 'bounded'
+    if(bounded){
+      parameter.min = this.state.demographicBounds.min
+      parameter.max = this.state.demographicBounds.max
+      parameter.concept_cd =  this.state.selectedDemographic + ' : ' + parameter.min + ' - ' + parameter.max
+      parameter.TableName = 'patient_dimension'
+      parameter.TableColumn = 'age_in_years_num'
+    }
+    else{
+      parameter.concept_cd = this.props.demographics[this.state.selectedDemographic][this.state.selectedDemographicAttributeIndex]
+      parameter.TableName = 'patient_dimension'
+      // sex_cd or race_cd
+      parameter.TableColumn = this.state.selectedDemographic
+    }
 
-    // // Rebind parameter
-    // parameter.tval_char = null
-    // parameter.nval_num = null
-    // parameter.concept_path = null
-    // parameter.concept_cd = parameter.concept_cd
-    // parameter.valtype_cd = 'N'
-    // parameter.TableName = null
-    // parameter.TableColumn = null
-    // if ((/LOINC.*/).test(parameter.concept_cd)) {
-    //   parameter.min = this.state.bounds.min
-    //   parameter.max = this.state.bounds.max
-    // }
-    //
-    // // Update state of parameters listing
-    // this.setState({
-    //   parameters: this.state.parameters.concat(parameter)
-    // })
+    this.setState({
+      parameters: this.state.parameters.concat(parameter)
+    }, ()=>{console.log(this.state.parameters)})
   }
 
   handleSelectedDemographic (key, index) {
