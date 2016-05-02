@@ -27,7 +27,11 @@ Alternatively the install_ai_packages script can be run.
 The Script for this is located in nemo/ai-controller/ folder
 
 ## Running
-run `./aiController.py`
+To run the aiController in background: 
+
+1. run `./aiController.py`
+2. press `ctrl-z` to suspend the process
+3. enter `bg` to run in the background
 
 ## Configuration
 
