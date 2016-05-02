@@ -3,11 +3,13 @@
 1. libzmq-dev
 2. libevent 
 
+# Installing
+
 run `sudo spt-get install libzmq-dev libevent`
 
 run `npm i` to install node packages
 
-# To run
+# Running
 
 To force the dataloader to run immediately: 
 
