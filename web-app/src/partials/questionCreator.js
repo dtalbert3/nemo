@@ -96,6 +96,9 @@ class QuestionCreator extends React.Component {
         editID: copy.ID,
         selectedTypeIndex: copy.QuestionType.ID - 1,
         selectedEventIndex: copy.QuestionEvent.ID - 1,
+        selectedDemographic: null,
+        selectedDemographicAttributeIndex: null,
+        demographicBounds: { min: null, max: null },
         bounds: { min: null, max: null },
         parameters: copy.QuestionParameters,
         parameter: {}
