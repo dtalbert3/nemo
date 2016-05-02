@@ -60,12 +60,15 @@ app
 // Unless path equals /confirm?hash=
 app.all('*', function (req, res) {
   if ((/confirm*.*/).test(req.url)) {
+    var url = (config.http.userHttps ? 'https://' : 'http://') +
+      config.http.listen + ':' +
+      config.http.port
     nemoApi.confirmEmail(req.query.hash, function(msg) {
       res.writeHeader(200, {"Content-Type": "text/html"});
       res.write(
         '<!DOCTYPE html><body>' +
           msg +
-          '<script>window.setTimeout(function(){ window.location = "' + config.client.apiUrl + '"; }, 3000);</script>' +
+          '<script>window.setTimeout(function(){ window.location = "' + url + '"; }, 3000);</script>' +
         '</body></html>')
       res.end()
     })

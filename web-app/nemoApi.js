@@ -73,6 +73,9 @@ function sendEmailConfirmation(data) {
 		+ senderPassword
 		+ '@smtp.gmail.com')
 
+  var url = (config.http.userHttps ? 'https://' : 'http://') +
+    config.http.listen + ':' +
+    config.http.port
 	var mailOptions = {
 			from: '"No Reply" <' + senderUsername + '@gmail.com>',
 			to: data.receiverEmail,
@@ -81,7 +84,7 @@ function sendEmailConfirmation(data) {
 			text: data.name + ', \nWelcome to NEMO! An account has been'
   			+ ' created for you and must now be activated. Please '
   			+ 'click on the link below to verify your email and complete the signup process:'
-  			+ '\n \n' + config.client.apiUrl + '/confirm?hash=' + data.confirmationHash
+  			+ '\n \n' + url + '/confirm?hash=' + data.confirmationHash
 
 			// HTML message to be delivered to the user
 			/*html: '<!DOCTYPE html><body><b> ' + data.name + ', </b> <br>'
@@ -99,6 +102,9 @@ function sendEmailConfirmation(data) {
 }
 
 exports.confirmEmail = function(hash, callback) {
+  var url = (config.http.userHttps ? 'https://' : 'http://') +
+    config.http.listen + ':' +
+    config.http.port
   userModel.findOne({
     where: { ConfirmationHash: hash }
   }).then(function(user) {
@@ -113,15 +119,15 @@ exports.confirmEmail = function(hash, callback) {
             transaction: t
           })
       }).then(function() {
-        return callback('Email confirmed. Redirecting to ' + config.client.apiUrl)
+        return callback('Email confirmed. Redirecting to ' + url)
       }).catch(function(error) {
-        return callback('Error confirming email. Redirecting to ' + config.client.apiUrl)
+        return callback('Error confirming email. Redirecting to ' + url)
       })
     } else {
-      return callback('Error confirming email. Redirecting to ' + config.client.apiUrl)
+      return callback('Error confirming email. Redirecting to ' + url)
     }
   }).catch(function() {
-    return callback('Error confirming email. Redirecting to ' + config.client.apiUrl)
+    return callback('Error confirming email. Redirecting to ' + url)
   })
 }
 
