@@ -4,6 +4,7 @@
 2. libevent 
 
 run `sudo spt-get install libzmq-dev libevent`
+
 run `npm i` to install node packages
 
 # To run
