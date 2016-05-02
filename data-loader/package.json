@@ -26,7 +26,8 @@
     "promise": "~7.1.1",
     "q": "~1.4.1",
     "sequelize": "~3.19.1",
-    "zerorpc": "^0.9.6"
+    "zerorpc": "^0.9.6",
+		"sleep": "~3.0.1"
   },
   "peerDependencies": {},
   "devDependencies": {

@@ -19,19 +19,17 @@ finishedRun = True
 
 class HelloRPC(object):
 	def dataLoad(self, event):
-		print "received a signal - " + event
+		print "received signal from data loader: " + event
 		if event == "pendingDataLoad":
-			print "inside pending"
+			print "dataLoad is true"
 			dataLoad = True
 			return "pendingAck"
 		elif event == "dataLoadDone":
-			print "inside load done"
 			dataLoad = False
 			return "doneAck"
 		elif event == "isAiDone":
-			print "finished run:"
-			print finishedRun
 			if finishedRun == False:
+				print "sending back notReady"
 				return "notReady"
 			else:
 				print "returning ready"
@@ -103,7 +101,7 @@ def worker(questionObj, s):
 	s.release()
 
 def main():
-	global API, CONFIG, QUEUE
+	global API, CONFIG, QUEUE, finishedRun, dataLoad
 
 	# Creating logger for logging to MAsterLog.log and console
 	# logger = createLogger()
@@ -117,13 +115,7 @@ def main():
 	# Start zerorpc server for remote control
 	t = threading.Thread(target=server)
 	t.start()
-
-
-	# Start zerorpc server for remote control
-	# s = zerorpc.Server(HelloRPC())
-	# s.bind("tcp://0.0.0.0:4242")
-	# s.run()
-
+	
 	# Set semaphore
 	SEMAPHORE = threading.BoundedSemaphore(CONFIG.MAX_NUM_THREADS)
 
@@ -133,25 +125,9 @@ def main():
 	QUEUE = Queue.Queue()
 	# Run indefinitely
 	while True:
-		# finishedRun = False
-		# RESULTS = API.fetchQuestions(CONFIG.MAX_QUEUE_SIZE, CONFIG.QUEUED_STATUS)
-		# for ROW in RESULTS:
-		#     QUEUE.put({'id': ROW['ID'], 'makePrediction':ROW['MakePrediction']})
-		# if QUEUE.empty():
-		#     time.sleep(CONFIG.TIMEOUT)
-		# else:
-		#     while not QUEUE.empty():
-		#         SEMAPHORE.acquire()
-		#         t = threading.Thread(target=worker, args=(QUEUE.get(), SEMAPHORE))
-		#         t.start()
-		# QUEUE.join()
-		#
-		# finishedRun = True
-		#
-		# while dataLoad:
-		# 	pass
-		finishRun = False
 		RESULTS = API.fetchQuestions(CONFIG.MAX_QUEUE_SIZE, CONFIG.QUEUED_STATUS)
+		print "Dataload:"
+		print dataLoad
 		for ROW in RESULTS:
    			QUEUE.put({
 				'id': ROW['ID'],
@@ -160,16 +136,26 @@ def main():
 				'Classifier': ROW['Classifier']
 			})
 		if QUEUE.empty():
-		   time.sleep(CONFIG.TIMEOUT)
+			 print "Dataload:"
+			 print dataLoad
+			 finishedRun = True
+			 time.sleep(CONFIG.TIMEOUT)
 		else:
+		   print "Dataload:"
+		   print dataLoad
+		   finishedRun = False
 		   while not QUEUE.empty():
 		       SEMAPHORE.acquire()
 		       t = threading.Thread(target=worker, args=(QUEUE.get(), SEMAPHORE))
 		       t.start()
 		QUEUE.join()
+		print "Dataload:"
+		print dataLoad
 		finishedRun = True						
 		while dataLoad:
-				pass
+				time.sleep(5);
+				print "waiting"
+				#pass
 		
 
 if  __name__ =='__main__':

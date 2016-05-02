@@ -39,28 +39,51 @@ var aiRunFinished = false
 	client.invoke("dataLoad", "isAiDone", function(error, res, more) {
 	    console.log(res);
 	});
-
-
-client.invoke("dataLoad", "pendingDataLoad", function(error, res, more) {
-	console.log(res);
-	while (!aiRunFinished) {
-		sleep.sleep(10);
-		
-		console.log("polling");
-		client.invoke("dataLoad", "isAiDone", function(error, res, more) {
-			console.log("waiting");
-			if (res == "ready") {
-				aiRunFinished = true
-			}
-		});
-		console.log("finished - " + aiRunFinished)
-	}
-	console.log("finished")
-});
-
-console.log("done")
 */
 
+function checkRun(callback) {
+	client.invoke("dataLoad", "isAiDone", function(error, res, more) {
+		console.log(res)
+		if (res == "ready") {
+			aiRunFinished = true
+			console.log("set finished to true")
+			return callback(error)
+		} else {
+			console.log("ai not ready. Waiting")
+			sleep.sleep(1)
+			return checkRun()
+		}
+	})
+}
+
+//var j = schedule.scheduleJob(rule, function(){
+	client.invoke("dataLoad", "pendingDataLoad", function(error, res, more) {
+		console.log(res)
+		//while (!aiRunFinished) {
+		//sleep.sleep(5);
+		
+		console.log("polling")
+		return checkRun(function(error) {
+  		if (error) {
+				console.log(error)
+			}
+			console.log("waiting")
+			sleep.sleep(30)
+			console.log("run dataloader")
+			return exec('node DataLoader.js', function callback(error, stdout, stderr){
+      	console.log(stdout)
+				return client.invoke("dataLoad", "dataLoadDone", function(error, res, more) {
+					console.log(res)
+					console.log("done, exiting")
+				})
+  		})
+				
+		})
+		//client.invoke("dataLoad", "isAiDone", checkRun) 
+		//console.log("finished - " + aiRunFinished)
+	//}
+	})
+//})
 
 /*
 setTimeout(function() {
@@ -85,7 +108,7 @@ setTimeout(function() {
 }, 5000);
 */
 
-
+/*
 var aiRunFinished = false
 var j = schedule.scheduleJob(rule, function(){
 	client.invoke("dataLoad", "pendingDataLoad", function(error, res, more) {
@@ -106,4 +129,4 @@ var j = schedule.scheduleJob(rule, function(){
 			});
   });
 });
-
+*/
