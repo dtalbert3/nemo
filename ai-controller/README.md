@@ -24,3 +24,4 @@ The following can be installed using "pip install"
 `sudo pip install javabridge python-weka-wrapper MySQL-python pyzmq zerorpc`
 
 Alternatively the install_ai_packages script can be run.
+The Script for this is located in nemo/web-app/
