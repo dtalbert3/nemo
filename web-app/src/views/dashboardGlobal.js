@@ -2,6 +2,7 @@ import React, { PropTypes } from 'react'
 import { connect } from 'react-redux'
 import { Table, Well, Button, Grid, Col, Row } from 'react-bootstrap'
 import CollapsibleTable from '../partials/collapsibleTable.js'
+import Alert from '../partials/alert'
 
 import api from '../api'
 import config from '../config'
@@ -107,7 +108,7 @@ class HiddenRow extends React.Component {
     var params = {
       ID: this.props.data.ID,
       UserID: localStorage.getItem('userID'),
-      useAiModels: false
+      useAiModels: confirm('What you like to keep the AI models associated with this question? (OK) to keep (Cancel) to not')
     }
 
     api.copyQuestion(params)
@@ -142,11 +143,13 @@ class HiddenRow extends React.Component {
     }
 
     // Get AI related info
+    var optimizer = ''
     var classifier = ''
     var accuracy = ''
     var matrix = ''
     if (data.AIModels.length > 0) {
       var aiModel = data.AIModels[0]
+      optimizer = aiModel.Optimizer
       classifier = aiModel.Algorithm
       accuracy = aiModel.Accuracy
 
@@ -180,6 +183,8 @@ class HiddenRow extends React.Component {
           </Col>
           <Col sm={6} md={6}>
             <dl className='dl-horizontal'>
+              <dt>Optimizer: </dt>
+              <dd>{optimizer}</dd>
               <dt>Classifier: </dt>
               <dd>{classifier}</dd>
               <dt>Accuracy: </dt>
