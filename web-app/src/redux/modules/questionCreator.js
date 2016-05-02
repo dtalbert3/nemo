@@ -45,7 +45,6 @@ const ACTION_HANDLERS = {
     return {
       questionTypes: action.payload,
       questionEvents: state.questionEvents,
-      demographics: state.demographics,
       suggestions: state.questionEvents,
       searchEngine: state.searchEngine
     }
@@ -54,7 +53,6 @@ const ACTION_HANDLERS = {
     return {
       questionTypes: state.questionTypes,
       questionEvents: action.payload,
-      demographics: state.demographics,
       suggestions: state.suggestions,
       searchEngine: state.searchEngine
     }
@@ -65,7 +63,6 @@ const ACTION_HANDLERS = {
     return {
       questionTypes: state.questionTypes,
       questionEvents: state.questionEvents,
-      demographics: state.demographics,
       suggestions: action.payload,
       searchEngine: state.searchEngine
     }
@@ -79,7 +76,6 @@ const initialState = {
   questionTypes: [],
   questionEvents: [],
   suggestions: [],
-  demographics: [{Name:'Sex', items: [{Name:'M'}, {Name: 'F'}]}, {Name:'Race', items: [{Name:'Black'}, {Name:'White'}]}, {Name:'Age'}],
   searchEngine: new Bloodhound({
     local: [],
     identify: (d) => d['concept_cd'],

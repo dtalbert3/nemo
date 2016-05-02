@@ -1,8 +1,9 @@
 import React, { PropTypes } from 'react'
-import { Input, Grid, Row, SplitButton, ButtonGroup, Button, MenuItem, Label, Glyphicon, Col } from 'react-bootstrap'
+import { Input, Grid, Row, SplitButton, DropdownButton, ButtonGroup, Button, MenuItem, Label, Glyphicon, Col } from 'react-bootstrap'
 import TypeAhead from './typeAhead'
 import Alert from './alert'
 import isEqual from 'lodash.isequal'
+import config from '../config'
 
 // Creates a form that allows users to form a question for the data mart
 class QuestionCreator extends React.Component {
@@ -14,6 +15,9 @@ class QuestionCreator extends React.Component {
       editID: null,
       selectedTypeIndex: null,
       selectedEventIndex: null,
+      selectedDemographic: null,
+      selectedDemographicAttributeIndex: null,
+      demographicBounds: { min: null, max: null },
       bounds: { min: null, max: null },
       parameters: [],
       parameter: {}
@@ -28,9 +32,49 @@ class QuestionCreator extends React.Component {
     this.removeParameter = this.removeParameter.bind(this)
     this.handleSelectedType = this.handleSelectedType.bind(this)
     this.handleSelectedEvent = this.handleSelectedEvent.bind(this)
+    this.handleSelectedDemographic = this.handleSelectedDemographic.bind(this)
+    this.handleSelectedDemographicAttribute = this.handleSelectedDemographicAttribute.bind(this)
+    this.updateDemographicBounds = this.updateDemographicBounds.bind(this)
+    this.addDemographic = this.addDemographic.bind(this)
     this.updateBounds = this.updateBounds.bind(this)
 
     this.updateState()
+  }
+
+  addDemographic () {
+    console.log(this.state.selectedDemographic)
+    console.log(this.props.demographics[this.state.selectedDemographic][this.state.selectedDemographicAttributeIndex])
+    console.log(this.state.demographicBounds)
+
+    // // Rebind parameter
+    // parameter.tval_char = null
+    // parameter.nval_num = null
+    // parameter.concept_path = null
+    // parameter.concept_cd = parameter.concept_cd
+    // parameter.valtype_cd = 'N'
+    // parameter.TableName = null
+    // parameter.TableColumn = null
+    // if ((/LOINC.*/).test(parameter.concept_cd)) {
+    //   parameter.min = this.state.bounds.min
+    //   parameter.max = this.state.bounds.max
+    // }
+    //
+    // // Update state of parameters listing
+    // this.setState({
+    //   parameters: this.state.parameters.concat(parameter)
+    // })
+  }
+
+  handleSelectedDemographic (key, index) {
+    this.setState({
+      selectedDemographic: Object.keys(this.props.demographics)[index]
+    })
+  }
+
+  handleSelectedDemographicAttribute (key, index) {
+    this.setState({
+      selectedDemographicAttributeIndex: index
+    })
   }
 
   updateState () {
@@ -117,6 +161,9 @@ class QuestionCreator extends React.Component {
       editID: null,
       selectedTypeIndex: null,
       selectedEventIndex: null,
+      selectedDemographic: null,
+      selectedDemographicAttributeIndex: null,
+      demographicBounds: { min: null, max: null },
       bounds: { min: null, max: null },
       parameters: [],
       parameter: {},
@@ -212,6 +259,12 @@ class QuestionCreator extends React.Component {
     })
   }
 
+  updateDemographicBounds (bounds) {
+    this.setState({
+      demographicBounds: bounds
+    })
+  }
+
   // Render question creator form
   render () {
     return (
@@ -235,7 +288,7 @@ class QuestionCreator extends React.Component {
             objectParam={'Name'}
             id={2} />
 
-          <strong> for patients with </strong>
+          <strong>{' '}for patients with{' '}</strong>
 
           {/* TypeAhead for finding parameters */}
           <TypeAhead
@@ -259,8 +312,39 @@ class QuestionCreator extends React.Component {
             undefined
           }
 
-          <Button bsStyle='primary' onClick={this.addParameter}>Add</Button>
+          <Button bsStyle='primary' onClick={this.addParameter}>
+            <span className='glyphicon glyphicon-plus'/>
+          </Button>
         </Row>
+        <br/>
+        <Row>
+          <strong>with the following demographics{' '}</strong>
+          <DropdownButton title={this.state.selectedDemographic !== null
+            ? this.state.selectedDemographic
+            : 'Demographic'} id={3} onSelect={this.handleSelectedDemographic}>
+            {Object.keys(this.props.demographics).map((d, i) => {
+              return <MenuItem key={i} eventKey={i}>{d}</MenuItem>
+            })}
+          </DropdownButton>
+          {this.state.selectedDemographic !== null && this.props.demographics[this.state.selectedDemographic] !== 'bounded' ?
+            (<DropdownButton title={this.state.selectedDemographicAttributeIndex !== null
+              ? this.props.demographics[this.state.selectedDemographic][this.state.selectedDemographicAttributeIndex]
+              : 'Attribute'} id={4} onSelect={this.handleSelectedDemographicAttribute}>
+              {this.props.demographics[this.state.selectedDemographic].map((d, i) => {
+                return <MenuItem key={i} eventKey={i}>{d}</MenuItem>
+              })}
+            </DropdownButton>)
+            : undefined}
+          {this.state.selectedDemographic !== null && this.props.demographics[this.state.selectedDemographic] === 'bounded' ?
+            <RangeInput
+              bounds={this.state.demographicBounds}
+              updateBounds={this.updateDemographicBounds} />
+            : undefined}
+          <Button bsStyle='primary' onClick={this.addDemographic}>
+            <span className='glyphicon glyphicon-plus'/>
+          </Button>
+        </Row>
+        <br/>
         <Row>
           {/* Render parameters as tokens */}
           {this.state.parameters.map((parameter, i) => {
@@ -273,7 +357,7 @@ class QuestionCreator extends React.Component {
         </Row>
         <Row>
           {/* Create buttons for submitting/clearing question*/}
-          <ButtonGroup>
+          <ButtonGroup className='pull-right'>
             {this.state.editMode
               ? <Button bsStyle='success' onClick={this.editQuestion}>Edit</Button>
               : <Button bsStyle='success' onClick={this.addQuestion}>Submit</Button>
@@ -289,6 +373,7 @@ class QuestionCreator extends React.Component {
 QuestionCreator.propTypes = {
   questionTypes: PropTypes.array,
   questionEvents: PropTypes.array,
+  demographics: PropTypes.object,
   suggestions: PropTypes.array,
   searchEngine: PropTypes.any,
   handleAdd: PropTypes.func,
@@ -298,6 +383,7 @@ QuestionCreator.propTypes = {
 QuestionCreator.defaultProps = {
   questionTypes: [],
   questionEvents: [],
+  demographics: {},
   suggestions: [],
   searchEngine: {},
   handleAdd: () => {},
@@ -429,7 +515,7 @@ class RangeInput extends React.Component {
   render () {
     return (
       <div className='rangeInput'>
-        <strong> between </strong>
+        <strong>{' '} between </strong>
         <Input type='number' ref='min'
           placeholder='Min'
           value={this.state.min}
