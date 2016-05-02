@@ -47,10 +47,7 @@ class Login extends React.Component {
             <ButtonInput type='submit' value='Login' bsStyle='primary' block/>
           </form>
           <Row>
-            <Col sm={6} md={6}>
-              <Link to='/forgotPassword'> forgot password? </Link>
-            </Col>
-            <Col sm={6} md={6}>
+            <Col sm={6} md={6} smOffset={6} mdOffset={6}>
               <span>
                 <Link to='/signup' style={{float: 'right'}}> signup </Link>
               </span>

@@ -26,6 +26,7 @@ Alternatively the install_webapp_packages script can be run to install automatic
 The application can be started via `npm start`. The application will start using the settings defined in `config/dev.json`. To access the web app open a page in your browser pointing at `localhost:3030`.
 
 To start the application in production use 'npm run production'
+To start in background: `nohup npm run production > /dev/null 2>&1 & disown`
 
 ## Configuration
 
