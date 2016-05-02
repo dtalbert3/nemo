@@ -1,15 +1,14 @@
 {
     "isDev": true,
     "session": {
-        "host": "localhost",
-        "port": 6379,
-        "db": 1,
-        "secret": "sshhh",
-        "secure": false
+      "length": 86400000,
+      "secret": "sshhh",
+      "secure": false
     },
     "http": {
-        "listen": "localhost",
-        "port": 3030
+      "useHttps": false,
+      "listen": "localhost",
+      "port": 3030
     },
     "server": {
       "ssl": {
@@ -23,7 +22,7 @@
         "password": "NEMO",
         "dialect": "mysql",
         "port": 3306,
-        "logging": false
+        "logging": true
       }
     },
     "nemoConfirmationEmail":{

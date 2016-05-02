@@ -1,6 +1,6 @@
 {
   "nemoConnection": {
-    "dbName": "DATALOADER_TEST_TWO",
+    "dbName": "NEMO_DATAMART_PROD",
     "userName": "NEMO_WEB",
     "password": "NEMO",
     "sequelizeOptions": {
@@ -16,7 +16,7 @@
     }
   },
   "kumcConnection": {
-    "dbName": "DATALOADER_TEST_ONE",
+    "dbName": "NEMO_Datamart",
     "userName": "NEMO_WEB",
     "password": "NEMO",
     "sequelizeOptions": {
@@ -47,7 +47,6 @@
     "minute": 39
   },
   "patientWhereClause": {
-    "language_cd": "english"
   }
 
 }

@@ -93,8 +93,12 @@ def worker(questionObj, s):
 			API.updateQuestionStatus(id, CONFIG.QUEUED_STATUS)
 			print e
 			# Need to log exception
+
 	# Set question status
-	API.updateQuestionStatus(id, instance.status)
+	try:
+		API.updateQuestionStatus(id, instance.status)
+	except:
+		API.updateQuestionStatus(id, 1) # If errors set back to queued
 
 	# Release thread
 	QUEUE.task_done()

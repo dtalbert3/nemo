@@ -1,29 +1,33 @@
 {
-    "isDev": false,
+    "isDev": true,
     "session": {
-        "host": "localhost",
-        "port": 6379,
-        "db": 1,
-        "secret": "bang!",
-        "secure": false
+      "length": 86400000,
+      "secret": "sshhh",
+      "secure": false
     },
     "http": {
-        "listen": "localhost",
-        "port": 3030
-    },
-    "client": {
-        "apiUrl": "http://localhost:3030",
-        "debugMode": false
+      "useHttps": true,
+      "listen": "localhost",
+      "port": 3030
     },
     "server": {
+      "ssl": {
+        "certPath": "/ssl/cert.pem",
+        "keyPath": "/ssl/key.pem"
+      },
       "db": {
         "host": "codyemoffitt.com",
-        "name": "NEMO_Datamart",
+        "name": "NEMO_DEV",
         "username": "NEMO_WEB",
         "password": "NEMO",
         "dialect": "mysql",
         "port": 3306,
-        "logging": false
+        "logging": true
       }
+    },
+    "nemoConfirmationEmail":{
+      "userName": "nemo.confirmation",
+      "password": "nemoconfirm"
     }
+
 }

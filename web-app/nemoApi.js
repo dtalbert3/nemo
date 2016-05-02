@@ -50,6 +50,9 @@ aiModelModel.hasMany(aiParameterModel)
 userModel.belongsTo(userType, {
   foreignKey: 'UserTypeID'
 })
+questionModel.belongsTo(userModel, {
+  foreignKey: 'UserID'
+})
 questionModel.belongsTo(questionStatusModel, {
   foreignKey: 'StatusID'
 })
@@ -70,6 +73,9 @@ function sendEmailConfirmation(data) {
 		+ senderPassword
 		+ '@smtp.gmail.com')
 
+  var url = (config.http.userHttps ? 'https://' : 'http://') +
+    config.http.listen + ':' +
+    config.http.port
 	var mailOptions = {
 			from: '"No Reply" <' + senderUsername + '@gmail.com>',
 			to: data.receiverEmail,
@@ -78,7 +84,7 @@ function sendEmailConfirmation(data) {
 			text: data.name + ', \nWelcome to NEMO! An account has been'
   			+ ' created for you and must now be activated. Please '
   			+ 'click on the link below to verify your email and complete the signup process:'
-  			+ '\n \n' + config.client.apiUrl + '/confirm?hash=' + data.confirmationHash
+  			+ '\n \n' + url + '/confirm?hash=' + data.confirmationHash
 
 			// HTML message to be delivered to the user
 			/*html: '<!DOCTYPE html><body><b> ' + data.name + ', </b> <br>'
@@ -96,6 +102,9 @@ function sendEmailConfirmation(data) {
 }
 
 exports.confirmEmail = function(hash, callback) {
+  var url = (config.http.userHttps ? 'https://' : 'http://') +
+    config.http.listen + ':' +
+    config.http.port
   userModel.findOne({
     where: { ConfirmationHash: hash }
   }).then(function(user) {
@@ -110,15 +119,15 @@ exports.confirmEmail = function(hash, callback) {
             transaction: t
           })
       }).then(function() {
-        return callback('Email confirmed. Redirecting to ' + config.client.apiUrl)
+        return callback('Email confirmed. Redirecting to ' + url)
       }).catch(function(error) {
-        return callback('Error confirming email. Redirecting to ' + config.client.apiUrl)
+        return callback('Error confirming email. Redirecting to ' + url)
       })
     } else {
-      return callback('Error confirming email. Redirecting to ' + config.client.apiUrl)
+      return callback('Error confirming email. Redirecting to ' + url)
     }
   }).catch(function() {
-    return callback('Error confirming email. Redirecting to ' + config.client.apiUrl)
+    return callback('Error confirming email. Redirecting to ' + url)
   })
 }
 
@@ -144,7 +153,7 @@ exports.authService = function(socket) {
           }
           error = null
           result = jwt.sign(user, config.session.secret, {
-            expiresIn: 24 * 60 * 60 * 1000
+            expiresIn: config.session.length
           })
         }
       }
@@ -525,6 +534,11 @@ exports.dashboardService = function(socket) {
         }, {
           model: questionEventModel,
           required: true //Inner join
+        },{
+          model: userModel,
+          attributes: ['ID'],
+          required: true, // Inner join
+          include: [{model: userType, required: true}]
         }],
         offset: params.start,
         limit: params.chunk,
@@ -704,70 +718,83 @@ exports.dashboardService = function(socket) {
   		Change from initial requirements, AI Model data is no longer kept
   */
   socket.on('delete', function(id, callback) {
-    sequelize.transaction(function(t) {
-  		// Destroy parameters of question then
-  		// Destroy parameters of AI models then
-  		// Destroy AI models of question then
-  		// Destroy the question itself
-  		return questionParameterModel.destroy({
-  			where: {
-  				QuestionID: id
-  			}
-  		}).then(function() {
-  			// Get list of AI Model IDs to destroy
-  			return aiModelModel.findAll({
-  				where: {
-  					QuestionID: id
-  				}
-  			}).then(function(aiModelData) {
-  				var aiModelDataIDList = aiModelData.map(function(a) {
-  					return a.dataValues.ID
-  				})
-  				// Find all of the AI Model Parameters
-  				return aiModelParamsModel.findAll({
-  					where: {
-  						AIModel: {
-  							$in: aiModelDataIDList
-  						}
-  					}
-  				}).then(function(aiModelParamsData) {
-  					var aiModelParamsList = aiModelParamsData.map(function(b) {
-  						return b.dataValues.AIModel
-  					})
-  					// Destroy all of the AI model parameters
-  					return aiModelParamsModel.destroy({
-  						where: {
-  							AIModel: {
-  								$in: aiModelParamsList
-  							}
-  						}
-  					}).then(function() {
-  						//Destroy the AI models
-  						return aiModelModel.destroy({
-  							where: {
-  								ID: {
-  									$in: aiModelDataIDList
-  								}
-  							}
-  						}).then(function() {
-  							//Finally delete the question itself
-  							return questionModel.destroy({
-  								where: {
-  									ID: id,
-  								}
-  							})
-  						})
-  					})
-  				})
-  			}).then(function(d) {
-  				// Return data to callback
-  				return callback(null, d)
-  			}).catch(function(error) {
-  				// Return error to callback
-  				return callback('Error deleting question', null)
-  			})
-  		})
-  	})
+    // Delete questions that are not running
+    questionModel.findOne({
+      where: {
+        ID: id
+      }
+    }).then(function(d) {
+      if (d.StatusID === 2) {
+        return callback('Can\'t delete questions that are running', null)
+      } else {
+        sequelize.transaction(function(t) {
+      		// Destroy parameters of question then
+      		// Destroy parameters of AI models then
+      		// Destroy AI models of question then
+      		// Destroy the question itself
+      		return questionParameterModel.destroy({
+      			where: {
+      				QuestionID: id
+      			}
+      		}).then(function() {
+      			// Get list of AI Model IDs to destroy
+      			return aiModelModel.findAll({
+      				where: {
+      					QuestionID: id
+      				}
+      			}).then(function(aiModelData) {
+      				var aiModelDataIDList = aiModelData.map(function(a) {
+      					return a.dataValues.ID
+      				})
+      				// Find all of the AI Model Parameters
+      				return aiModelParamsModel.findAll({
+      					where: {
+      						AIModel: {
+      							$in: aiModelDataIDList
+      						}
+      					}
+      				}).then(function(aiModelParamsData) {
+      					var aiModelParamsList = aiModelParamsData.map(function(b) {
+      						return b.dataValues.AIModel
+      					})
+      					// Destroy all of the AI model parameters
+      					return aiModelParamsModel.destroy({
+      						where: {
+      							AIModel: {
+      								$in: aiModelParamsList
+      							}
+      						}
+      					}).then(function() {
+      						//Destroy the AI models
+      						return aiModelModel.destroy({
+      							where: {
+      								ID: {
+      									$in: aiModelDataIDList
+      								}
+      							}
+      						}).then(function() {
+      							//Finally delete the question itself
+      							return questionModel.destroy({
+      								where: {
+      									ID: id,
+      								}
+      							})
+      						})
+      					})
+      				})
+      			}).then(function(d) {
+      				// Return data to callback
+      				return callback(null, d)
+      			}).catch(function(error) {
+      				// Return error to callback
+      				return callback('Error deleting question', null)
+      			})
+      		})
+      	})
+      }
+    }).catch(function(d) {
+      return callback('Error deleting question', null)
+    })
   })
 
   socket.on('feedback', function(params, callback) {
@@ -943,7 +970,9 @@ exports.dashboardService = function(socket) {
                       PredictionFeedback: mArray[i].dataValues.PredictionFeedback,
                       AI: mArray[i].dataValues.AI,
                       Active: mArray[i].dataValues.Active,
-                      ConfusionMatrix: mArray[i].dataValues.ConfusionMatrix
+                      ConfusionMatrix: mArray[i].dataValues.ConfusionMatrix,
+                      Algorithm: mArray[i].dataValues.Algorithm,
+                      Optimizer: mArray[i].dataValues.Optimizer
                     }, {
                       transaction: t
                     }).then(function(newAiModel) {

@@ -19,6 +19,7 @@ class UserDashboard extends React.Component {
     super(props)
 
     this.updateUserQuestions = this.updateUserQuestions.bind(this)
+    this.updateGlobalQuestions = this.updateGlobalQuestions.bind(this)
     this.handleAddQuestion = this.handleAddQuestion.bind(this)
     this.handleEditQuestion = this.handleEditQuestion.bind(this)
   }
@@ -26,6 +27,13 @@ class UserDashboard extends React.Component {
   // Handler to api call to update user dashboard
   updateUserQuestions () {
     api.fetchUserData()
+      .catch((err) => {
+        Alert(err, 'danger', 4 * 1000)
+      })
+  }
+
+  updateGlobalQuestions () {
+    api.fetchGlobalData()
       .catch((err) => {
         Alert(err, 'danger', 4 * 1000)
       })
@@ -45,7 +53,6 @@ class UserDashboard extends React.Component {
   }
 
   handleEditQuestion (question) {
-    console.log(question)
     api.editQuestion(question)
       .then((msg) => {
         Alert(msg, 'success', 4 * 1000)
@@ -66,10 +73,8 @@ class UserDashboard extends React.Component {
     document.title = 'Nemo User Dashboard'
 
     // Fetch user questions
-    api.fetchUserData()
-      .catch((err) => {
-        Alert(err, 'danger', 4 * 1000)
-      })
+    this.updateUserQuestions()
+    this.updateGlobalQuestions()
 
     // Set periodic refresh of questions
     if (refresh === null) {
@@ -113,7 +118,20 @@ class UserDashboard extends React.Component {
           numCols={3}
           headers={Headers}
           minimalRow={MinimalRow}
-          hiddenRow={HiddenRow} />
+          hiddenRow={UserHiddenRow} />
+
+        { localStorage.getItem('userType') === '1' ? ([
+          <h3 key={1}> Offer feedback for others
+            <span className='glyphicon glyphicon-refresh pull-right hover-icon'
+              onClick={this.updateGlobalQuestions} />
+          </h3>,
+          <CollapsibleTable key={2}
+            data={this.props.otherQuestions}
+            numCols={3}
+            headers={Headers}
+            minimalRow={MinimalRow}
+            hiddenRow={OthersHiddenRow} />
+          ]) : undefined }
       </Grid>
     )
   }
@@ -121,6 +139,7 @@ class UserDashboard extends React.Component {
 
 UserDashboard.propTypes = {
   questions: PropTypes.array,
+  otherQuestions: PropTypes.array,
   questionTypes: PropTypes.array,
   questionEvents: PropTypes.array,
   suggestions: PropTypes.array,
@@ -130,6 +149,7 @@ UserDashboard.propTypes = {
 
 UserDashboard.defaultProps = {
   questions: [],
+  otherQuestions: [],
   questionTypes: [],
   questionEvents: [],
   suggestions: [],
@@ -139,6 +159,11 @@ UserDashboard.defaultProps = {
 
 const mapStateToProps = (state) => ({
   questions: state.nemoQuestions.userQuestions,
+  otherQuestions: state.nemoQuestions.globalQuestions.filter((d) => {
+    return d.User.UserType.ID === 2 &&
+      d.StatusID === 3 &&
+      d.AIModels.length > 0
+  }),
   questionTypes: state.questionCreator.questionTypes,
   questionEvents: state.questionCreator.questionEvents,
   suggestions: state.questionCreator.suggestions,
@@ -184,8 +209,9 @@ const MinimalRow = (data) => {
   ])
 }
 
-// Creates the hidden row used by the table filled with functionality for nemo
-class HiddenRow extends React.Component {
+// Creates the hidden row used by Table
+// This table is for the current user
+class UserHiddenRow extends React.Component {
   constructor (props, context) {
     super(props)
 
@@ -247,10 +273,12 @@ class HiddenRow extends React.Component {
       .then((msg) => {
         Alert(msg, 'success', 4 * 1000)
         api.fetchUserData()
+          .then((msg) => {
+            this.props.collapsibleTableCloseAll()
+          })
           .catch((err) => {
             Alert(err, 'danger', 4 * 1000)
           })
-        this.props.collapsibleTableCloseAll()
       })
       .catch((err) => {
         Alert(err, 'danger', 4 * 1000)
@@ -322,8 +350,6 @@ class HiddenRow extends React.Component {
     }
 
     // Get AI related info
-    var currentOptimizer = ''
-    var currentClassifier = ''
     var status = data.QuestionStatus.Status
     var optimizer = ''
     var classifier = ''
@@ -447,11 +473,188 @@ class HiddenRow extends React.Component {
   }
 }
 
-HiddenRow.contextTypes = {
+UserHiddenRow.contextTypes = {
   router: PropTypes.object.isRequired
 }
 
-HiddenRow.propTypes = {
+UserHiddenRow.propTypes = {
+  data: PropTypes.any
+}
+
+// Creates the hidden row used by Table
+// This table is for the current user to give non domain experts feedback
+class OthersHiddenRow extends React.Component {
+  constructor (props) {
+    super(props)
+
+    this.handleFeedback = this.handleFeedback.bind(this)
+  }
+
+  // Handler to api call to give feedback to question
+  handleFeedback () {
+    var acc_yes = this.refs.satisfied_acc_yes.checked
+    var acc_no = this.refs.satisfied_acc_no.checked
+    var id = this.props.data.AIModels[0].ID
+    if (acc_yes || acc_no) {
+      var params = {}
+      params.aiModelID = id
+      params.accFeedback = acc_yes
+
+      if (this.props.data.Prediction !== null && this.props.data.MakePrediction) {
+        var predict_yes = this.refs.satisfied_predict_yes.checked
+        var predict_no = this.refs.satisfied_predict_no.checked
+        if (predict_yes || predict_no) {
+          params.prdFeedback = predict_yes
+        } else {
+          Alert('Missng prediction feedback', 'danger', 4 * 1000)
+          return
+        }
+      } else {
+        params.prdFeedback = null
+      }
+
+      api.giveFeedback(params)
+        .then((msg) => {
+          Alert(msg, 'success', 4 * 1000)
+          this.props.collapsibleTableCloseAll()
+          api.fetchGlobalData()
+            .catch((err) => {
+              Alert(err, 'danger', 4 * 1000)
+            })
+        })
+        .catch((err) => {
+          Alert(err, 'danger', 4 * 1000)
+        })
+    }
+  }
+
+  // Render well
+  render () {
+    var data = this.props.data
+
+    // Get Question realted info
+    var id = data.ID
+    var question = data.QuestionType.Type + ' ' +
+      data.QuestionEvent.Name
+    var paramsLong = ''
+    var numParams = data['QuestionParameters'].length
+    for (var i = 0; i < numParams; i++) {
+      paramsLong += data['QuestionParameters'][i]['concept_cd']
+      paramsLong += (i !== numParams - 1) ? ', ' : ''
+    }
+
+    // Get prediction related info
+    var runningPredict = false
+    if (data.MakePrediction) {
+      runningPredict = true
+    }
+    var hasPrediction = false
+    var prediction = ''
+    if (data.Prediction !== null) {
+      hasPrediction = true
+      prediction = data.Prediction ? 'true' : 'false'
+    }
+
+    // Get AI related info
+    var status = data.QuestionStatus.Status
+    var optimizer = ''
+    var classifier = ''
+    var accuracy = ''
+    var matrix = ''
+    var hasFeedback = data.StatusID === 3
+
+    // Get data related to most recent AI model if one exist
+    if (data.AIModels.length > 0) {
+      var aiModel = data.AIModels[0]
+      optimizer = aiModel.Optimizer
+      classifier = aiModel.Algorithm
+      accuracy = aiModel.Accuracy
+
+      var confusionMatrix = JSON.parse(aiModel.ConfusionMatrix)
+      matrix = (
+        <Table condensed>
+          <tbody>
+            <tr>
+              <td>{confusionMatrix[0][0]}</td>
+              <td>{confusionMatrix[0][1]}</td>
+            </tr>
+            <tr>
+              <td>{confusionMatrix[1][0]}</td>
+              <td>{confusionMatrix[1][1]}</td>
+            </tr>
+          </tbody>
+        </Table>
+      )
+    }
+
+    return (
+      <Well bsStyle='sm'>
+        <Row className='hiddenRowWell'>
+          <Col sm={6} md={6}>
+            <Row>
+              <dl className='dl-horizontal'>
+                <dt>Question: </dt>
+                <dd>{question} </dd>
+                <dt>Parameters: </dt>
+                <dd>{paramsLong} </dd>
+              </dl>
+            </Row>
+            <Row>
+              {(hasPrediction && runningPredict) ?
+                <span>
+                  Latest prediction for the current patient is {prediction}.
+                </span>
+              : undefined}
+            </Row>
+            {(hasFeedback && localStorage.getItem('userType') === '1') ?
+              <Row>
+                <br/>
+                <label>Feedback Required:</label>
+                <form>
+                  Are you satisfied with the accuracy?
+                  <span>{'  Yes'}</span>
+                  <input ref='satisfied_acc_yes' type='radio' name='accFeedback' value={1} />
+                  <span>{'  No'}</span>
+                  <input ref='satisfied_acc_no' type='radio' name='accFeedback' value={0} /><br/>
+                  {(hasPrediction && runningPredict) ?
+                    <span>
+                      Are you satisfied with the prediction?
+                      <span>{'  Yes'}</span>
+                      <input ref='satisfied_predict_yes' type='radio' name='predictFeedback' value={1} />
+                      <span>{'  No'}</span>
+                      <input ref='satisfied_predict_no' type='radio' name='predictFeedback' value={0} /><br/>
+                    </span>
+                  : undefined}
+                  <Button className='pull-left' bsSize='xsmall' bsStyle='primary' onClick={this.handleFeedback}>
+                    Submit Feedback
+                  </Button>
+                </form>
+              </Row>
+              : undefined}
+          </Col>
+          <Col sm={6} md={6}>
+            <Row>
+              <dl className='dl-horizontal'>
+                <dt>Status: </dt>
+                <dd>{status}</dd>
+                <dt>Optimizer: </dt>
+                <dd>{optimizer}</dd>
+                <dt>Classifier: </dt>
+                <dd>{classifier}</dd>
+                <dt>Accuracy: </dt>
+                <dd>{accuracy}</dd>
+                <dt>Confusion Matrix: </dt>
+                <dd>{matrix}</dd>
+              </dl>
+            </Row>
+          </Col>
+        </Row>
+      </Well>
+    )
+  }
+}
+
+OthersHiddenRow.propTypes = {
   data: PropTypes.any
 }
 

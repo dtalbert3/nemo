@@ -160,7 +160,7 @@ class NemoApi {
 
   editQuestion (data) {
     var promise = new Promise((resolve, reject) => {
-      this.qstn.emit('create', data, (error) => {
+      this.qstn.emit('editQuestion', data, (error) => {
         if (!error) {
           resolve('Question Edited!')
         } else {

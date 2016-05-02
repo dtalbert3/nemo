@@ -1,8 +1,8 @@
 {
   "CONTROLLER": {
     "MAX_QUEUE_SIZE": 20,
-    "MAX_NUM_THREADS": 2,
-    "TIMEOUT": 30
+    "MAX_NUM_THREADS": 1,
+    "TIMEOUT": 3
   },
   "DATABASE": {
     "HOST": "codyemoffitt.com",
