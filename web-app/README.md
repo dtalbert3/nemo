@@ -21,8 +21,11 @@ This should set your default node version for future use, if it does not you wil
 
 Alternatively the install_webapp_packages script can be run to install automatically. This is located in nemo/web-app/ folder.
 
-## Running
-run `npm start`
+## Usage
+
+The application can be started via `npm start`. The application will start using the settings defined in `config/dev.json`. To access the web app open a page in your browser pointing at `localhost:3030`.
+
+To start the application in production use 'npm run production'
 
 ## Configuration
 
@@ -31,8 +34,6 @@ run `npm start`
  - `nemoConfirmationEmail` can be setup using an email accounts username/password (We used a gmail account)
  - `session` contains info used to setup json web token
 
-## Usage
+## Notes
 
-The application can be started via `npm start`. The application will start using the settings defined in `config/dev.json`. To access the web app open a page in your browser pointing at `localhost:3030`.
-
-To start the application in production use 'npm run production'
+Any updates to the data mart should be reflected in `models` folder
