@@ -1,17 +1,26 @@
-# Required Packages
+# NEMO  AI CONTROLLER
+## Prerequisites 
 
-apt-get
-	default-jdk
-	python-dev
-	python-pip
-	python-numpy
-	libmysqlclient-dev
-	libzmq-dev
-	libevent # Might not be necessary, might fail (for zerorpc package)
+1. default-jdk 
+2. python-dev 
+3. python-pip 
+4. python-numpy 
+5. libmysqlclient-dev 
+6. libzmq-dev 
+7. libevent 
+8. javabridge 
+9. python-weka-wrapper 
+10. MySQL-python 
+11. pyzmq 
+12. zerorpc
 
-pip
-	javabridge
-	python-weka-wrapper
-	MySQL-python
-	pyzmq
-	zerorpc
+## Installing Packages
+The following can be installed using "apt-get install"
+
+`sudo apt-get default-jdk python-dev python-pip python-numpy libmysqlclient-dev libzmq-dev libevent`
+
+The following can be installed using "pip install"
+
+`sudo pip install javabridge python-weka-wrapper MySQL-python pyzmq zerorpc`
+
+Alternatively the install_ai_packages script can be run.
