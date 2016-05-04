@@ -30,6 +30,9 @@ To start in background: `nohup npm run production > /dev/null 2>&1 & disown`
 
 ## Configuration
 
+  Generate self signed ssl cert/key
+  `openssl req -x509 -newkey rsa:2048 -keyout key.pem -out cert.pem -days XXX`
+
  - src/config.js must have apiUrl correctly set (Was issues setting up cookies for initial page load)
  - https can be used via the `useHttps` in the config, ssl certs/keys must be provided
  - `nemoConfirmationEmail` can be setup using an email accounts username/password (We used a gmail account)
